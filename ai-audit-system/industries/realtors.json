@@ -23,6 +23,11 @@
     "Marketing & Online Presence",
     "Recommended Action Plan"
   ],
+  "detectionKeywords": [
+    "listing", "buyer", "seller", "realtor", "agent", "property", "properties",
+    "closing", "escrow", "mortgage", "open house", "mls", "commission",
+    "days on market", "real estate", "contract", "offer", "home"
+  ],
   "voicePromptHints": [
     "Ask how quickly they respond to new online leads.",
     "Ask how many follow-up touches they make before giving up on a lead.",

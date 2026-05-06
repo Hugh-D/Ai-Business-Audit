@@ -20,6 +20,11 @@
     "Opportunities for Improvement",
     "Recommended Action Plan"
   ],
+  "detectionKeywords": [
+    "keyword one",
+    "keyword two",
+    "keyword three"
+  ],
   "voicePromptHints": [
     "Ask about their lead follow-up process.",
     "Ask how they handle objections.",

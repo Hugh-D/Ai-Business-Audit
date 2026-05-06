@@ -23,6 +23,11 @@
     "Reputation & Reviews",
     "Recommended Action Plan"
   ],
+  "detectionKeywords": [
+    "plumber", "plumbing", "electrician", "electrical", "hvac", "roofer", "roofing",
+    "technician", "dispatch", "service call", "membership", "maintenance plan",
+    "warranty", "callback", "furnace", "wiring", "install", "repair"
+  ],
   "voicePromptHints": [
     "Ask how inbound calls are handled after hours.",
     "Ask what percentage of service calls result in a membership or maintenance plan offer.",

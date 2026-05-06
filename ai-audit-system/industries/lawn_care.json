@@ -23,6 +23,11 @@
     "Operations & Scheduling",
     "Recommended Action Plan"
   ],
+  "detectionKeywords": [
+    "lawn", "grass", "mowing", "mow", "landscaping", "landscape", "aeration",
+    "fertilization", "fertilizer", "seasonal", "crew", "mulch", "trimming",
+    "irrigation", "sprinkler", "quote", "estimate"
+  ],
   "voicePromptHints": [
     "Ask how long it takes to send a quote after an estimate visit.",
     "Ask what percentage of one-time customers convert to recurring service.",
