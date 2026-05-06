@@ -1,0 +1,38 @@
+{
+  "id": "trades",
+  "label": "Trades & Home Services",
+  "description": "Audit framework for plumbers, electricians, HVAC, roofers, and similar trade businesses.",
+  "auditFocus": [
+    "Inbound call and lead handling",
+    "Dispatch and booking efficiency",
+    "Technician upsell and membership pitch",
+    "Online reputation and review generation",
+    "Service agreement and maintenance plan conversion"
+  ],
+  "scoringWeights": {
+    "communication": 0.30,
+    "followUp": 0.20,
+    "processClarity": 0.25,
+    "customerExperience": 0.25
+  },
+  "reportSections": [
+    "Executive Summary",
+    "Lead Handling & Booking",
+    "Dispatch & Scheduling",
+    "Technician Performance & Upsell",
+    "Reputation & Reviews",
+    "Recommended Action Plan"
+  ],
+  "voicePromptHints": [
+    "Ask how inbound calls are handled after hours.",
+    "Ask what percentage of service calls result in a membership or maintenance plan offer.",
+    "Ask how they currently request Google reviews from happy customers.",
+    "Ask what their booking-to-job completion rate looks like.",
+    "Ask how they handle callbacks or warranty issues."
+  ],
+  "benchmarks": {
+    "responseTimeGoalMinutes": 15,
+    "followUpAttempts": 2,
+    "membershipConversionGoalPercent": 20
+  }
+}

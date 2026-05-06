@@ -1,0 +1,38 @@
+{
+  "id": "lawn_care",
+  "label": "Lawn Care & Landscaping",
+  "description": "Audit framework for lawn care, landscaping, and outdoor maintenance businesses.",
+  "auditFocus": [
+    "Estimate and quote response time",
+    "Recurring service agreement conversion",
+    "Seasonal upsell and add-on process",
+    "Crew scheduling and route efficiency",
+    "Customer retention and referral program"
+  ],
+  "scoringWeights": {
+    "communication": 0.20,
+    "followUp": 0.30,
+    "processClarity": 0.30,
+    "customerExperience": 0.20
+  },
+  "reportSections": [
+    "Executive Summary",
+    "Estimating & Quote Process",
+    "Service Agreement Conversion",
+    "Upsell & Add-On Opportunities",
+    "Operations & Scheduling",
+    "Recommended Action Plan"
+  ],
+  "voicePromptHints": [
+    "Ask how long it takes to send a quote after an estimate visit.",
+    "Ask what percentage of one-time customers convert to recurring service.",
+    "Ask how they handle seasonal upsells like aeration or fertilization.",
+    "Ask how they follow up on quotes that go unanswered.",
+    "Ask if they have a formal referral or review-request program."
+  ],
+  "benchmarks": {
+    "responseTimeGoalMinutes": 60,
+    "followUpAttempts": 3,
+    "recurringConversionGoalPercent": 40
+  }
+}

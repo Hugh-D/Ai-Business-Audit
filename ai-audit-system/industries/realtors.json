@@ -1,0 +1,38 @@
+{
+  "id": "realtors",
+  "label": "Real Estate Agents",
+  "description": "Audit framework for residential and commercial real estate professionals.",
+  "auditFocus": [
+    "Lead response time and nurture sequences",
+    "Listing presentation quality",
+    "Buyer consultation process",
+    "CRM and pipeline management",
+    "Marketing and social proof"
+  ],
+  "scoringWeights": {
+    "communication": 0.30,
+    "followUp": 0.25,
+    "processClarity": 0.25,
+    "customerExperience": 0.20
+  },
+  "reportSections": [
+    "Executive Summary",
+    "Lead Response & Nurture",
+    "Listing & Buyer Process",
+    "CRM & Pipeline Health",
+    "Marketing & Online Presence",
+    "Recommended Action Plan"
+  ],
+  "voicePromptHints": [
+    "Ask how quickly they respond to new online leads.",
+    "Ask how many follow-up touches they make before giving up on a lead.",
+    "Ask about their current CRM and whether it is automated.",
+    "Ask how they handle open house leads after the event.",
+    "Ask what their average days-on-market is versus the local average."
+  ],
+  "benchmarks": {
+    "responseTimeGoalMinutes": 5,
+    "followUpAttempts": 7,
+    "domVsMarketGoalPercent": -10
+  }
+}

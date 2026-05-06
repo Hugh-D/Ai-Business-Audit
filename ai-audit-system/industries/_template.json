@@ -1,0 +1,32 @@
+{
+  "id": "your_industry_slug",
+  "label": "Human-Readable Industry Name",
+  "description": "Brief description of what this industry covers.",
+  "auditFocus": [
+    "Key area 1 to audit",
+    "Key area 2 to audit",
+    "Key area 3 to audit"
+  ],
+  "scoringWeights": {
+    "communication": 0.25,
+    "followUp": 0.25,
+    "processClarity": 0.25,
+    "customerExperience": 0.25
+  },
+  "reportSections": [
+    "Executive Summary",
+    "Communication Quality",
+    "Follow-Up Process",
+    "Opportunities for Improvement",
+    "Recommended Action Plan"
+  ],
+  "voicePromptHints": [
+    "Ask about their lead follow-up process.",
+    "Ask how they handle objections.",
+    "Ask what tools they currently use."
+  ],
+  "benchmarks": {
+    "responseTimeGoalMinutes": 5,
+    "followUpAttempts": 3
+  }
+}
