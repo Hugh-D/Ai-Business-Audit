@@ -60,14 +60,22 @@ app.post('/webhook/retell', async (req, res) => {
 
     const { transcript, metadata = {}, call_id } = payload.call;
 
-    if (!transcript || !metadata.industry) {
+    if (!transcript) {
+      return res.status(400).json({ error: 'call.transcript is required' });
+    }
+
+    const cleaned = transcriptCleaner.clean(transcript);
+
+    let config = industryRouter.detect(cleaned);
+    if (!config && metadata.industry) {
+      config = industryRouter.resolve(metadata.industry);
+    }
+    if (!config) {
       return res.status(400).json({
-        error: 'call.transcript and call.metadata.industry are required',
+        error: 'Could not detect industry from transcript and no metadata.industry fallback was provided',
       });
     }
 
-    const config = industryRouter.resolve(metadata.industry);
-    const cleaned = transcriptCleaner.clean(transcript);
     const report = await reportEngine.generate({ config, transcript: cleaned });
 
     res.json({ auditId: uuidv4(), callId: call_id, industry: config.id, report });
