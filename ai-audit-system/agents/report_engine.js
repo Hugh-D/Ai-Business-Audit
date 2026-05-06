@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const OpenAI = require('openai');
+const Anthropic = require('@anthropic-ai/sdk');
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const BASE_PROMPT = fs.readFileSync(
   path.join(__dirname, '../prompts/base_report.txt'),
@@ -14,17 +14,17 @@ async function generate({ config, transcript }) {
   const systemPrompt = buildSystemPrompt(config);
   const userMessage = buildUserMessage(config, transcript);
 
-  const response = await client.chat.completions.create({
-    model: process.env.AUDIT_MODEL || 'gpt-4o',
+  const response = await client.messages.create({
+    model: process.env.AUDIT_MODEL || 'claude-sonnet-4-20250514',
     max_tokens: parseInt(process.env.AUDIT_MAX_TOKENS || '2000', 10),
+    system: systemPrompt,
     messages: [
-      { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage },
     ],
-    response_format: { type: 'json_object' },
   });
 
-  const raw = response.choices[0].message.content;
+  const raw = response.content.find(b => b.type === 'text')?.text;
+  if (!raw) throw new Error('No text content in Anthropic response');
   return JSON.parse(raw);
 }
 
