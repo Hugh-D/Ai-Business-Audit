@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const VOICE_SYSTEM_PROMPT = fs.readFileSync(
   path.join(__dirname, '../prompts/voice_system.txt'),
@@ -7,8 +8,7 @@ const VOICE_SYSTEM_PROMPT = fs.readFileSync(
 );
 
 // Builds a voice session configuration scoped to the given industry config.
-// Returns the system prompt and session-level settings for the caller to
-// forward to the telephony or real-time voice layer.
+// Returns the system prompt and session-level settings to forward to Retell.
 async function createSession(config) {
   const systemPrompt = buildVoicePrompt(config);
 
@@ -20,15 +20,35 @@ async function createSession(config) {
   };
 }
 
-// Audio transcription is not provided by the Anthropic API.
-// Wire this function to a dedicated transcription service such as
-// AssemblyAI, Deepgram, or AWS Transcribe and return the transcript string.
-async function transcribe(_audioBuffer, _filename = 'audio.webm') {
-  throw new Error(
-    'transcribe() requires a third-party audio transcription service. ' +
-    'Anthropic does not provide an audio transcription API. ' +
-    'Integrate AssemblyAI, Deepgram, or AWS Transcribe and implement this function.'
-  );
+// Verifies the Retell webhook signature and returns the parsed payload.
+// rawBody must be the raw request body Buffer (captured before JSON parsing).
+// Throws a 401 error if the signature is missing or invalid.
+//
+// Retell sends the transcript in payload.call.transcript (plain string) and
+// the industry in payload.call.metadata.industry (set when creating the call).
+// Only call_ended events carry a completed transcript.
+function parseRetellWebhook(rawBody, signature) {
+  if (!signature) {
+    const err = new Error('Missing x-retell-signature header');
+    err.status = 401;
+    throw err;
+  }
+
+  const apiKey = process.env.RETELL_API_KEY;
+  if (!apiKey) throw new Error('RETELL_API_KEY environment variable is not set');
+
+  const expected = crypto
+    .createHmac('sha256', apiKey)
+    .update(rawBody)
+    .digest('hex');
+
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+    const err = new Error('Invalid Retell webhook signature');
+    err.status = 401;
+    throw err;
+  }
+
+  return JSON.parse(rawBody.toString('utf8'));
 }
 
 function buildVoicePrompt(config) {
@@ -39,4 +59,4 @@ function buildVoicePrompt(config) {
     .replace('{{VOICE_PROMPT_HINTS}}', hints);
 }
 
-module.exports = { createSession, transcribe };
+module.exports = { createSession, parseRetellWebhook };
