@@ -1,8 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const OpenAI = require('openai');
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const VOICE_SYSTEM_PROMPT = fs.readFileSync(
   path.join(__dirname, '../prompts/voice_system.txt'),
@@ -10,33 +7,28 @@ const VOICE_SYSTEM_PROMPT = fs.readFileSync(
 );
 
 // Builds a voice session configuration scoped to the given industry config.
-// Returns the system prompt and any session-level settings for the caller to
-// forward to the real-time voice API or telephony layer.
+// Returns the system prompt and session-level settings for the caller to
+// forward to the telephony or real-time voice layer.
 async function createSession(config) {
   const systemPrompt = buildVoicePrompt(config);
 
   return {
     systemPrompt,
-    model: process.env.VOICE_MODEL || 'gpt-4o-realtime-preview',
-    voice: 'alloy',
+    model: process.env.VOICE_MODEL || 'claude-sonnet-4-20250514',
     industry: config.id,
     hints: config.voicePromptHints,
   };
 }
 
-// Transcribes an audio buffer using Whisper.
-// audioBuffer must be a Buffer; filename is used only for MIME-type detection.
-async function transcribe(audioBuffer, filename = 'audio.webm') {
-  const { Readable } = require('stream');
-  const stream = Readable.from(audioBuffer);
-  stream.path = filename;
-
-  const transcription = await client.audio.transcriptions.create({
-    model: process.env.VOICE_TRANSCRIPTION_MODEL || 'whisper-1',
-    file: stream,
-  });
-
-  return transcription.text;
+// Audio transcription is not provided by the Anthropic API.
+// Wire this function to a dedicated transcription service such as
+// AssemblyAI, Deepgram, or AWS Transcribe and return the transcript string.
+async function transcribe(_audioBuffer, _filename = 'audio.webm') {
+  throw new Error(
+    'transcribe() requires a third-party audio transcription service. ' +
+    'Anthropic does not provide an audio transcription API. ' +
+    'Integrate AssemblyAI, Deepgram, or AWS Transcribe and implement this function.'
+  );
 }
 
 function buildVoicePrompt(config) {
