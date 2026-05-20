@@ -25,7 +25,24 @@ async function generate({ config, transcript }) {
 
   const raw = response.content.find(b => b.type === 'text')?.text;
   if (!raw) throw new Error('No text content in Anthropic response');
-  return JSON.parse(raw);
+  return parseJsonReport(raw);
+}
+
+function parseJsonReport(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch (_err) {
+    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fenced) return JSON.parse(fenced[1]);
+
+    const firstBrace = raw.indexOf('{');
+    const lastBrace = raw.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      return JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+    }
+
+    throw new Error('Report engine returned text that was not valid JSON');
+  }
 }
 
 function buildSystemPrompt(config) {
@@ -49,4 +66,4 @@ function buildUserMessage(config, transcript) {
   ].join('\n');
 }
 
-module.exports = { generate };
+module.exports = { generate, parseJsonReport };

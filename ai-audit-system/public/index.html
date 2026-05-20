@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Business Audit</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace" aria-label="AI Business Audit workbench">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AI Business Audit</p>
+            <h1>Phone Audit Workbench</h1>
+          </div>
+          <div class="status-pill" id="serviceStatus">Checking API</div>
+        </header>
+
+        <section class="input-panel" aria-labelledby="phoneAuditTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="phoneAuditTitle">Start Phone Audit</h2>
+              <p>Launch a discovery call, then review the completed readiness report when the webhook lands.</p>
+            </div>
+            <button class="ghost-button" id="refreshCallsButton" type="button">Refresh Calls</button>
+          </div>
+
+          <form id="callForm" class="audit-form">
+            <label for="callIndustrySelect">Industry</label>
+            <select id="callIndustrySelect" name="industry" required>
+              <option value="">Loading industries...</option>
+            </select>
+
+            <label for="businessNameInput">Business Name</label>
+            <input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
+
+            <label for="contactNameInput">Contact Name</label>
+            <input id="contactNameInput" name="contactName" type="text" placeholder="Sam">
+
+            <label for="phoneNumberInput">Phone Number</label>
+            <input
+              id="phoneNumberInput"
+              name="phoneNumber"
+              type="tel"
+              placeholder="+61400111222"
+              required
+            >
+
+            <div class="form-actions">
+              <button class="primary-button" id="startCallButton" type="submit">Start Phone Audit</button>
+              <p class="hint">Requires `RETELL_API_KEY` and `RETELL_FROM_NUMBER`.</p>
+            </div>
+          </form>
+
+          <div class="call-list-wrap">
+            <div class="section-title-row">
+              <h2>Recent Calls</h2>
+              <span id="callCount">0</span>
+            </div>
+            <div id="callList" class="call-list">
+              <div class="empty-state compact">No calls tracked in this server session.</div>
+            </div>
+          </div>
+
+          <details class="manual-audit">
+            <summary>Manual transcript fallback</summary>
+            <form id="auditForm" class="audit-form nested">
+              <label for="industrySelect">Industry</label>
+              <select id="industrySelect" name="industry" required>
+                <option value="">Loading industries...</option>
+              </select>
+
+              <div class="section-title-row">
+                <label for="transcriptInput">Transcript</label>
+                <button class="text-button" id="sampleButton" type="button">Load Sample</button>
+              </div>
+              <textarea
+                id="transcriptInput"
+                name="transcript"
+                rows="10"
+                placeholder="Client: We miss calls after 5pm and do follow-up manually..."
+                required
+              ></textarea>
+
+              <div class="form-actions">
+                <button class="secondary-button" id="generateButton" type="submit">Generate From Transcript</button>
+                <p class="hint">Requires `ANTHROPIC_API_KEY` in `.env`.</p>
+              </div>
+            </form>
+          </details>
+        </section>
+
+        <section class="report-panel" aria-labelledby="reportTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="reportTitle">Report Preview</h2>
+              <p id="reportMeta">No audit generated yet.</p>
+            </div>
+            <button class="ghost-button" id="copyButton" type="button" disabled>Copy JSON</button>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <strong>Ready for the first audit.</strong>
+            <span>The report will appear here with scores, gaps, strengths, and an action plan.</span>
+          </div>
+
+          <div id="errorState" class="error-state" hidden></div>
+
+          <article id="reportOutput" class="report-output" hidden></article>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
