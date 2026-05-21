@@ -27,6 +27,7 @@ It is a Node/Express app with:
 - editable spreadsheet export at `POST /export/xlsx`
 - browser-based report export actions: Copy JSON, Download Sheet, and Print / PDF
 - persisted report review/delivery workflow at `PATCH /voice/calls/:callId/review`
+- SMTP workbook delivery at `POST /voice/calls/:callId/deliver`
 - voice prompt session config at `POST /voice/session`
 - outbound Retell call creation at `POST /voice/call`
 - in-memory call list at `GET /voice/calls`
@@ -48,6 +49,7 @@ Important files:
 - `ai-audit-system/agents/voice_agent.js` - Retell call creation and webhook verification
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
 - `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation
+- `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with workbook attachment
 - `ai-audit-system/agents/call_store.js` - local disk-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
@@ -84,6 +86,17 @@ Required for outbound Retell phone calls:
 RETELL_API_KEY=...
 RETELL_FROM_NUMBER=...
 RETELL_AGENT_ID=...
+```
+
+Optional for sending completed reports by email:
+
+```bash
+SMTP_HOST=...
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=...
+SMTP_PASS=...
+SMTP_FROM="AI Business Audit <audit@example.com>"
 ```
 
 Current known environment status:
@@ -157,7 +170,7 @@ Webhook behavior:
 - No external database.
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
 - Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with internal review notes, recipient email, and delivery notes.
-- The UI can prepare a mailto email draft for client delivery, but it does not send email automatically or attach the workbook.
+- The UI can prepare a mailto email draft, or send the editable workbook by SMTP when SMTP env vars are configured.
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
@@ -172,7 +185,7 @@ Webhook behavior:
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
 6. Replace local JSON storage with a production database when moving beyond local MVP testing.
-7. Add actual delivery integrations for completed reports, such as SMTP/email API sending or CRM handoff.
+7. Add CRM handoff or a richer email provider integration if SMTP is not enough.
 8. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes

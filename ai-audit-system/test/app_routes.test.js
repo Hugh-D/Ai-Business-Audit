@@ -12,20 +12,26 @@ events.setMaxListeners(50);
 const reportEngine = require('../agents/report_engine');
 const voiceAgent = require('../agents/voice_agent');
 const callStore = require('../agents/call_store');
+const deliveryAgent = require('../agents/delivery_agent');
 const { app } = require('../index');
 
 const originalGenerate = reportEngine.generate;
 const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
+const originalSendReportEmail = deliveryAgent.sendReportEmail;
 const originalEnv = {
   RETELL_API_KEY: process.env.RETELL_API_KEY,
   RETELL_FROM_NUMBER: process.env.RETELL_FROM_NUMBER,
   RETELL_AGENT_ID: process.env.RETELL_AGENT_ID,
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_FROM: process.env.SMTP_FROM,
 };
 
 test.beforeEach(() => {
   callStore.clear();
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
+  deliveryAgent.sendReportEmail = originalSendReportEmail;
   restoreEnv();
 });
 
@@ -33,6 +39,7 @@ test.afterEach(() => {
   callStore.clear();
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
+  deliveryAgent.sendReportEmail = originalSendReportEmail;
   restoreEnv();
 });
 
@@ -260,6 +267,51 @@ test('PATCH /voice/calls/:callId/review requires a report', async () => {
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'Call does not have a report to review');
+});
+
+test('POST /voice/calls/:callId/deliver sends the workbook and marks report sent', async () => {
+  let captured = null;
+  deliveryAgent.sendReportEmail = async (input) => {
+    captured = input;
+    return {
+      messageId: 'message_test',
+      accepted: [input.call.recipientEmail],
+      rejected: [],
+    };
+  };
+  callStore.save('call_deliver', {
+    status: 'report_ready',
+    reviewStatus: 'reviewed',
+    industry: 'trades',
+    businessName: 'Demo Plumbing Co',
+    recipientEmail: 'owner@example.com',
+    report: {
+      overallScore: 8,
+      actionPlan: [{ action: 'Follow up faster.' }],
+    },
+  });
+
+  const response = await requestJson('POST', '/voice/calls/call_deliver/deliver');
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.call.reviewStatus, 'sent');
+  assert.equal(response.body.call.lastDelivery.messageId, 'message_test');
+  assert.equal(captured.call.callId, 'call_deliver');
+  assert.match(captured.filename, /trades-call-deliver\.xlsx/);
+  assert.ok(Buffer.isBuffer(Buffer.from(captured.workbookBuffer)));
+});
+
+test('POST /voice/calls/:callId/deliver requires a recipient email', async () => {
+  callStore.save('call_no_recipient', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('POST', '/voice/calls/call_no_recipient/deliver');
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'recipientEmail is required before sending');
 });
 
 test('POST /webhook/retell accepts a signed call_ended webhook and stores the report', async () => {

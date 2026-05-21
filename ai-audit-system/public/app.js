@@ -29,6 +29,7 @@ const deliveryNotesInput = document.querySelector('#deliveryNotesInput');
 const reviewStatusBadge = document.querySelector('#reviewStatusBadge');
 const reviewHint = document.querySelector('#reviewHint');
 const saveReviewButton = document.querySelector('#saveReviewButton');
+const sendEmailButton = document.querySelector('#sendEmailButton');
 const prepareEmailButton = document.querySelector('#prepareEmailButton');
 
 let lastAudit = null;
@@ -244,6 +245,42 @@ prepareEmailButton.addEventListener('click', async () => {
   reviewHint.textContent = 'Email draft opened. Attach the downloaded sheet before sending.';
 });
 
+sendEmailButton.addEventListener('click', async () => {
+  if (!lastAudit?.callId) {
+    showError('Load a saved phone-call report before sending email.');
+    return;
+  }
+  if (!recipientEmailInput.value.trim()) {
+    showError('Enter a recipient email before sending.');
+    return;
+  }
+
+  const saved = await saveReviewWorkflow({ quiet: true });
+  if (!saved) return;
+
+  sendEmailButton.disabled = true;
+  sendEmailButton.textContent = 'Sending...';
+  clearError();
+
+  try {
+    const response = await fetch(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/deliver`, {
+      method: 'POST',
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Could not send report email');
+
+    applyCallToAudit(payload.call);
+    renderReviewWorkflow(lastAudit);
+    await loadCalls();
+    reviewHint.textContent = 'Report email sent.';
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    sendEmailButton.disabled = false;
+    sendEmailButton.textContent = 'Send Email';
+  }
+});
+
 async function saveReviewWorkflow(options = {}) {
   if (!lastAudit?.callId) {
     showError('Load a saved phone-call report before saving review status.');
@@ -251,6 +288,7 @@ async function saveReviewWorkflow(options = {}) {
   }
   saveReviewButton.disabled = true;
   prepareEmailButton.disabled = true;
+  sendEmailButton.disabled = true;
   saveReviewButton.textContent = 'Saving...';
   clearError();
 
@@ -279,6 +317,7 @@ async function saveReviewWorkflow(options = {}) {
   } finally {
     saveReviewButton.disabled = false;
     prepareEmailButton.disabled = false;
+    sendEmailButton.disabled = false;
     saveReviewButton.textContent = 'Save Review';
   }
 }
@@ -370,6 +409,7 @@ function applyCallToAudit(call) {
     deliveryNotes: call.deliveryNotes || '',
     reviewedAt: call.reviewedAt,
     sentAt: call.sentAt,
+    lastDelivery: call.lastDelivery,
     report: call.report,
   };
 }
@@ -386,6 +426,7 @@ function renderReviewWorkflow(payload) {
   reviewStatusBadge.className = `review-badge review-${status}`;
   saveReviewButton.disabled = !hasSavedCall;
   prepareEmailButton.disabled = !hasSavedCall;
+  sendEmailButton.disabled = !hasSavedCall;
   reviewStatusSelect.disabled = !hasSavedCall;
   reviewNotesInput.disabled = !hasSavedCall;
   recipientEmailInput.disabled = !hasSavedCall;
@@ -396,6 +437,7 @@ function renderReviewWorkflow(payload) {
 }
 
 function buildReviewHint(payload) {
+  if (payload.lastDelivery?.sentAt) return `Email sent ${formatDateTime(payload.lastDelivery.sentAt)}.`;
   if (payload.sentAt) return `Sent ${formatDateTime(payload.sentAt)}.`;
   if (payload.reviewedAt) return `Reviewed ${formatDateTime(payload.reviewedAt)}.`;
   return 'Track edits, approval, and send status before delivery.';

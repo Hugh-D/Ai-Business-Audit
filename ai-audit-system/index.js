@@ -8,6 +8,7 @@ const voiceAgent = require('./agents/voice_agent');
 const transcriptCleaner = require('./agents/transcript_cleaner');
 const callStore = require('./agents/call_store');
 const workbookExporter = require('./agents/workbook_exporter');
+const deliveryAgent = require('./agents/delivery_agent');
 
 const app = express();
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
@@ -184,6 +185,40 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
   }
 });
 
+// POST /voice/calls/:callId/deliver
+// Sends the completed report workbook to the saved recipient email via SMTP.
+app.post('/voice/calls/:callId/deliver', async (req, res) => {
+  try {
+    const call = callStore.get(req.params.callId);
+    if (!call) return res.status(404).json({ error: 'Call not found' });
+    if (!call.report) return res.status(400).json({ error: 'Call does not have a report to deliver' });
+    if (!call.recipientEmail) return res.status(400).json({ error: 'recipientEmail is required before sending' });
+
+    const audit = callToAudit(call);
+    const workbookBuffer = await workbookExporter.buildAuditWorkbookBuffer(audit);
+    const filename = workbookExporter.buildWorkbookFilename(audit);
+    const delivery = await deliveryAgent.sendReportEmail({ call, workbookBuffer, filename });
+
+    const now = new Date().toISOString();
+    const saved = callStore.save(call.callId, {
+      reviewStatus: 'sent',
+      reviewedAt: call.reviewedAt || now,
+      sentAt: now,
+      lastDelivery: {
+        messageId: delivery.messageId || null,
+        accepted: delivery.accepted || [],
+        rejected: delivery.rejected || [],
+        sentAt: now,
+      },
+    });
+
+    res.json({ call: saved });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // POST /webhook/retell
 // Retell.ai POSTs here on call events. Only call_ended carries a completed transcript.
 // The industry must be set in call.metadata.industry when creating the Retell call.
@@ -266,6 +301,25 @@ async function processEndedCall(call) {
     report,
     auditId: uuidv4(),
   });
+}
+
+function callToAudit(call) {
+  return {
+    auditId: call.auditId || call.callId,
+    callId: call.callId,
+    industry: call.industry,
+    businessName: call.businessName,
+    contactName: call.contactName,
+    phoneNumber: call.phoneNumber,
+    transcript: call.transcript,
+    reviewStatus: call.reviewStatus || 'draft',
+    reviewNotes: call.reviewNotes || '',
+    recipientEmail: call.recipientEmail || '',
+    deliveryNotes: call.deliveryNotes || '',
+    reviewedAt: call.reviewedAt,
+    sentAt: call.sentAt,
+    report: call.report,
+  };
 }
 
 module.exports = { app, processEndedCall };
