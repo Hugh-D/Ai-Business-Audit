@@ -129,13 +129,13 @@ app.post('/voice/call', async (req, res) => {
 });
 
 // GET /voice/calls
-// Lists recent in-memory call records captured during this server run.
+// Lists recent persisted call records.
 app.get('/voice/calls', (_req, res) => {
   res.json({ calls: callStore.list() });
 });
 
 // GET /voice/calls/:callId
-// Returns one in-memory call record.
+// Returns one persisted call record.
 app.get('/voice/calls/:callId', (req, res) => {
   const call = callStore.get(req.params.callId);
   if (!call) return res.status(404).json({ error: 'Call not found' });

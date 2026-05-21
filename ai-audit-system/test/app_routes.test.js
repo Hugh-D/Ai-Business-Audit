@@ -6,7 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const ExcelJS = require('exceljs');
 
-process.env.CALL_STORE_PATH = path.join(os.tmpdir(), `ai-audit-app-routes-${process.pid}.json`);
+process.env.CALL_STORE_PATH = path.join(os.tmpdir(), `ai-audit-app-routes-${process.pid}.sqlite`);
 events.setMaxListeners(50);
 
 const reportEngine = require('../agents/report_engine');

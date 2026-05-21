@@ -30,8 +30,8 @@ It is a Node/Express app with:
 - SMTP workbook delivery at `POST /voice/calls/:callId/deliver`
 - voice prompt session config at `POST /voice/session`
 - outbound Retell call creation at `POST /voice/call`
-- in-memory call list at `GET /voice/calls`
-- single in-memory call lookup at `GET /voice/calls/:callId`
+- persisted call list at `GET /voice/calls`
+- single persisted call lookup at `GET /voice/calls/:callId`
 - Retell webhook receiver at `POST /webhook/retell`
 
 As of 2026-05-19, the local pre-number test path has been exercised:
@@ -50,7 +50,7 @@ Important files:
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
 - `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation
 - `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with workbook attachment
-- `ai-audit-system/agents/call_store.js` - local disk-backed call/report storage
+- `ai-audit-system/agents/call_store.js` - local SQLite-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
 - `ai-audit-system/prompts/` - voice and report prompts
@@ -111,6 +111,7 @@ Useful defaults:
 ```bash
 PORT=3000
 NODE_ENV=development
+CALL_STORE_PATH=./data/calls.sqlite
 AUDIT_MAX_TOKENS=2000
 AUDIT_MODEL=claude-sonnet-4-20250514
 VOICE_MODEL=claude-sonnet-4-20250514
@@ -165,9 +166,9 @@ Webhook behavior:
 
 ## Current Limitations
 
-- Call storage persists locally to `ai-audit-system/data/calls.json` by default.
+- Call storage persists locally to `ai-audit-system/data/calls.sqlite` by default.
 - No user accounts or authentication.
-- No external database.
+- No external database or CRM integration yet.
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
 - Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with internal review notes, recipient email, and delivery notes.
 - The UI can prepare a mailto email draft, or send the editable workbook by SMTP when SMTP env vars are configured.
@@ -184,8 +185,8 @@ Webhook behavior:
 3. Configure Retell webhook to `https://your-public-url/webhook/retell`.
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
-6. Replace local JSON storage with a production database when moving beyond local MVP testing.
-7. Add CRM handoff or a richer email provider integration if SMTP is not enough.
+6. Replace local SQLite storage with a managed production database when moving beyond local MVP testing.
+7. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
 8. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
