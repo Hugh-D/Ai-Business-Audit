@@ -187,11 +187,15 @@ test('PATCH /voice/calls/:callId/review updates review workflow state', async ()
   const response = await requestJson('PATCH', '/voice/calls/call_review/review', {
     reviewStatus: 'reviewed',
     reviewNotes: 'Tighten recommendation wording before sending.',
+    recipientEmail: 'owner@example.com',
+    deliveryNotes: 'Attach the editable workbook.',
   });
 
   assert.equal(response.status, 200);
   assert.equal(response.body.call.reviewStatus, 'reviewed');
   assert.equal(response.body.call.reviewNotes, 'Tighten recommendation wording before sending.');
+  assert.equal(response.body.call.recipientEmail, 'owner@example.com');
+  assert.equal(response.body.call.deliveryNotes, 'Attach the editable workbook.');
   assert.ok(response.body.call.reviewedAt);
   assert.equal(callStore.get('call_review').reviewStatus, 'reviewed');
 });
@@ -226,6 +230,22 @@ test('PATCH /voice/calls/:callId/review validates review status', async () => {
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'reviewStatus must be draft, reviewed, or sent');
+});
+
+test('PATCH /voice/calls/:callId/review validates recipient email', async () => {
+  callStore.save('call_invalid_email', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_invalid_email/review', {
+    reviewStatus: 'reviewed',
+    recipientEmail: 'not-an-email',
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'recipientEmail must be a valid email address');
 });
 
 test('PATCH /voice/calls/:callId/review requires a report', async () => {

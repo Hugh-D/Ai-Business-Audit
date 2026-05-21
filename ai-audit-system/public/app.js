@@ -24,9 +24,12 @@ const reviewPanel = document.querySelector('#reviewPanel');
 const reviewForm = document.querySelector('#reviewForm');
 const reviewStatusSelect = document.querySelector('#reviewStatusSelect');
 const reviewNotesInput = document.querySelector('#reviewNotesInput');
+const recipientEmailInput = document.querySelector('#recipientEmailInput');
+const deliveryNotesInput = document.querySelector('#deliveryNotesInput');
 const reviewStatusBadge = document.querySelector('#reviewStatusBadge');
 const reviewHint = document.querySelector('#reviewHint');
 const saveReviewButton = document.querySelector('#saveReviewButton');
+const prepareEmailButton = document.querySelector('#prepareEmailButton');
 
 let lastAudit = null;
 
@@ -221,12 +224,33 @@ printButton.addEventListener('click', () => {
 
 reviewForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  await saveReviewWorkflow();
+});
+
+prepareEmailButton.addEventListener('click', async () => {
   if (!lastAudit?.callId) {
-    showError('Load a saved phone-call report before saving review status.');
+    showError('Load a saved phone-call report before preparing an email.');
+    return;
+  }
+  if (!recipientEmailInput.value.trim()) {
+    showError('Enter a recipient email before preparing the handoff.');
     return;
   }
 
+  const saved = await saveReviewWorkflow({ quiet: true });
+  if (!saved) return;
+
+  window.location.href = buildMailtoUrl(lastAudit);
+  reviewHint.textContent = 'Email draft opened. Attach the downloaded sheet before sending.';
+});
+
+async function saveReviewWorkflow(options = {}) {
+  if (!lastAudit?.callId) {
+    showError('Load a saved phone-call report before saving review status.');
+    return null;
+  }
   saveReviewButton.disabled = true;
+  prepareEmailButton.disabled = true;
   saveReviewButton.textContent = 'Saving...';
   clearError();
 
@@ -237,6 +261,8 @@ reviewForm.addEventListener('submit', async (event) => {
       body: JSON.stringify({
         reviewStatus: reviewStatusSelect.value,
         reviewNotes: reviewNotesInput.value.trim(),
+        recipientEmail: recipientEmailInput.value.trim(),
+        deliveryNotes: deliveryNotesInput.value.trim(),
       }),
     });
     const payload = await response.json();
@@ -245,14 +271,17 @@ reviewForm.addEventListener('submit', async (event) => {
     applyCallToAudit(payload.call);
     renderReviewWorkflow(lastAudit);
     await loadCalls();
-    reviewHint.textContent = 'Review status saved.';
+    if (!options.quiet) reviewHint.textContent = 'Review status saved.';
+    return payload.call;
   } catch (err) {
     showError(err.message);
+    return null;
   } finally {
     saveReviewButton.disabled = false;
+    prepareEmailButton.disabled = false;
     saveReviewButton.textContent = 'Save Review';
   }
-});
+}
 
 async function loadCalls() {
   try {
@@ -337,6 +366,8 @@ function applyCallToAudit(call) {
     transcript: call.transcript,
     reviewStatus: call.reviewStatus || 'draft',
     reviewNotes: call.reviewNotes || '',
+    recipientEmail: call.recipientEmail || '',
+    deliveryNotes: call.deliveryNotes || '',
     reviewedAt: call.reviewedAt,
     sentAt: call.sentAt,
     report: call.report,
@@ -349,11 +380,16 @@ function renderReviewWorkflow(payload) {
   const status = payload.reviewStatus || 'draft';
   reviewStatusSelect.value = status;
   reviewNotesInput.value = payload.reviewNotes || '';
+  recipientEmailInput.value = payload.recipientEmail || '';
+  deliveryNotesInput.value = payload.deliveryNotes || '';
   reviewStatusBadge.textContent = formatLabel(status);
   reviewStatusBadge.className = `review-badge review-${status}`;
   saveReviewButton.disabled = !hasSavedCall;
+  prepareEmailButton.disabled = !hasSavedCall;
   reviewStatusSelect.disabled = !hasSavedCall;
   reviewNotesInput.disabled = !hasSavedCall;
+  recipientEmailInput.disabled = !hasSavedCall;
+  deliveryNotesInput.disabled = !hasSavedCall;
   reviewHint.textContent = hasSavedCall
     ? buildReviewHint(payload)
     : 'Manual transcript reports can be exported, but review status is only saved for phone-call reports.';
@@ -363,6 +399,34 @@ function buildReviewHint(payload) {
   if (payload.sentAt) return `Sent ${formatDateTime(payload.sentAt)}.`;
   if (payload.reviewedAt) return `Reviewed ${formatDateTime(payload.reviewedAt)}.`;
   return 'Track edits, approval, and send status before delivery.';
+}
+
+function buildMailtoUrl(payload) {
+  const subject = `${formatLabel(payload.industry || 'Business')} audit report for ${payload.businessName || payload.contactName || 'your business'}`;
+  const body = [
+    `Hi ${payload.contactName || 'there'},`,
+    '',
+    `Thanks again for taking the time to complete the AI Business Audit.`,
+    '',
+    `Your overall readiness score is ${payload.report?.overallScore ?? '-'}/10.`,
+    '',
+    'The biggest opportunities we identified:',
+    ...firstItems(payload.report?.criticalGaps, 3).map(item => `- ${item}`),
+    '',
+    'Recommended next actions:',
+    ...firstItems(payload.report?.actionPlan, 3).map(item => `- ${item.action || item}`),
+    '',
+    payload.deliveryNotes ? `Notes:\n${payload.deliveryNotes}\n` : '',
+    'I have also prepared an editable audit workbook for the detailed scores, findings, and action plan.',
+    '',
+    'Best,',
+  ].filter(Boolean).join('\n');
+
+  return `mailto:${encodeURIComponent(payload.recipientEmail || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function firstItems(value, count) {
+  return Array.isArray(value) ? value.filter(Boolean).slice(0, count) : [];
 }
 
 function buildExportDocument(payload) {

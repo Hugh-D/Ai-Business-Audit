@@ -134,8 +134,25 @@
                 placeholder="What needs editing before this report is sent?"
               ></textarea>
 
+              <label for="recipientEmailInput">Recipient Email</label>
+              <input
+                id="recipientEmailInput"
+                name="recipientEmail"
+                type="email"
+                placeholder="owner@example.com"
+              >
+
+              <label for="deliveryNotesInput">Delivery Notes</label>
+              <textarea
+                id="deliveryNotesInput"
+                name="deliveryNotes"
+                rows="4"
+                placeholder="What should be included in the client handoff?"
+              ></textarea>
+
               <div class="form-actions">
                 <button class="secondary-button" id="saveReviewButton" type="submit">Save Review</button>
+                <button class="ghost-button" id="prepareEmailButton" type="button">Prepare Email</button>
                 <p class="hint" id="reviewHint">Load a saved call report to track review status.</p>
               </div>
             </form>

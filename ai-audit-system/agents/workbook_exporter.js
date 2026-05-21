@@ -41,6 +41,8 @@ function addSummarySheet(workbook, audit, report) {
     ['Overall Score', report.overallScore ?? ''],
     ['Review Status', formatLabel(audit.reviewStatus || 'draft')],
     ['Review Notes', audit.reviewNotes || ''],
+    ['Recipient Email', audit.recipientEmail || ''],
+    ['Delivery Notes', audit.deliveryNotes || ''],
     ['Generated At', new Date().toLocaleString()],
   ]);
 

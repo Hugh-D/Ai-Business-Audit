@@ -142,7 +142,7 @@ app.get('/voice/calls/:callId', (req, res) => {
 });
 
 // PATCH /voice/calls/:callId/review
-// Body: { reviewStatus?: "draft"|"reviewed"|"sent", reviewNotes?: string }
+// Body: { reviewStatus?: "draft"|"reviewed"|"sent", reviewNotes?: string, recipientEmail?: string, deliveryNotes?: string }
 // Updates internal review/send workflow state for a completed report.
 app.patch('/voice/calls/:callId/review', (req, res) => {
   try {
@@ -150,15 +150,25 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
     if (!call) return res.status(404).json({ error: 'Call not found' });
     if (!call.report) return res.status(400).json({ error: 'Call does not have a report to review' });
 
-    const { reviewStatus = call.reviewStatus || 'draft', reviewNotes = call.reviewNotes || '' } = req.body || {};
+    const {
+      reviewStatus = call.reviewStatus || 'draft',
+      reviewNotes = call.reviewNotes || '',
+      recipientEmail = call.recipientEmail || '',
+      deliveryNotes = call.deliveryNotes || '',
+    } = req.body || {};
     if (!REVIEW_STATUSES.has(reviewStatus)) {
       return res.status(400).json({ error: 'reviewStatus must be draft, reviewed, or sent' });
+    }
+    if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(recipientEmail))) {
+      return res.status(400).json({ error: 'recipientEmail must be a valid email address' });
     }
 
     const now = new Date().toISOString();
     const patch = {
       reviewStatus,
       reviewNotes: String(reviewNotes),
+      recipientEmail: String(recipientEmail),
+      deliveryNotes: String(deliveryNotes),
     };
     if (reviewStatus === 'reviewed') patch.reviewedAt = call.reviewedAt || now;
     if (reviewStatus === 'sent') {
