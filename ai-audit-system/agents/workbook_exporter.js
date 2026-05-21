@@ -39,6 +39,8 @@ function addSummarySheet(workbook, audit, report) {
     ['Industry', formatLabel(audit.industry || 'unknown')],
     ['Audit ID', audit.auditId || 'draft'],
     ['Overall Score', report.overallScore ?? ''],
+    ['Review Status', formatLabel(audit.reviewStatus || 'draft')],
+    ['Review Notes', audit.reviewNotes || ''],
     ['Generated At', new Date().toLocaleString()],
   ]);
 

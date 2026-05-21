@@ -17,6 +17,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -350,6 +354,31 @@ button:disabled {
   color: var(--accent-dark);
 }
 
+.status-stack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.status-tag.review-draft,
+.review-badge.review-draft {
+  background: var(--surface-alt);
+  color: var(--muted);
+}
+
+.status-tag.review-reviewed,
+.review-badge.review-reviewed {
+  background: #e5f3ee;
+  color: var(--accent-dark);
+}
+
+.status-tag.review-sent,
+.review-badge.review-sent {
+  background: #e8eef9;
+  color: #254d86;
+}
+
 .manual-audit summary {
   cursor: pointer;
   color: var(--accent-dark);
@@ -363,6 +392,33 @@ button:disabled {
 .report-output {
   display: grid;
   gap: 16px;
+}
+
+.review-panel {
+  display: grid;
+  gap: 14px;
+  margin: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.review-form {
+  display: grid;
+  gap: 10px;
+}
+
+.review-form textarea {
+  min-height: 110px;
+}
+
+.review-badge {
+  min-width: 74px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  text-align: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .score-row {

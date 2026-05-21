@@ -12,6 +12,8 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
     contactName: 'Mia',
     phoneNumber: '+61474779711',
     transcript: 'Client: Quotes are on a whiteboard.',
+    reviewStatus: 'reviewed',
+    reviewNotes: 'Ready to send after checking phone number.',
     report: {
       overallScore: 7,
       scores: {
@@ -38,6 +40,8 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
 
   assert.equal(workbook.getWorksheet('Summary').getCell('B2').value, 'Green Stripe');
   assert.equal(workbook.getWorksheet('Summary').getCell('B8').value, 7);
+  assert.equal(workbook.getWorksheet('Summary').getCell('B9').value, 'Reviewed');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B10').value, 'Ready to send after checking phone number.');
   assert.equal(workbook.getWorksheet('Findings').getCell('A2').value, 'Strength');
   assert.equal(workbook.getWorksheet('Findings').getCell('B3').value, 'Quote tracking is manual');
   assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, 'Not Started');

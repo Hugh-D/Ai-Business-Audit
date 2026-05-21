@@ -112,6 +112,34 @@
           <div id="errorState" class="error-state" hidden></div>
 
           <article id="reportOutput" class="report-output" hidden></article>
+
+          <section id="reviewPanel" class="review-panel" hidden>
+            <div class="section-title-row">
+              <h2>Review Workflow</h2>
+              <span id="reviewStatusBadge">Draft</span>
+            </div>
+            <form id="reviewForm" class="review-form">
+              <label for="reviewStatusSelect">Status</label>
+              <select id="reviewStatusSelect" name="reviewStatus">
+                <option value="draft">Draft</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="sent">Sent</option>
+              </select>
+
+              <label for="reviewNotesInput">Internal Notes</label>
+              <textarea
+                id="reviewNotesInput"
+                name="reviewNotes"
+                rows="5"
+                placeholder="What needs editing before this report is sent?"
+              ></textarea>
+
+              <div class="form-actions">
+                <button class="secondary-button" id="saveReviewButton" type="submit">Save Review</button>
+                <p class="hint" id="reviewHint">Load a saved call report to track review status.</p>
+              </div>
+            </form>
+          </section>
         </section>
       </section>
     </main>

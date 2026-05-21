@@ -26,6 +26,7 @@ It is a Node/Express app with:
 - manual transcript report generation at `POST /audit`
 - editable spreadsheet export at `POST /export/xlsx`
 - browser-based report export actions: Copy JSON, Download Sheet, and Print / PDF
+- persisted report review workflow at `PATCH /voice/calls/:callId/review`
 - voice prompt session config at `POST /voice/session`
 - outbound Retell call creation at `POST /voice/call`
 - in-memory call list at `GET /voice/calls`
@@ -155,6 +156,7 @@ Webhook behavior:
 - No user accounts or authentication.
 - No external database.
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
+- Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with internal review notes.
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
@@ -169,7 +171,7 @@ Webhook behavior:
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
 6. Replace local JSON storage with a production database when moving beyond local MVP testing.
-7. Add a review/send workflow for completed reports.
+7. Add actual delivery integrations for completed reports, such as email or CRM handoff.
 8. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes

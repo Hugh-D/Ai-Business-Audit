@@ -13,6 +13,8 @@ const app = express();
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+const REVIEW_STATUSES = new Set(['draft', 'reviewed', 'sent']);
+
 // GET /
 // MVP audit workbench.
 app.get('/', (_req, res) => {
@@ -139,6 +141,39 @@ app.get('/voice/calls/:callId', (req, res) => {
   res.json({ call });
 });
 
+// PATCH /voice/calls/:callId/review
+// Body: { reviewStatus?: "draft"|"reviewed"|"sent", reviewNotes?: string }
+// Updates internal review/send workflow state for a completed report.
+app.patch('/voice/calls/:callId/review', (req, res) => {
+  try {
+    const call = callStore.get(req.params.callId);
+    if (!call) return res.status(404).json({ error: 'Call not found' });
+    if (!call.report) return res.status(400).json({ error: 'Call does not have a report to review' });
+
+    const { reviewStatus = call.reviewStatus || 'draft', reviewNotes = call.reviewNotes || '' } = req.body || {};
+    if (!REVIEW_STATUSES.has(reviewStatus)) {
+      return res.status(400).json({ error: 'reviewStatus must be draft, reviewed, or sent' });
+    }
+
+    const now = new Date().toISOString();
+    const patch = {
+      reviewStatus,
+      reviewNotes: String(reviewNotes),
+    };
+    if (reviewStatus === 'reviewed') patch.reviewedAt = call.reviewedAt || now;
+    if (reviewStatus === 'sent') {
+      patch.reviewedAt = call.reviewedAt || now;
+      patch.sentAt = call.sentAt || now;
+    }
+
+    const saved = callStore.save(call.callId, patch);
+    res.json({ call: saved });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // POST /webhook/retell
 // Retell.ai POSTs here on call events. Only call_ended carries a completed transcript.
 // The industry must be set in call.metadata.industry when creating the Retell call.
@@ -215,6 +250,7 @@ async function processEndedCall(call) {
   const report = await reportEngine.generate({ config, transcript: cleaned });
   callStore.save(call_id, {
     status: 'report_ready',
+    reviewStatus: 'draft',
     industry: config.id,
     transcript: cleaned,
     report,

@@ -1,11 +1,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const events = require('node:events');
 const os = require('node:os');
 const path = require('node:path');
 const ExcelJS = require('exceljs');
 
 process.env.CALL_STORE_PATH = path.join(os.tmpdir(), `ai-audit-app-routes-${process.pid}.json`);
+events.setMaxListeners(50);
 
 const reportEngine = require('../agents/report_engine');
 const voiceAgent = require('../agents/voice_agent');
@@ -175,6 +177,71 @@ test('GET /voice/calls/:callId returns 404 for unknown calls', async () => {
   assert.equal(response.body.error, 'Call not found');
 });
 
+test('PATCH /voice/calls/:callId/review updates review workflow state', async () => {
+  callStore.save('call_review', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_review/review', {
+    reviewStatus: 'reviewed',
+    reviewNotes: 'Tighten recommendation wording before sending.',
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.call.reviewStatus, 'reviewed');
+  assert.equal(response.body.call.reviewNotes, 'Tighten recommendation wording before sending.');
+  assert.ok(response.body.call.reviewedAt);
+  assert.equal(callStore.get('call_review').reviewStatus, 'reviewed');
+});
+
+test('PATCH /voice/calls/:callId/review marks sent reports', async () => {
+  callStore.save('call_sent', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_sent/review', {
+    reviewStatus: 'sent',
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.call.reviewStatus, 'sent');
+  assert.ok(response.body.call.reviewedAt);
+  assert.ok(response.body.call.sentAt);
+});
+
+test('PATCH /voice/calls/:callId/review validates review status', async () => {
+  callStore.save('call_invalid_review', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_invalid_review/review', {
+    reviewStatus: 'approved',
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'reviewStatus must be draft, reviewed, or sent');
+});
+
+test('PATCH /voice/calls/:callId/review requires a report', async () => {
+  callStore.save('call_no_report', {
+    status: 'registered',
+    industry: 'trades',
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_no_report/review', {
+    reviewStatus: 'reviewed',
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'Call does not have a report to review');
+});
+
 test('POST /webhook/retell accepts a signed call_ended webhook and stores the report', async () => {
   process.env.RETELL_API_KEY = 'test_retell_key';
   reportEngine.generate = async ({ config, transcript }) => ({
@@ -212,6 +279,7 @@ test('POST /webhook/retell accepts a signed call_ended webhook and stores the re
 
   const call = callStore.get('call_webhook');
   assert.equal(call.industry, 'lawn_care');
+  assert.equal(call.reviewStatus, 'draft');
   assert.equal(call.report.overallScore, 9);
   assert.equal(call.transcript, 'Client: lawn quote requests sit on a whiteboard!');
 });

@@ -20,6 +20,13 @@ const reportMeta = document.querySelector('#reportMeta');
 const emptyState = document.querySelector('#emptyState');
 const errorState = document.querySelector('#errorState');
 const reportOutput = document.querySelector('#reportOutput');
+const reviewPanel = document.querySelector('#reviewPanel');
+const reviewForm = document.querySelector('#reviewForm');
+const reviewStatusSelect = document.querySelector('#reviewStatusSelect');
+const reviewNotesInput = document.querySelector('#reviewNotesInput');
+const reviewStatusBadge = document.querySelector('#reviewStatusBadge');
+const reviewHint = document.querySelector('#reviewHint');
+const saveReviewButton = document.querySelector('#saveReviewButton');
 
 let lastAudit = null;
 
@@ -212,6 +219,41 @@ printButton.addEventListener('click', () => {
   }, { once: true });
 });
 
+reviewForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (!lastAudit?.callId) {
+    showError('Load a saved phone-call report before saving review status.');
+    return;
+  }
+
+  saveReviewButton.disabled = true;
+  saveReviewButton.textContent = 'Saving...';
+  clearError();
+
+  try {
+    const response = await fetch(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/review`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reviewStatus: reviewStatusSelect.value,
+        reviewNotes: reviewNotesInput.value.trim(),
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Could not save review status');
+
+    applyCallToAudit(payload.call);
+    renderReviewWorkflow(lastAudit);
+    await loadCalls();
+    reviewHint.textContent = 'Review status saved.';
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    saveReviewButton.disabled = false;
+    saveReviewButton.textContent = 'Save Review';
+  }
+});
+
 async function loadCalls() {
   try {
     const response = await fetch('/voice/calls');
@@ -234,7 +276,10 @@ function renderCalls(calls = []) {
     <div class="call-card">
       <div class="call-title">
         <strong>${escapeHtml(call.businessName || call.contactName || call.phoneNumber || 'Phone audit')}</strong>
-        <span class="status-tag ${call.report ? 'ready' : ''}">${escapeHtml(formatLabel(call.status || 'started'))}</span>
+        <div class="status-stack">
+          <span class="status-tag ${call.report ? 'ready' : ''}">${escapeHtml(formatLabel(call.status || 'started'))}</span>
+          ${call.report ? `<span class="status-tag review-${escapeHtml(call.reviewStatus || 'draft')}">${escapeHtml(formatLabel(call.reviewStatus || 'draft'))}</span>` : ''}
+        </div>
       </div>
       <p>${escapeHtml(formatLabel(call.industry || 'unknown'))} - ${escapeHtml(call.phoneNumber || call.callId)}</p>
       ${call.report ? `<button class="secondary-button" type="button" data-call-id="${escapeHtml(call.callId)}">View Report</button>` : ''}
@@ -254,15 +299,7 @@ async function loadCallReport(callId) {
     if (!response.ok) throw new Error('Could not load call report');
     if (!call.report) throw new Error('That call does not have a report yet.');
 
-    lastAudit = {
-      auditId: call.callId,
-      industry: call.industry,
-      businessName: call.businessName,
-      contactName: call.contactName,
-      phoneNumber: call.phoneNumber,
-      transcript: call.transcript,
-      report: call.report,
-    };
+    applyCallToAudit(call);
     renderReport(lastAudit);
   } catch (err) {
     showError(err.message);
@@ -285,6 +322,47 @@ function renderReport(payload) {
     renderSections(report.sections),
     renderActionPlan(report.actionPlan),
   ].join('');
+
+  renderReviewWorkflow(payload);
+}
+
+function applyCallToAudit(call) {
+  lastAudit = {
+    auditId: call.auditId || call.callId,
+    callId: call.callId,
+    industry: call.industry,
+    businessName: call.businessName,
+    contactName: call.contactName,
+    phoneNumber: call.phoneNumber,
+    transcript: call.transcript,
+    reviewStatus: call.reviewStatus || 'draft',
+    reviewNotes: call.reviewNotes || '',
+    reviewedAt: call.reviewedAt,
+    sentAt: call.sentAt,
+    report: call.report,
+  };
+}
+
+function renderReviewWorkflow(payload) {
+  reviewPanel.hidden = false;
+  const hasSavedCall = Boolean(payload.callId);
+  const status = payload.reviewStatus || 'draft';
+  reviewStatusSelect.value = status;
+  reviewNotesInput.value = payload.reviewNotes || '';
+  reviewStatusBadge.textContent = formatLabel(status);
+  reviewStatusBadge.className = `review-badge review-${status}`;
+  saveReviewButton.disabled = !hasSavedCall;
+  reviewStatusSelect.disabled = !hasSavedCall;
+  reviewNotesInput.disabled = !hasSavedCall;
+  reviewHint.textContent = hasSavedCall
+    ? buildReviewHint(payload)
+    : 'Manual transcript reports can be exported, but review status is only saved for phone-call reports.';
+}
+
+function buildReviewHint(payload) {
+  if (payload.sentAt) return `Sent ${formatDateTime(payload.sentAt)}.`;
+  if (payload.reviewedAt) return `Reviewed ${formatDateTime(payload.reviewedAt)}.`;
+  return 'Track edits, approval, and send status before delivery.';
 }
 
 function buildExportDocument(payload) {
@@ -608,6 +686,10 @@ function formatLabel(value) {
 
 function formatMarkdownLite(value) {
   return escapeHtml(value).replace(/\n/g, '<br>');
+}
+
+function formatDateTime(value) {
+  return new Date(value).toLocaleString();
 }
 
 function escapeHtml(value) {
