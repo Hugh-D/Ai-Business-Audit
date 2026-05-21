@@ -37,6 +37,7 @@ As of 2026-05-19, the local pre-number test path has been exercised:
 - The Retell voice agent ID in `.env` is valid.
 - A simulated signed Retell `call_ended` webhook was accepted and generated a report.
 - A bug where transcript keyword detection overrode `metadata.industry` was fixed; explicit metadata now wins.
+- As of 2026-05-21, the app has a focused Node test suite for industry routing, transcript cleanup, report JSON parsing, Retell webhook signature verification, and key Express endpoints.
 
 Important files:
 
@@ -152,7 +153,7 @@ Webhook behavior:
 - No database.
 - No PDF export yet.
 - No deployed public URL yet.
-- No automated tests yet.
+- Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
 - The Retell call can only work after `.env` contains real credentials and Retell webhook config is set.
 - Real phone testing still requires a Retell/imported phone number and public webhook URL.
 
@@ -164,8 +165,8 @@ Webhook behavior:
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
 6. Add persistent storage for calls, transcripts, and reports.
-7. Add automated tests for industry routing, transcript cleanup, report JSON parsing, and webhook signature verification.
-8. Add PDF/export and a review/send workflow for completed reports.
+7. Add PDF/export for completed reports.
+8. Add a review/send workflow for completed reports.
 
 ## Conversation Notes
 

@@ -23,4 +23,8 @@ function list() {
     .slice(0, 25);
 }
 
-module.exports = { save, get, list };
+function clear() {
+  calls.clear();
+}
+
+module.exports = { save, get, list, clear };

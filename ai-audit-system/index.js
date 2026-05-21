@@ -157,8 +157,10 @@ app.get('/industries', (_req, res) => {
   res.json({ industries });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`ai-audit-system running on port ${PORT}`));
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`ai-audit-system running on port ${PORT}`));
+}
 
 async function processEndedCall(call) {
   const { transcript, metadata = {}, call_id } = call;
@@ -193,3 +195,5 @@ async function processEndedCall(call) {
     auditId: uuidv4(),
   });
 }
+
+module.exports = { app, processEndedCall };

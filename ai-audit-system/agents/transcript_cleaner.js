@@ -1,6 +1,6 @@
 // Normalizes raw voice transcripts before they are passed to the report engine.
 
-const FILLER_WORDS = /\b(um|uh|like|you know|i mean|basically|literally|right\?|okay\?)\b/gi;
+const FILLER_WORDS = /\b(um|uh|like|you know|i mean|basically|literally|right|okay)\b[,.?]?/gi;
 const REPEATED_SPACES = /\s{2,}/g;
 const REPEATED_PUNCTUATION = /([.!?]){2,}/g;
 
@@ -12,6 +12,7 @@ function clean(rawTranscript) {
   return rawTranscript
     .replace(FILLER_WORDS, '')
     .replace(REPEATED_PUNCTUATION, '$1')
+    .replace(/\s+([,.!?])/g, '$1')
     .replace(REPEATED_SPACES, ' ')
     .trim();
 }
