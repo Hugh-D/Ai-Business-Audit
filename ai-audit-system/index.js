@@ -7,6 +7,7 @@ const reportEngine = require('./agents/report_engine');
 const voiceAgent = require('./agents/voice_agent');
 const transcriptCleaner = require('./agents/transcript_cleaner');
 const callStore = require('./agents/call_store');
+const workbookExporter = require('./agents/workbook_exporter');
 
 const app = express();
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
@@ -57,6 +58,31 @@ app.post('/voice/session', async (req, res) => {
     const session = await voiceAgent.createSession(config);
 
     res.json({ sessionId: uuidv4(), ...session });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// POST /export/xlsx
+// Body: { auditId, industry, businessName?, contactName?, phoneNumber?, transcript?, report }
+// Returns an editable workbook for Excel or Google Sheets.
+app.post('/export/xlsx', async (req, res) => {
+  try {
+    const { industry, report } = req.body;
+    if (!industry || !report) {
+      return res.status(400).json({ error: 'industry and report are required' });
+    }
+
+    const buffer = await workbookExporter.buildAuditWorkbookBuffer(req.body);
+    const filename = workbookExporter.buildWorkbookFilename(req.body);
+    res
+      .status(200)
+      .set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      })
+      .send(Buffer.from(buffer));
   } catch (err) {
     console.error(err);
     res.status(err.status || 500).json({ error: err.message });

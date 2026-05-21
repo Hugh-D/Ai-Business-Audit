@@ -24,7 +24,8 @@ It is a Node/Express app with:
 - health check at `GET /health`
 - industry list at `GET /industries`
 - manual transcript report generation at `POST /audit`
-- browser-based report export with Copy JSON, Download HTML, and Print / PDF actions
+- editable spreadsheet export at `POST /export/xlsx`
+- browser-based report export actions: Copy JSON, Download Sheet, and Print / PDF
 - voice prompt session config at `POST /voice/session`
 - outbound Retell call creation at `POST /voice/call`
 - in-memory call list at `GET /voice/calls`
@@ -45,6 +46,7 @@ Important files:
 - `ai-audit-system/index.js` - Express routes and webhook flow
 - `ai-audit-system/agents/voice_agent.js` - Retell call creation and webhook verification
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
+- `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation
 - `ai-audit-system/agents/call_store.js` - local disk-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
@@ -152,6 +154,7 @@ Webhook behavior:
 - Call storage persists locally to `ai-audit-system/data/calls.json` by default.
 - No user accounts or authentication.
 - No external database.
+- Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.

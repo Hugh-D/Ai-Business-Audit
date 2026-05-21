@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const os = require('node:os');
 const path = require('node:path');
+const ExcelJS = require('exceljs');
 
 process.env.CALL_STORE_PATH = path.join(os.tmpdir(), `ai-audit-app-routes-${process.pid}.json`);
 
@@ -64,6 +65,53 @@ test('POST /audit validates required fields', async () => {
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'industry and transcript are required');
+});
+
+test('POST /export/xlsx returns an editable workbook', async () => {
+  const response = await requestJson('POST', '/export/xlsx', {
+    auditId: 'audit_export',
+    industry: 'trades',
+    businessName: 'Demo Plumbing Co',
+    transcript: 'Client: We miss calls.',
+    report: {
+      overallScore: 8,
+      scores: { leadResponse: 7 },
+      keyStrengths: ['Strong repeat customers'],
+      criticalGaps: ['Missed after-hours calls'],
+      sections: { leadFlow: 'Leads arrive by phone.' },
+      actionPlan: [{ priority: 'High', action: 'Automate missed-call follow-up.', timeframe: '14 days' }],
+    },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(
+    response.headers.get('content-type'),
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  assert.match(response.headers.get('content-disposition'), /trades-audit-export\.xlsx/);
+
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(response.buffer);
+
+  assert.deepEqual(workbook.worksheets.map(sheet => sheet.name), [
+    'Summary',
+    'Scores',
+    'Findings',
+    'Action Plan',
+    'Transcript',
+  ]);
+  assert.equal(workbook.getWorksheet('Summary').getCell('B2').value, 'Demo Plumbing Co');
+  assert.equal(workbook.getWorksheet('Scores').getCell('A2').value, 'Lead Response');
+  assert.equal(workbook.getWorksheet('Action Plan').getCell('B2').value, 'Automate missed-call follow-up.');
+});
+
+test('POST /export/xlsx validates required fields', async () => {
+  const response = await requestJson('POST', '/export/xlsx', {
+    industry: 'trades',
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'industry and report are required');
 });
 
 test('POST /voice/call stores a created Retell call', async () => {
@@ -209,11 +257,15 @@ async function requestRaw(method, path, body, headers = {}) {
       headers,
       body: method === 'GET' ? undefined : body,
     });
-    const text = await response.text();
-    const parsed = text ? JSON.parse(text) : null;
+    const contentType = response.headers.get('content-type') || '';
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const text = buffer.toString('utf8');
+    const parsed = text && contentType.includes('application/json') ? JSON.parse(text) : null;
 
     return {
       status: response.status,
+      headers: response.headers,
+      buffer,
       body: parsed,
     };
   } finally {

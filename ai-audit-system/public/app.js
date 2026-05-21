@@ -13,7 +13,7 @@ const auditForm = document.querySelector('#auditForm');
 const generateButton = document.querySelector('#generateButton');
 const sampleButton = document.querySelector('#sampleButton');
 const copyButton = document.querySelector('#copyButton');
-const downloadButton = document.querySelector('#downloadButton');
+const sheetButton = document.querySelector('#sheetButton');
 const printButton = document.querySelector('#printButton');
 const serviceStatus = document.querySelector('#serviceStatus');
 const reportMeta = document.querySelector('#reportMeta');
@@ -161,18 +161,37 @@ copyButton.addEventListener('click', async () => {
   }, 1400);
 });
 
-downloadButton.addEventListener('click', () => {
+sheetButton.addEventListener('click', async () => {
   if (!lastAudit) return;
 
-  const html = buildExportDocument(lastAudit);
-  const blob = new Blob([html], { type: 'text/html' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${slugify(lastAudit.industry || 'audit')}-${slugify(lastAudit.auditId || 'report')}.html`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(link.href);
+  sheetButton.disabled = true;
+  sheetButton.textContent = 'Building...';
+
+  try {
+    const response = await fetch('/export/xlsx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastAudit),
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.error || 'Spreadsheet export failed');
+    }
+
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${slugify(lastAudit.industry || 'audit')}-${slugify(lastAudit.auditId || 'report')}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    sheetButton.disabled = false;
+    sheetButton.textContent = 'Download Sheet';
+  }
 });
 
 printButton.addEventListener('click', () => {
@@ -255,7 +274,7 @@ function renderReport(payload) {
   emptyState.hidden = true;
   reportOutput.hidden = false;
   copyButton.disabled = false;
-  downloadButton.disabled = false;
+  sheetButton.disabled = false;
   printButton.disabled = false;
   reportMeta.textContent = `${formatLabel(industry)} audit - ${auditId}`;
 
