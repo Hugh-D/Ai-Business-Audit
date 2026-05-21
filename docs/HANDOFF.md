@@ -24,6 +24,7 @@ It is a Node/Express app with:
 - health check at `GET /health`
 - industry list at `GET /industries`
 - manual transcript report generation at `POST /audit`
+- browser-based report export with Copy JSON, Download HTML, and Print / PDF actions
 - voice prompt session config at `POST /voice/session`
 - outbound Retell call creation at `POST /voice/call`
 - in-memory call list at `GET /voice/calls`
@@ -151,7 +152,7 @@ Webhook behavior:
 - Call storage persists locally to `ai-audit-system/data/calls.json` by default.
 - No user accounts or authentication.
 - No external database.
-- No PDF export yet.
+- PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
 - The Retell call can only work after `.env` contains real credentials and Retell webhook config is set.
@@ -165,8 +166,8 @@ Webhook behavior:
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
 6. Replace local JSON storage with a production database when moving beyond local MVP testing.
-7. Add PDF/export for completed reports.
-8. Add a review/send workflow for completed reports.
+7. Add a review/send workflow for completed reports.
+8. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
 

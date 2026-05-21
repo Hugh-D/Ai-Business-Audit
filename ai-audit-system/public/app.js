@@ -13,6 +13,8 @@ const auditForm = document.querySelector('#auditForm');
 const generateButton = document.querySelector('#generateButton');
 const sampleButton = document.querySelector('#sampleButton');
 const copyButton = document.querySelector('#copyButton');
+const downloadButton = document.querySelector('#downloadButton');
+const printButton = document.querySelector('#printButton');
 const serviceStatus = document.querySelector('#serviceStatus');
 const reportMeta = document.querySelector('#reportMeta');
 const emptyState = document.querySelector('#emptyState');
@@ -159,6 +161,38 @@ copyButton.addEventListener('click', async () => {
   }, 1400);
 });
 
+downloadButton.addEventListener('click', () => {
+  if (!lastAudit) return;
+
+  const html = buildExportDocument(lastAudit);
+  const blob = new Blob([html], { type: 'text/html' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${slugify(lastAudit.industry || 'audit')}-${slugify(lastAudit.auditId || 'report')}.html`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
+});
+
+printButton.addEventListener('click', () => {
+  if (!lastAudit) return;
+
+  const win = window.open('', '_blank');
+  if (!win) {
+    showError('Allow pop-ups for this page to print or save the report as PDF.');
+    return;
+  }
+
+  win.document.open();
+  win.document.write(buildExportDocument(lastAudit));
+  win.document.close();
+  win.addEventListener('load', () => {
+    win.focus();
+    win.print();
+  }, { once: true });
+});
+
 async function loadCalls() {
   try {
     const response = await fetch('/voice/calls');
@@ -204,6 +238,10 @@ async function loadCallReport(callId) {
     lastAudit = {
       auditId: call.callId,
       industry: call.industry,
+      businessName: call.businessName,
+      contactName: call.contactName,
+      phoneNumber: call.phoneNumber,
+      transcript: call.transcript,
       report: call.report,
     };
     renderReport(lastAudit);
@@ -217,6 +255,8 @@ function renderReport(payload) {
   emptyState.hidden = true;
   reportOutput.hidden = false;
   copyButton.disabled = false;
+  downloadButton.disabled = false;
+  printButton.disabled = false;
   reportMeta.textContent = `${formatLabel(industry)} audit - ${auditId}`;
 
   reportOutput.innerHTML = [
@@ -226,6 +266,241 @@ function renderReport(payload) {
     renderSections(report.sections),
     renderActionPlan(report.actionPlan),
   ].join('');
+}
+
+function buildExportDocument(payload) {
+  const { auditId, industry, businessName, contactName, phoneNumber, transcript, report } = payload;
+  const title = `${formatLabel(industry || 'Business')} Readiness Audit`;
+  const preparedFor = businessName || contactName || phoneNumber || 'Business Owner';
+  const generatedAt = new Date().toLocaleString();
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(title)}</title>
+    <style>
+      :root {
+        color: #202524;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: #f5f4ef;
+      }
+
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 42px 28px;
+        background: #ffffff;
+      }
+
+      header {
+        border-bottom: 2px solid #0d6b57;
+        padding-bottom: 22px;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: #0d6b57;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1, h2, h3, p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      h2 {
+        margin-bottom: 12px;
+        font-size: 19px;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 18px;
+        color: #65706d;
+        font-size: 13px;
+      }
+
+      .score {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .score strong {
+        display: grid;
+        place-items: center;
+        width: 86px;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        background: #084c3e;
+        color: #ffffff;
+        font-size: 30px;
+      }
+
+      .score span {
+        color: #65706d;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      section {
+        break-inside: avoid;
+        margin-bottom: 22px;
+      }
+
+      .box {
+        border: 1px solid #d9dfdc;
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      .box p,
+      li {
+        color: #38413f;
+        line-height: 1.55;
+      }
+
+      ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+      }
+
+      .metric-label {
+        color: #65706d;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .metric-value {
+        display: block;
+        margin-top: 4px;
+        font-size: 22px;
+        font-weight: 850;
+      }
+
+      .transcript {
+        white-space: pre-wrap;
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+        }
+
+        main {
+          padding: 0;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .meta,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">AI Business Audit</p>
+        <h1>${escapeHtml(title)}</h1>
+        <div class="meta">
+          <div><strong>Prepared for:</strong> ${escapeHtml(preparedFor)}</div>
+          <div><strong>Industry:</strong> ${escapeHtml(formatLabel(industry || 'unknown'))}</div>
+          <div><strong>Audit ID:</strong> ${escapeHtml(auditId || 'draft')}</div>
+          <div><strong>Generated:</strong> ${escapeHtml(generatedAt)}</div>
+        </div>
+      </header>
+      ${renderExportReport(report || {})}
+      ${transcript ? `<section><h2>Transcript</h2><div class="box transcript">${escapeHtml(transcript)}</div></section>` : ''}
+    </main>
+  </body>
+</html>`;
+}
+
+function renderExportReport(report) {
+  return [
+    `<section class="score"><strong>${escapeHtml(String(report.overallScore ?? '-'))}</strong><span>Overall readiness score out of 10</span></section>`,
+    renderExportScores(report.scores),
+    renderExportList('Key Strengths', report.keyStrengths),
+    renderExportList('Critical Gaps', report.criticalGaps),
+    renderExportSections(report.sections),
+    renderExportActions(report.actionPlan),
+  ].join('');
+}
+
+function renderExportScores(scores = {}) {
+  const metrics = Object.entries(scores).map(([label, value]) => `
+    <div class="box">
+      <span class="metric-label">${escapeHtml(formatLabel(label))}</span>
+      <strong class="metric-value">${escapeHtml(String(value))}/10</strong>
+    </div>
+  `).join('');
+
+  if (!metrics) return '';
+  return `<section><h2>Score Breakdown</h2><div class="grid">${metrics}</div></section>`;
+}
+
+function renderExportList(title, items = []) {
+  if (!Array.isArray(items) || items.length === 0) return '';
+  return `
+    <section>
+      <h2>${escapeHtml(title)}</h2>
+      <div class="box"><ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>
+    </section>
+  `;
+}
+
+function renderExportSections(sections = {}) {
+  return Object.entries(sections).map(([title, body]) => `
+    <section>
+      <h2>${escapeHtml(formatLabel(title))}</h2>
+      <div class="box"><p>${formatMarkdownLite(String(body))}</p></div>
+    </section>
+  `).join('');
+}
+
+function renderExportActions(actions = []) {
+  if (!Array.isArray(actions) || actions.length === 0) return '';
+  const items = actions.map((item) => `
+    <div class="box">
+      <h3>${escapeHtml(item.priority || 'Next')}</h3>
+      <p><strong>${escapeHtml(item.action || 'Action needed')}</strong></p>
+      <p>${escapeHtml(item.timeframe || 'Set timeframe')}</p>
+    </div>
+  `).join('');
+
+  return `<section><h2>Action Plan</h2><div class="grid">${items}</div></section>`;
 }
 
 function renderScores(report) {
@@ -323,6 +598,15 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function slugify(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || 'report';
 }
 
 init();

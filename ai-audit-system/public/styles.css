@@ -129,6 +129,13 @@ h2 {
   padding: 18px;
 }
 
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .audit-form {
   display: grid;
   gap: 10px;
@@ -478,6 +485,7 @@ button:disabled {
   .topbar,
   .panel-header,
   .form-actions,
+  .report-actions,
   .score-row {
     align-items: stretch;
     flex-direction: column;
