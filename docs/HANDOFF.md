@@ -44,7 +44,7 @@ Important files:
 - `ai-audit-system/index.js` - Express routes and webhook flow
 - `ai-audit-system/agents/voice_agent.js` - Retell call creation and webhook verification
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
-- `ai-audit-system/agents/call_store.js` - temporary in-memory call storage
+- `ai-audit-system/agents/call_store.js` - local disk-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
 - `ai-audit-system/prompts/` - voice and report prompts
@@ -148,9 +148,9 @@ Webhook behavior:
 
 ## Current Limitations
 
-- Call storage is in memory and resets on server restart.
+- Call storage persists locally to `ai-audit-system/data/calls.json` by default.
 - No user accounts or authentication.
-- No database.
+- No external database.
 - No PDF export yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
@@ -164,7 +164,7 @@ Webhook behavior:
 3. Configure Retell webhook to `https://your-public-url/webhook/retell`.
 4. Run the first real phone call to the builder's own phone.
 5. Verify the full call-to-report loop with one test business audit.
-6. Add persistent storage for calls, transcripts, and reports.
+6. Replace local JSON storage with a production database when moving beyond local MVP testing.
 7. Add PDF/export for completed reports.
 8. Add a review/send workflow for completed reports.
 

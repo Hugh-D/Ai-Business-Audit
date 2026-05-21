@@ -1,6 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const os = require('node:os');
+const path = require('node:path');
+
+process.env.CALL_STORE_PATH = path.join(os.tmpdir(), `ai-audit-app-routes-${process.pid}.json`);
 
 const reportEngine = require('../agents/report_engine');
 const voiceAgent = require('../agents/voice_agent');
