@@ -28,6 +28,12 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// GET /readiness
+// Summarizes local configuration needed for report generation, live calls, and email delivery.
+app.get('/readiness', (_req, res) => {
+  res.json(buildReadiness());
+});
+
 // POST /audit
 // Body: { industry: string, transcript: string }
 // Returns a structured audit report for the given industry and raw transcript.
@@ -94,7 +100,7 @@ app.post('/export/xlsx', async (req, res) => {
 
 // POST /voice/call
 // Body: { industry: string, businessName?: string, contactName?: string, phoneNumber: string }
-// Starts an outbound Retell phone audit call and tracks its status in memory.
+// Starts an outbound Retell phone audit call and tracks its persisted status.
 app.post('/voice/call', async (req, res) => {
   try {
     const { industry, businessName = '', contactName = '', phoneNumber } = req.body;
@@ -322,4 +328,86 @@ function callToAudit(call) {
   };
 }
 
-module.exports = { app, processEndedCall };
+function buildReadiness(env = process.env) {
+  const checks = [
+    readinessCheck({
+      id: 'anthropic_api_key',
+      label: 'Report generation',
+      ready: voiceAgent.hasUsableEnvValue(env.ANTHROPIC_API_KEY),
+      detail: 'ANTHROPIC_API_KEY is required for AI report generation.',
+    }),
+    readinessCheck({
+      id: 'retell_api_key',
+      label: 'Retell API access',
+      ready: voiceAgent.hasUsableEnvValue(env.RETELL_API_KEY),
+      detail: 'RETELL_API_KEY is required to create outbound calls and verify webhooks.',
+    }),
+    readinessCheck({
+      id: 'retell_agent_id',
+      label: 'Retell agent',
+      ready: voiceAgent.hasUsableEnvValue(env.RETELL_AGENT_ID),
+      detail: 'RETELL_AGENT_ID must point at the published audit voice agent.',
+    }),
+    readinessCheck({
+      id: 'retell_from_number',
+      label: 'Outbound phone number',
+      ready: voiceAgent.hasUsableEnvValue(env.RETELL_FROM_NUMBER),
+      detail: 'RETELL_FROM_NUMBER must be a Retell-managed or imported number.',
+    }),
+    readinessCheck({
+      id: 'retell_webhook_url',
+      label: 'Public webhook URL',
+      ready: voiceAgent.hasUsableEnvValue(env.RETELL_WEBHOOK_URL || env.PUBLIC_BASE_URL),
+      detail: 'RETELL_WEBHOOK_URL or PUBLIC_BASE_URL should point at the public /webhook/retell endpoint.',
+      optional: true,
+    }),
+    readinessCheck({
+      id: 'smtp_delivery',
+      label: 'SMTP email delivery',
+      ready: deliveryAgent.hasEmailConfig(env),
+      detail: 'SMTP_HOST, SMTP_PORT, and SMTP_FROM are required for one-click email delivery.',
+      optional: true,
+    }),
+  ];
+
+  const byId = Object.fromEntries(checks.map(check => [check.id, check]));
+  const readyForManualAudit = byId.anthropic_api_key.ready;
+  const readyForPhoneCalls = [
+    byId.anthropic_api_key,
+    byId.retell_api_key,
+    byId.retell_agent_id,
+    byId.retell_from_number,
+  ].every(check => check.ready);
+
+  return {
+    status: readyForPhoneCalls ? 'ready' : 'blocked',
+    readyForManualAudit,
+    readyForPhoneCalls,
+    readyForEmailDelivery: byId.smtp_delivery.ready,
+    checks,
+    nextSteps: buildReadinessNextSteps(checks, readyForPhoneCalls),
+  };
+}
+
+function readinessCheck({ id, label, ready, detail, optional = false }) {
+  return {
+    id,
+    label,
+    status: ready ? 'ready' : optional ? 'optional' : 'missing',
+    ready,
+    optional,
+    detail,
+  };
+}
+
+function buildReadinessNextSteps(checks, readyForPhoneCalls) {
+  if (readyForPhoneCalls) {
+    return ['Start a test phone audit and confirm Retell posts the completed call to /webhook/retell.'];
+  }
+
+  return checks
+    .filter(check => !check.ready && !check.optional)
+    .map(check => check.detail);
+}
+
+module.exports = { app, processEndedCall, buildReadiness };

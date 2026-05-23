@@ -19,9 +19,12 @@ const originalGenerate = reportEngine.generate;
 const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
 const originalSendReportEmail = deliveryAgent.sendReportEmail;
 const originalEnv = {
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   RETELL_API_KEY: process.env.RETELL_API_KEY,
   RETELL_FROM_NUMBER: process.env.RETELL_FROM_NUMBER,
   RETELL_AGENT_ID: process.env.RETELL_AGENT_ID,
+  RETELL_WEBHOOK_URL: process.env.RETELL_WEBHOOK_URL,
+  PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL,
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_FROM: process.env.SMTP_FROM,
@@ -121,6 +124,47 @@ test('POST /export/xlsx validates required fields', async () => {
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'industry and report are required');
+});
+
+test('GET /readiness summarizes missing launch configuration', async () => {
+  delete process.env.ANTHROPIC_API_KEY;
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  process.env.RETELL_AGENT_ID = 'agent_test';
+  delete process.env.RETELL_FROM_NUMBER;
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_FROM;
+
+  const response = await requestJson('GET', '/readiness');
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.readyForManualAudit, false);
+  assert.equal(response.body.readyForPhoneCalls, false);
+  assert.equal(response.body.readyForEmailDelivery, false);
+  assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'missing');
+  assert.equal(findReadinessCheck(response.body, 'smtp_delivery').status, 'optional');
+  assert.ok(response.body.nextSteps.some(step => step.includes('RETELL_FROM_NUMBER')));
+});
+
+test('GET /readiness marks live phone testing ready when required env is set', async () => {
+  process.env.ANTHROPIC_API_KEY = 'test_anthropic_key';
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  process.env.RETELL_AGENT_ID = 'agent_test';
+  process.env.RETELL_FROM_NUMBER = '+61255550000';
+  process.env.SMTP_HOST = 'smtp.example.com';
+  process.env.SMTP_PORT = '587';
+  process.env.SMTP_FROM = 'audit@example.com';
+
+  const response = await requestJson('GET', '/readiness');
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.status, 'ready');
+  assert.equal(response.body.readyForManualAudit, true);
+  assert.equal(response.body.readyForPhoneCalls, true);
+  assert.equal(response.body.readyForEmailDelivery, true);
+  assert.deepEqual(response.body.nextSteps, [
+    'Start a test phone audit and confirm Retell posts the completed call to /webhook/retell.',
+  ]);
 });
 
 test('POST /voice/call stores a created Retell call', async () => {
@@ -463,4 +507,10 @@ async function withoutConsoleError(fn) {
   } finally {
     console.error = original;
   }
+}
+
+function findReadinessCheck(payload, id) {
+  const check = payload.checks.find(item => item.id === id);
+  assert.ok(check, `Missing readiness check ${id}`);
+  return check;
 }

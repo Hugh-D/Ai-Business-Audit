@@ -6,6 +6,10 @@ const phoneNumberInput = document.querySelector('#phoneNumberInput');
 const callForm = document.querySelector('#callForm');
 const startCallButton = document.querySelector('#startCallButton');
 const refreshCallsButton = document.querySelector('#refreshCallsButton');
+const refreshReadinessButton = document.querySelector('#refreshReadinessButton');
+const readinessSummary = document.querySelector('#readinessSummary');
+const readinessChecks = document.querySelector('#readinessChecks');
+const readinessNextSteps = document.querySelector('#readinessNextSteps');
 const callList = document.querySelector('#callList');
 const callCount = document.querySelector('#callCount');
 const transcriptInput = document.querySelector('#transcriptInput');
@@ -58,7 +62,7 @@ Client: We mention it, but there is no standard script or follow-up.`
 };
 
 async function init() {
-  await Promise.all([loadIndustries(), checkHealth(), loadCalls()]);
+  await Promise.all([loadIndustries(), checkHealth(), loadReadiness(), loadCalls()]);
 }
 
 async function checkHealth() {
@@ -91,6 +95,7 @@ async function loadIndustries() {
 }
 
 refreshCallsButton.addEventListener('click', loadCalls);
+refreshReadinessButton.addEventListener('click', loadReadiness);
 
 callForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -333,10 +338,52 @@ async function loadCalls() {
   }
 }
 
+async function loadReadiness() {
+  try {
+    const response = await fetch('/readiness');
+    if (!response.ok) throw new Error('Could not load launch readiness');
+    const readiness = await response.json();
+    renderReadiness(readiness);
+  } catch (err) {
+    readinessSummary.textContent = err.message;
+    readinessChecks.innerHTML = '';
+    readinessNextSteps.hidden = true;
+  }
+}
+
+function renderReadiness(readiness) {
+  const readyCount = readiness.checks.filter(check => check.ready).length;
+  const totalCount = readiness.checks.length;
+  readinessSummary.textContent = readiness.readyForPhoneCalls
+    ? `Ready for live phone testing. ${readyCount}/${totalCount} checks ready.`
+    : `Phone testing blocked. ${readyCount}/${totalCount} checks ready.`;
+
+  readinessChecks.innerHTML = readiness.checks.map(check => `
+    <div class="readiness-check ${escapeHtml(check.status)}">
+      <span aria-hidden="true">${check.ready ? 'OK' : check.optional ? 'OPT' : '!'}</span>
+      <div>
+        <strong>${escapeHtml(check.label)}</strong>
+        <p>${escapeHtml(check.ready ? 'Configured' : check.detail)}</p>
+      </div>
+    </div>
+  `).join('');
+
+  if (readiness.nextSteps?.length) {
+    readinessNextSteps.hidden = false;
+    readinessNextSteps.innerHTML = `
+      <strong>Next</strong>
+      <ul>${readiness.nextSteps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
+    `;
+  } else {
+    readinessNextSteps.hidden = true;
+    readinessNextSteps.innerHTML = '';
+  }
+}
+
 function renderCalls(calls = []) {
   callCount.textContent = String(calls.length);
   if (!calls.length) {
-    callList.innerHTML = '<div class="empty-state compact">No calls tracked in this server session.</div>';
+    callList.innerHTML = '<div class="empty-state compact">No persisted calls yet.</div>';
     return;
   }
 

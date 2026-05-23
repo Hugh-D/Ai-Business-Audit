@@ -54,7 +54,7 @@ test('reload restores calls from SQLite', () => {
   assert.equal(callStore.get('call_reload').report.overallScore, 8);
 });
 
-test('clear removes calls from memory and disk', () => {
+test('clear removes calls from SQLite', () => {
   callStore.save('call_clear', { status: 'registered' });
 
   callStore.clear();

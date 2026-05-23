@@ -18,6 +18,20 @@
         </header>
 
         <section class="input-panel" aria-labelledby="phoneAuditTitle">
+          <section class="readiness-panel" aria-labelledby="readinessTitle">
+            <div class="section-title-row">
+              <div>
+                <h2 id="readinessTitle">Launch Readiness</h2>
+                <p class="hint" id="readinessSummary">Checking setup...</p>
+              </div>
+              <button class="ghost-button" id="refreshReadinessButton" type="button">Refresh</button>
+            </div>
+            <div id="readinessChecks" class="readiness-checks">
+              <div class="empty-state compact">Loading configuration checks.</div>
+            </div>
+            <div id="readinessNextSteps" class="readiness-next" hidden></div>
+          </section>
+
           <div class="panel-header">
             <div>
               <h2 id="phoneAuditTitle">Start Phone Audit</h2>
@@ -49,7 +63,7 @@
 
             <div class="form-actions">
               <button class="primary-button" id="startCallButton" type="submit">Start Phone Audit</button>
-              <p class="hint">Requires `RETELL_API_KEY` and `RETELL_FROM_NUMBER`.</p>
+              <p class="hint">Requires Retell API, agent ID, and an outbound number.</p>
             </div>
           </form>
 
@@ -59,7 +73,7 @@
               <span id="callCount">0</span>
             </div>
             <div id="callList" class="call-list">
-              <div class="empty-state compact">No calls tracked in this server session.</div>
+              <div class="empty-state compact">No persisted calls yet.</div>
             </div>
           </div>
 

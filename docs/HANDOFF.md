@@ -22,6 +22,7 @@ It is a Node/Express app with:
 
 - static MVP workbench at `GET /`
 - health check at `GET /health`
+- launch readiness checklist at `GET /readiness`
 - industry list at `GET /industries`
 - manual transcript report generation at `POST /audit`
 - editable spreadsheet export at `POST /export/xlsx`
@@ -112,6 +113,7 @@ Useful defaults:
 PORT=3000
 NODE_ENV=development
 CALL_STORE_PATH=./data/calls.sqlite
+RETELL_WEBHOOK_URL=https://your-public-url/webhook/retell
 AUDIT_MAX_TOKENS=2000
 AUDIT_MODEL=claude-sonnet-4-20250514
 VOICE_MODEL=claude-sonnet-4-20250514
@@ -151,6 +153,8 @@ Configure Retell webhooks to:
 https://your-public-url/webhook/retell
 ```
 
+Set `RETELL_WEBHOOK_URL` or `PUBLIC_BASE_URL` in `.env` so the launch readiness panel can show whether public webhook setup has been filled in.
+
 The app verifies Retell signatures using the current `x-retell-signature` format:
 
 ```text
@@ -177,6 +181,7 @@ Webhook behavior:
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
 - The Retell call can only work after `.env` contains real credentials and Retell webhook config is set.
 - Real phone testing still requires a Retell/imported phone number and public webhook URL.
+- A SIPcity contact request has been sent to confirm Australian SIP trunk compatibility for Retell outbound/inbound calls and caller ID.
 
 ## Recommended Next Steps
 
@@ -218,11 +223,10 @@ Important wording in that prompt:
 
 ## Current Git State
 
-There are local uncommitted changes from this build session. They have not been pushed to GitHub yet.
-
-Before committing, review:
+Before starting a new work session or committing, review:
 
 ```bash
 git status --short
+git log -1 --oneline
 git diff
 ```
