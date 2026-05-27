@@ -354,9 +354,9 @@ async function loadReadiness() {
 function renderReadiness(readiness) {
   const readyCount = readiness.checks.filter(check => check.ready).length;
   const totalCount = readiness.checks.length;
-  readinessSummary.textContent = readiness.readyForPhoneCalls
-    ? `Ready for live phone testing. ${readyCount}/${totalCount} checks ready.`
-    : `Phone testing blocked. ${readyCount}/${totalCount} checks ready.`;
+  readinessSummary.textContent = readiness.readyForInboundAudits
+    ? `Ready for inbound assessment testing. ${readyCount}/${totalCount} checks ready.`
+    : `Inbound assessment testing blocked. ${readyCount}/${totalCount} checks ready.`;
 
   readinessChecks.innerHTML = readiness.checks.map(check => `
     <div class="readiness-check ${escapeHtml(check.status)}">
@@ -817,7 +817,7 @@ function setLoading(isLoading) {
 
 function setCallLoading(isLoading) {
   startCallButton.disabled = isLoading;
-  startCallButton.textContent = isLoading ? 'Starting...' : 'Start Phone Audit';
+  startCallButton.textContent = isLoading ? 'Starting...' : 'Start Test Call';
 }
 
 function showError(message) {

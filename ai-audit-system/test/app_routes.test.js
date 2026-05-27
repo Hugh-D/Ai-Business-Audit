@@ -20,6 +20,7 @@ const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
 const originalSendReportEmail = deliveryAgent.sendReportEmail;
 const originalEnv = {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+  AUDIT_PHONE_NUMBER: process.env.AUDIT_PHONE_NUMBER,
   RETELL_API_KEY: process.env.RETELL_API_KEY,
   RETELL_FROM_NUMBER: process.env.RETELL_FROM_NUMBER,
   RETELL_AGENT_ID: process.env.RETELL_AGENT_ID,
@@ -126,11 +127,14 @@ test('POST /export/xlsx validates required fields', async () => {
   assert.equal(response.body.error, 'industry and report are required');
 });
 
-test('GET /readiness summarizes missing launch configuration', async () => {
+test('GET /readiness summarizes missing inbound launch configuration', async () => {
   delete process.env.ANTHROPIC_API_KEY;
   process.env.RETELL_API_KEY = 'test_retell_key';
   process.env.RETELL_AGENT_ID = 'agent_test';
   delete process.env.RETELL_FROM_NUMBER;
+  delete process.env.AUDIT_PHONE_NUMBER;
+  delete process.env.RETELL_WEBHOOK_URL;
+  delete process.env.PUBLIC_BASE_URL;
   delete process.env.SMTP_HOST;
   delete process.env.SMTP_PORT;
   delete process.env.SMTP_FROM;
@@ -139,18 +143,21 @@ test('GET /readiness summarizes missing launch configuration', async () => {
 
   assert.equal(response.status, 200);
   assert.equal(response.body.readyForManualAudit, false);
-  assert.equal(response.body.readyForPhoneCalls, false);
+  assert.equal(response.body.readyForInboundAudits, false);
   assert.equal(response.body.readyForEmailDelivery, false);
-  assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'missing');
+  assert.equal(findReadinessCheck(response.body, 'audit_phone_number').status, 'missing');
+  assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'optional');
   assert.equal(findReadinessCheck(response.body, 'smtp_delivery').status, 'optional');
-  assert.ok(response.body.nextSteps.some(step => step.includes('RETELL_FROM_NUMBER')));
+  assert.ok(response.body.nextSteps.some(step => step.includes('AUDIT_PHONE_NUMBER')));
 });
 
-test('GET /readiness marks live phone testing ready when required env is set', async () => {
+test('GET /readiness marks inbound audit testing ready without outbound number', async () => {
   process.env.ANTHROPIC_API_KEY = 'test_anthropic_key';
   process.env.RETELL_API_KEY = 'test_retell_key';
-  process.env.RETELL_AGENT_ID = 'agent_test';
-  process.env.RETELL_FROM_NUMBER = '+61255550000';
+  process.env.AUDIT_PHONE_NUMBER = '1300 244 357';
+  process.env.RETELL_WEBHOOK_URL = 'https://audit.example.com/webhook/retell';
+  delete process.env.RETELL_AGENT_ID;
+  delete process.env.RETELL_FROM_NUMBER;
   process.env.SMTP_HOST = 'smtp.example.com';
   process.env.SMTP_PORT = '587';
   process.env.SMTP_FROM = 'audit@example.com';
@@ -160,10 +167,11 @@ test('GET /readiness marks live phone testing ready when required env is set', a
   assert.equal(response.status, 200);
   assert.equal(response.body.status, 'ready');
   assert.equal(response.body.readyForManualAudit, true);
-  assert.equal(response.body.readyForPhoneCalls, true);
+  assert.equal(response.body.readyForInboundAudits, true);
   assert.equal(response.body.readyForEmailDelivery, true);
+  assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'optional');
   assert.deepEqual(response.body.nextSteps, [
-    'Start a test phone audit and confirm Retell posts the completed call to /webhook/retell.',
+    'Call 1300 244 357 and confirm Retell posts the completed assessment to /webhook/retell.',
   ]);
 });
 

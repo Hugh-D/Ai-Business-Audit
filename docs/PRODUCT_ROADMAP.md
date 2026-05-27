@@ -10,11 +10,11 @@ The app should become an audit engine that captures a discovery conversation, ex
 
 The MVP should prove one workflow end to end:
 
-1. Start or receive a phone audit call.
+1. Receive an inbound phone assessment from a business owner who responds to an ad or offer.
 2. Capture the completed Retell transcript.
 3. Generate a structured audit report.
 4. Present the report in a clean web view.
-5. Offer report delivery and the included review call with Hugh.
+5. Offer report delivery and an optional booked follow-up call with Hugh.
 
 ## Build Phases
 
@@ -40,9 +40,11 @@ The MVP should prove one workflow end to end:
 
 ### Phase 3: Voice-Led Audit Flow
 
-- Connect Retell call creation, not only the webhook receiver. Done for the MVP.
+- Make inbound SIPcity/Retell calls the primary live customer path.
+- Keep Retell outbound call creation only as an internal testing utility. Done for the MVP.
 - Pass `metadata.industry` into calls and prefer it over transcript detection. Done for the MVP.
-- Store call ID, transcript, report, and status. In-memory only for now.
+- Store call ID, transcript, report, and status in local SQLite. Done for the MVP.
+- Require AI identity and recording/transcription consent at the start of each assessment.
 - Add a review step before sending the final report.
 
 ### Phase 4: Business Workflow

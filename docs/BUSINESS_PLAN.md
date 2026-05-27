@@ -21,9 +21,10 @@ The strongest initial wedge is:
 
 ### Entry Offer: AI Business Audit
 
-- 20 to 30 minute discovery call.
+- Customer calls an advertised audit number and completes an AI-led assessment.
 - AI/process audit report.
 - Top 3 recommended fixes.
+- Optional booked follow-up call with Hugh to discuss the report.
 - Suggested price: free for validation, then $97 to $297.
 
 ### Core Offer: Implementation Sprint
@@ -41,7 +42,7 @@ The strongest initial wedge is:
 ## Validation Plan
 
 1. Pick one niche first: plumbers, HVAC, roofers, electricians, or lawn care.
-2. Run 10 manual audits using the app as an internal tool.
+2. Run 10 opt-in inbound audits using the app and the public audit number.
 3. Track the most common pain points.
 4. Turn repeated recommendations into implementation packages.
 5. Collect before/after metrics and testimonials.
@@ -50,8 +51,8 @@ The strongest initial wedge is:
 
 - Outreach target: owner, operations manager, or office manager.
 - Hook: "I help home service businesses find missed revenue in calls, follow-up, reviews, and booking workflows."
-- CTA: "Want me to run a quick AI/process audit and show you the top 3 leaks?"
-- Delivery: voice call, generated report, short loom or live walkthrough.
+- CTA: "Call for a quick AI/process audit and see your top 3 leaks."
+- Delivery: inbound AI assessment, generated report, optional follow-up call with Hugh.
 
 ## Metrics To Track
 

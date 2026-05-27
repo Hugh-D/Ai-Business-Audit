@@ -6,11 +6,13 @@ AI Business Audit is meant to be a phone-led business readiness audit.
 
 Target flow:
 
-1. A business owner receives or phones into an AI audit call.
-2. The AI voice agent asks discovery questions about leads, follow-up, operations, tools, and customer experience.
+1. A business owner sees an ad or offer and calls the public AI Business Audit number.
+2. The AI voice agent identifies itself, obtains consent for recording/transcription, and asks discovery questions about leads, follow-up, operations, tools, and customer experience.
 3. Retell sends the completed call transcript to this app.
 4. The app generates a structured readiness/revenue-leak report.
-5. The report supports a follow-up consult or implementation offer.
+5. The business owner receives the report and can choose to book a follow-up call with Hugh.
+
+The assessment is free during validation, with a later paid version expected to include an optional follow-up call as part of the fee.
 
 The current wedge is trades and home services, with `trades`, `realtors`, and `lawn_care` configs already available.
 
@@ -30,7 +32,7 @@ It is a Node/Express app with:
 - persisted report review/delivery workflow at `PATCH /voice/calls/:callId/review`
 - SMTP workbook delivery at `POST /voice/calls/:callId/deliver`
 - voice prompt session config at `POST /voice/session`
-- outbound Retell call creation at `POST /voice/call`
+- optional outbound Retell test-call creation at `POST /voice/call`
 - persisted call list at `GET /voice/calls`
 - single persisted call lookup at `GET /voice/calls/:callId`
 - Retell webhook receiver at `POST /webhook/retell`
@@ -81,10 +83,17 @@ Required for report generation:
 ANTHROPIC_API_KEY=...
 ```
 
-Required for outbound Retell phone calls:
+Required for inbound live audit testing:
 
 ```bash
+AUDIT_PHONE_NUMBER=...
 RETELL_API_KEY=...
+RETELL_WEBHOOK_URL=...
+```
+
+Optional for internal outbound test calls:
+
+```bash
 RETELL_FROM_NUMBER=...
 RETELL_AGENT_ID=...
 ```
@@ -105,7 +114,8 @@ Current known environment status:
 - `ANTHROPIC_API_KEY` is set.
 - `RETELL_API_KEY` is set.
 - `RETELL_AGENT_ID` is set and verified against Retell.
-- `RETELL_FROM_NUMBER` is still the remaining live-call blocker until a Retell/imported number is available.
+- The customer path is now inbound-first; `RETELL_FROM_NUMBER` is not required for launch.
+- SIPcity confirmed it can provide an Australian number connected to Retell for inbound calling, and permit AI service use for opt-in callers.
 
 Useful defaults:
 
@@ -130,6 +140,7 @@ Current Retell agent:
 - Voice: Cimo
 - Model: GPT 4.1
 - V1 was published in the Retell UI; the API may still report the editable draft as unpublished.
+- Current live prompt opening discloses that the assistant is AI and that the call will be recorded, then asks the caller to agree before the assessment proceeds.
 
 Recommended Retell speech/transcription settings from testing:
 
@@ -179,20 +190,21 @@ Webhook behavior:
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
-- The Retell call can only work after `.env` contains real credentials and Retell webhook config is set.
-- Real phone testing still requires a Retell/imported phone number and public webhook URL.
-- A SIPcity contact request has been sent to confirm Australian SIP trunk compatibility for Retell outbound/inbound calls and caller ID.
+- The inbound Retell call flow can only work after `.env` contains the public audit number and webhook config, and SIPcity routing is connected to Retell.
+- Real phone testing still requires purchasing/configuring a SIPcity number and a public webhook URL.
+- SIPcity confirmed Australian SIP trunk compatibility with Retell, inbound and outbound support, and use of a SIPcity-account local number as outbound caller ID. It does not permit a `13`, `1300`, or `1800` number as outbound caller ID.
 
 ## Recommended Next Steps
 
-1. Add/verify `RETELL_FROM_NUMBER`.
-2. Set up ngrok or deploy the app so Retell can reach `/webhook/retell`.
-3. Configure Retell webhook to `https://your-public-url/webhook/retell`.
-4. Run the first real phone call to the builder's own phone.
-5. Verify the full call-to-report loop with one test business audit.
+1. Respond to SIPcity with the inbound, opt-in pilot traffic profile and request the recommended local/1300 inbound number setup for Retell.
+2. Purchase/configure the inbound audit number, with `1300 AI HELP` retained as the preferred branded option if available.
+3. Set up ngrok or deploy the app so Retell can reach `/webhook/retell`.
+4. Configure Retell webhook to `https://your-public-url/webhook/retell` and set `AUDIT_PHONE_NUMBER` plus `RETELL_WEBHOOK_URL` in `.env`.
+5. Call the advertised number yourself and verify the consent-first inbound call-to-report loop.
 6. Replace local SQLite storage with a managed production database when moving beyond local MVP testing.
-7. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
-8. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
+7. Add follow-up booking capture before moving from free validation into paid assessments.
+8. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
+9. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
 
@@ -214,12 +226,14 @@ Use the Retell dashboard prompt version named `V6 - confirm contact details`.
 
 Important wording in that prompt:
 
+- The opening identifies the voice as an AI assistant, says the call will be recorded/transcribed for the assessment report, and asks for agreement before discovery begins.
 - Opening tells callers they can pause, interrupt, correct the agent, or ask for repetition/clarification.
 - Silence handling says: "No rush, take your time" before repeating or moving on.
 - Tools/software question must be exactly: "What software or tools do you currently use to run the business?"
 - Contact capture must repeat normalized email/mobile details and wait for confirmation.
 - If contact details are corrected, the agent must repeat the corrected version and ask for confirmation again.
 - The agent must not close the call until contact details are confirmed.
+- The closing offers the option to book a follow-up call with Hugh to discuss the completed report.
 
 ## Current Git State
 

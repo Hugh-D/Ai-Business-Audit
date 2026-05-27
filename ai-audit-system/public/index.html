@@ -34,48 +34,51 @@
 
           <div class="panel-header">
             <div>
-              <h2 id="phoneAuditTitle">Start Phone Audit</h2>
-              <p>Launch a discovery call, then review the completed readiness report when the webhook lands.</p>
+              <h2 id="phoneAuditTitle">Incoming Assessments</h2>
+              <p>Customers call the advertised number, complete the AI assessment, then appear here for follow-up.</p>
             </div>
             <button class="ghost-button" id="refreshCallsButton" type="button">Refresh Calls</button>
           </div>
 
-          <form id="callForm" class="audit-form">
-            <label for="callIndustrySelect">Industry</label>
-            <select id="callIndustrySelect" name="industry" required>
-              <option value="">Loading industries...</option>
-            </select>
-
-            <label for="businessNameInput">Business Name</label>
-            <input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
-
-            <label for="contactNameInput">Contact Name</label>
-            <input id="contactNameInput" name="contactName" type="text" placeholder="Sam">
-
-            <label for="phoneNumberInput">Phone Number</label>
-            <input
-              id="phoneNumberInput"
-              name="phoneNumber"
-              type="tel"
-              placeholder="+61400111222"
-              required
-            >
-
-            <div class="form-actions">
-              <button class="primary-button" id="startCallButton" type="submit">Start Phone Audit</button>
-              <p class="hint">Requires Retell API, agent ID, and an outbound number.</p>
-            </div>
-          </form>
-
           <div class="call-list-wrap">
             <div class="section-title-row">
-              <h2>Recent Calls</h2>
+              <h2>Completed And Active Calls</h2>
               <span id="callCount">0</span>
             </div>
             <div id="callList" class="call-list">
               <div class="empty-state compact">No persisted calls yet.</div>
             </div>
           </div>
+
+          <details class="manual-audit">
+            <summary>Optional outbound test call</summary>
+            <form id="callForm" class="audit-form nested">
+              <label for="callIndustrySelect">Industry</label>
+              <select id="callIndustrySelect" name="industry" required>
+                <option value="">Loading industries...</option>
+              </select>
+
+              <label for="businessNameInput">Business Name</label>
+              <input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
+
+              <label for="contactNameInput">Contact Name</label>
+              <input id="contactNameInput" name="contactName" type="text" placeholder="Sam">
+
+              <label for="phoneNumberInput">Phone Number</label>
+              <input
+                id="phoneNumberInput"
+                name="phoneNumber"
+                type="tel"
+                placeholder="+61400111222"
+                required
+              >
+
+              <div class="form-actions">
+                <button class="primary-button" id="startCallButton" type="submit">Start Test Call</button>
+                <p class="hint">Optional utility requiring a configured outbound Retell number.</p>
+              </div>
+            </form>
+          </details>
 
           <details class="manual-audit">
             <summary>Manual transcript fallback</summary>

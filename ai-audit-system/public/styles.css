@@ -363,8 +363,11 @@ button:disabled {
 
 .call-list-wrap,
 .manual-audit {
-  border-top: 1px solid var(--line);
   padding: 18px;
+}
+
+.manual-audit {
+  border-top: 1px solid var(--line);
 }
 
 .section-title-row {
