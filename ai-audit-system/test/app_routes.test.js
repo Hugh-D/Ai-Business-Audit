@@ -247,6 +247,7 @@ test('PATCH /voice/calls/:callId/review updates review workflow state', async ()
     reviewStatus: 'reviewed',
     reviewNotes: 'Tighten recommendation wording before sending.',
     recipientEmail: 'owner@example.com',
+    websiteUrl: 'demoplumbing.com.au',
     deliveryNotes: 'Attach the editable workbook.',
     followUpStatus: 'booked',
     followUpPreferredTime: 'Weekday mornings',
@@ -258,6 +259,7 @@ test('PATCH /voice/calls/:callId/review updates review workflow state', async ()
   assert.equal(response.body.call.reviewStatus, 'reviewed');
   assert.equal(response.body.call.reviewNotes, 'Tighten recommendation wording before sending.');
   assert.equal(response.body.call.recipientEmail, 'owner@example.com');
+  assert.equal(response.body.call.websiteUrl, 'https://demoplumbing.com.au');
   assert.equal(response.body.call.deliveryNotes, 'Attach the editable workbook.');
   assert.equal(response.body.call.followUpStatus, 'booked');
   assert.equal(response.body.call.followUpPreferredTime, 'Weekday mornings');
@@ -315,6 +317,21 @@ test('PATCH /voice/calls/:callId/review validates recipient email', async () => 
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'recipientEmail must be a valid email address');
+});
+
+test('PATCH /voice/calls/:callId/review validates website address', async () => {
+  callStore.save('call_invalid_website', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('PATCH', '/voice/calls/call_invalid_website/review', {
+    websiteUrl: 'not a website',
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'websiteUrl must be a valid website address');
 });
 
 test('PATCH /voice/calls/:callId/review validates follow-up status and scheduled time', async () => {
@@ -405,6 +422,7 @@ test('POST /voice/calls/:callId/deliver requires a recipient email', async () =>
 test('POST /webhook/retell accepts a signed call_ended webhook and stores the report', async () => {
   process.env.RETELL_API_KEY = 'test_retell_key';
   reportEngine.generate = async ({ config, transcript }) => ({
+    websiteUrl: 'greenstripe.com.au',
     overallScore: 9,
     scores: { leadResponse: 9 },
     keyStrengths: [`${config.id}:${transcript}`],
@@ -441,6 +459,7 @@ test('POST /webhook/retell accepts a signed call_ended webhook and stores the re
   assert.equal(call.industry, 'lawn_care');
   assert.equal(call.reviewStatus, 'draft');
   assert.equal(call.followUpStatus, 'not_offered');
+  assert.equal(call.websiteUrl, 'https://greenstripe.com.au');
   assert.equal(call.report.overallScore, 9);
   assert.equal(call.transcript, 'Client: lawn quote requests sit on a whiteboard!');
 });

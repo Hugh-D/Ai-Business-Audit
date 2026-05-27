@@ -31,6 +31,7 @@ It is a Node/Express app with:
 - browser-based report export actions: Copy JSON, Download Sheet, and Print / PDF
 - persisted report review/delivery workflow at `PATCH /voice/calls/:callId/review`
 - persisted follow-up booking capture within the report workflow: status, preferred timing, scheduled time, and notes
+- website capture from the assessment transcript or report review form, stored with the report and editable export
 - SMTP workbook delivery at `POST /voice/calls/:callId/deliver`
 - voice prompt session config at `POST /voice/session`
 - optional outbound Retell test-call creation at `POST /voice/call`
@@ -186,7 +187,8 @@ Webhook behavior:
 - No user accounts or authentication.
 - No external database or CRM integration yet.
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
-- Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with internal review notes, recipient email, delivery notes, and follow-up booking status/timing.
+- Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with website URL, internal review notes, recipient email, delivery notes, and follow-up booking status/timing.
+- Website addresses are captured for future customer-journey review and optional report personalisation; logo/brand extraction is not implemented yet.
 - The UI can prepare a mailto email draft, or send the editable workbook by SMTP when SMTP env vars are configured.
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
@@ -203,9 +205,10 @@ Webhook behavior:
 4. Configure Retell webhook to `https://your-public-url/webhook/retell` and set `AUDIT_PHONE_NUMBER` plus `RETELL_WEBHOOK_URL` in `.env`.
 5. Call the advertised number yourself and verify the consent-first inbound call-to-report loop.
 6. Replace local SQLite storage with a managed production database when moving beyond local MVP testing.
-7. Add a scheduling/calendar link or integration once the preferred booking workflow is chosen.
-8. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
-9. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
+7. Add public website review signals and optional logo/brand accents to reports using the captured URL.
+8. Add a scheduling/calendar link or integration once the preferred booking workflow is chosen.
+9. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
+10. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
 
@@ -232,6 +235,7 @@ Important wording in that prompt:
 - Silence handling says: "No rush, take your time" before repeating or moving on.
 - Tools/software question must be exactly: "What software or tools do you currently use to run the business?"
 - Contact capture must repeat normalized email/mobile details and wait for confirmation.
+- The agent asks whether the caller has a website they want included in the assessment, then repeats and confirms it when supplied.
 - If contact details are corrected, the agent must repeat the corrected version and ask for confirmation again.
 - The agent must not close the call until contact details are confirmed.
 - The closing asks whether the caller would like a follow-up call with Hugh; when they do, it gathers and confirms preferred timing.

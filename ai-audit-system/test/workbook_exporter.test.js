@@ -15,6 +15,7 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
     reviewStatus: 'reviewed',
     reviewNotes: 'Ready to send after checking phone number.',
     recipientEmail: 'mia@example.com',
+    websiteUrl: 'https://greenstripe.example.com.au',
     deliveryNotes: 'Attach the workbook before sending.',
     followUpStatus: 'booked',
     followUpPreferredTime: 'Tuesday morning',
@@ -49,11 +50,12 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
   assert.equal(workbook.getWorksheet('Summary').getCell('B9').value, 'Reviewed');
   assert.equal(workbook.getWorksheet('Summary').getCell('B10').value, 'Ready to send after checking phone number.');
   assert.equal(workbook.getWorksheet('Summary').getCell('B11').value, 'mia@example.com');
-  assert.equal(workbook.getWorksheet('Summary').getCell('B12').value, 'Attach the workbook before sending.');
-  assert.equal(workbook.getWorksheet('Summary').getCell('B13').value, 'Booked');
-  assert.equal(workbook.getWorksheet('Summary').getCell('B14').value, 'Tuesday morning');
-  assert.equal(workbook.getWorksheet('Summary').getCell('B15').value, '2026-06-02T09:30');
-  assert.equal(workbook.getWorksheet('Summary').getCell('B16').value, 'Cover the priority automation plan.');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B12').value, 'https://greenstripe.example.com.au');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B13').value, 'Attach the workbook before sending.');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B14').value, 'Booked');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B15').value, 'Tuesday morning');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B16').value, '2026-06-02T09:30');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B17').value, 'Cover the priority automation plan.');
   assert.equal(workbook.getWorksheet('Findings').getCell('A2').value, 'Strength');
   assert.equal(workbook.getWorksheet('Findings').getCell('B3').value, 'Quote tracking is manual');
   assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, 'Not Started');

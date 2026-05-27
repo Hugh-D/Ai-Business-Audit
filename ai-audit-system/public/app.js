@@ -29,6 +29,7 @@ const reviewForm = document.querySelector('#reviewForm');
 const reviewStatusSelect = document.querySelector('#reviewStatusSelect');
 const reviewNotesInput = document.querySelector('#reviewNotesInput');
 const recipientEmailInput = document.querySelector('#recipientEmailInput');
+const websiteUrlInput = document.querySelector('#websiteUrlInput');
 const deliveryNotesInput = document.querySelector('#deliveryNotesInput');
 const reviewStatusBadge = document.querySelector('#reviewStatusBadge');
 const followUpStatusBadge = document.querySelector('#followUpStatusBadge');
@@ -310,6 +311,7 @@ async function saveReviewWorkflow(options = {}) {
         reviewStatus: reviewStatusSelect.value,
         reviewNotes: reviewNotesInput.value.trim(),
         recipientEmail: recipientEmailInput.value.trim(),
+        websiteUrl: websiteUrlInput.value.trim(),
         deliveryNotes: deliveryNotesInput.value.trim(),
         followUpStatus: followUpStatusSelect.value,
         followUpPreferredTime: followUpPreferredTimeInput.value.trim(),
@@ -463,6 +465,7 @@ function applyCallToAudit(call) {
     reviewStatus: call.reviewStatus || 'draft',
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
+    websiteUrl: call.websiteUrl || '',
     deliveryNotes: call.deliveryNotes || '',
     followUpStatus: call.followUpStatus || 'not_offered',
     followUpPreferredTime: call.followUpPreferredTime || '',
@@ -485,6 +488,7 @@ function renderReviewWorkflow(payload) {
   reviewStatusSelect.value = status;
   reviewNotesInput.value = payload.reviewNotes || '';
   recipientEmailInput.value = payload.recipientEmail || '';
+  websiteUrlInput.value = payload.websiteUrl || '';
   deliveryNotesInput.value = payload.deliveryNotes || '';
   const followUpStatus = payload.followUpStatus || 'not_offered';
   followUpStatusSelect.value = followUpStatus;
@@ -501,6 +505,7 @@ function renderReviewWorkflow(payload) {
   reviewStatusSelect.disabled = !hasSavedCall;
   reviewNotesInput.disabled = !hasSavedCall;
   recipientEmailInput.disabled = !hasSavedCall;
+  websiteUrlInput.disabled = !hasSavedCall;
   deliveryNotesInput.disabled = !hasSavedCall;
   followUpStatusSelect.disabled = !hasSavedCall;
   followUpPreferredTimeInput.disabled = !hasSavedCall;
@@ -540,6 +545,8 @@ function buildMailtoUrl(payload) {
     'Recommended next actions:',
     ...firstItems(payload.report?.actionPlan, 3).map(item => `- ${item.action || item}`),
     '',
+    payload.websiteUrl ? `Website noted for assessment context: ${payload.websiteUrl}` : '',
+    '',
     payload.deliveryNotes ? `Notes:\n${payload.deliveryNotes}\n` : '',
     'I have also prepared an editable audit workbook for the detailed scores, findings, and action plan.',
     '',
@@ -554,7 +561,7 @@ function firstItems(value, count) {
 }
 
 function buildExportDocument(payload) {
-  const { auditId, industry, businessName, contactName, phoneNumber, transcript, report } = payload;
+  const { auditId, industry, businessName, contactName, phoneNumber, websiteUrl, transcript, report } = payload;
   const title = `${formatLabel(industry || 'Business')} Readiness Audit`;
   const preparedFor = businessName || contactName || phoneNumber || 'Business Owner';
   const generatedAt = new Date().toLocaleString();
@@ -724,6 +731,7 @@ function buildExportDocument(payload) {
           <div><strong>Industry:</strong> ${escapeHtml(formatLabel(industry || 'unknown'))}</div>
           <div><strong>Audit ID:</strong> ${escapeHtml(auditId || 'draft')}</div>
           <div><strong>Generated:</strong> ${escapeHtml(generatedAt)}</div>
+          ${websiteUrl ? `<div><strong>Website:</strong> ${escapeHtml(websiteUrl)}</div>` : ''}
         </div>
       </header>
       ${renderExportReport(report || {})}

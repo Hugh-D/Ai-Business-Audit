@@ -17,6 +17,7 @@ Score each dimension on a scale of 1–10 and apply the following weights to com
 ## Output Format
 Return a single valid JSON object with this shape:
 {
+  "websiteUrl": "<customer website URL if clearly provided in the transcript, otherwise empty string>",
   "overallScore": <number 1-10>,
   "scores": {
     "communication": <1-10>,

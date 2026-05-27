@@ -66,6 +66,7 @@ function buildDeliveryMessage(call) {
     '',
     gaps ? `The biggest opportunities we identified:\n${gaps}` : '',
     actions ? `Recommended next actions:\n${actions}` : '',
+    call.websiteUrl ? `Website noted for assessment context: ${call.websiteUrl}` : '',
     call.deliveryNotes ? `Notes:\n${call.deliveryNotes}` : '',
     'I have attached the editable audit workbook with the detailed scores, findings, and action plan.',
     '',

@@ -42,6 +42,7 @@ function addSummarySheet(workbook, audit, report) {
     ['Review Status', formatLabel(audit.reviewStatus || 'draft')],
     ['Review Notes', audit.reviewNotes || ''],
     ['Recipient Email', audit.recipientEmail || ''],
+    ['Website', audit.websiteUrl || ''],
     ['Delivery Notes', audit.deliveryNotes || ''],
     ['Follow-up Status', formatLabel(audit.followUpStatus || 'not_offered')],
     ['Preferred Follow-up Time', audit.followUpPreferredTime || ''],

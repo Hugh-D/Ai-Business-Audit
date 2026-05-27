@@ -162,6 +162,7 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
       reviewStatus = call.reviewStatus || 'draft',
       reviewNotes = call.reviewNotes || '',
       recipientEmail = call.recipientEmail || '',
+      websiteUrl = call.websiteUrl || '',
       deliveryNotes = call.deliveryNotes || '',
       followUpStatus = call.followUpStatus || 'not_offered',
       followUpPreferredTime = call.followUpPreferredTime || '',
@@ -173,6 +174,10 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
     }
     if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(recipientEmail))) {
       return res.status(400).json({ error: 'recipientEmail must be a valid email address' });
+    }
+    const normalizedWebsiteUrl = normalizeWebsiteUrl(websiteUrl);
+    if (websiteUrl && !normalizedWebsiteUrl) {
+      return res.status(400).json({ error: 'websiteUrl must be a valid website address' });
     }
     if (!FOLLOW_UP_STATUSES.has(followUpStatus)) {
       return res.status(400).json({ error: 'followUpStatus must be not_offered, declined, requested, booked, or completed' });
@@ -189,6 +194,7 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
       reviewStatus,
       reviewNotes: String(reviewNotes),
       recipientEmail: String(recipientEmail),
+      websiteUrl: normalizedWebsiteUrl,
       deliveryNotes: String(deliveryNotes),
       followUpStatus,
       followUpPreferredTime: String(followUpPreferredTime),
@@ -330,6 +336,7 @@ async function processEndedCall(call) {
     followUpStatus: 'not_offered',
     industry: config.id,
     transcript: cleaned,
+    websiteUrl: normalizeWebsiteUrl(report.websiteUrl),
     report,
     auditId: uuidv4(),
   });
@@ -347,6 +354,7 @@ function callToAudit(call) {
     reviewStatus: call.reviewStatus || 'draft',
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
+    websiteUrl: call.websiteUrl || '',
     deliveryNotes: call.deliveryNotes || '',
     followUpStatus: call.followUpStatus || 'not_offered',
     followUpPreferredTime: call.followUpPreferredTime || '',
@@ -450,4 +458,17 @@ function buildReadinessNextSteps(checks, readyForInboundAudits, auditPhoneNumber
     .map(check => check.detail);
 }
 
-module.exports = { app, processEndedCall, buildReadiness };
+function normalizeWebsiteUrl(value) {
+  const input = String(value || '').trim();
+  if (!input) return '';
+
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(input) ? input : `https://${input}`);
+    if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.')) return '';
+    return url.toString().replace(/\/$/, '');
+  } catch (_err) {
+    return '';
+  }
+}
+
+module.exports = { app, processEndedCall, buildReadiness, normalizeWebsiteUrl };

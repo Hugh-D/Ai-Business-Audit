@@ -21,6 +21,7 @@ test('buildDeliveryMessage creates a client-ready email body', () => {
     industry: 'trades',
     businessName: 'Demo Plumbing Co',
     contactName: 'Sam',
+    websiteUrl: 'https://demoplumbing.com.au',
     deliveryNotes: 'Book a follow-up consult next week.',
     report: {
       overallScore: 8,
@@ -32,5 +33,6 @@ test('buildDeliveryMessage creates a client-ready email body', () => {
   assert.equal(message.subject, 'Trades audit report for Demo Plumbing Co');
   assert.match(message.text, /Hi Sam/);
   assert.match(message.text, /Missed after-hours calls/);
+  assert.match(message.text, /https:\/\/demoplumbing\.com\.au/);
   assert.match(message.text, /Book a follow-up consult next week/);
 });

@@ -55,6 +55,7 @@ The MVP should prove one workflow end to end:
 - Add per-client audit history.
 - Add templates for follow-up offers.
 - Add follow-up booking capture to report review. Done for the MVP.
+- Capture the customer's website URL for later customer-journey checks and personalised reporting. Done for the MVP.
 
 ## First Differentiators
 

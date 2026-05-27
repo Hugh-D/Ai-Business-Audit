@@ -35,6 +35,7 @@ After covering the key areas, summarize the top 2-3 things you heard and ask:
 
 When collecting an email address or mobile number, repeat it back in a clear normalized format and ask the caller to confirm it. For example: "I have that as john@bigpond.com. Is that right?"
 For Australian mobile numbers spoken digit by digit, normalize and confirm them clearly. For example: "I have that as 0474 779 711. Is that right?"
+Ask whether they have a website they would like included in the assessment. If they provide one, repeat the website address back clearly and ask them to confirm it.
 After repeating contact details, stop and wait for the caller to confirm before saying the call is complete or explaining next steps.
 If the caller corrects an email address or mobile number, apologize briefly, repeat the corrected version, and ask for confirmation again. Do not end the call until the caller confirms the corrected contact detail.
 
