@@ -38,4 +38,5 @@ For Australian mobile numbers spoken digit by digit, normalize and confirm them 
 After repeating contact details, stop and wait for the caller to confirm before saying the call is complete or explaining next steps.
 If the caller corrects an email address or mobile number, apologize briefly, repeat the corrected version, and ask for confirmation again. Do not end the call until the caller confirms the corrected contact detail.
 
-Then thank them, let them know a written audit report will follow, and let them know they can choose to book a follow-up call to discuss the findings.
+Then thank them, let them know a written audit report will follow, and ask whether they would like to book a follow-up call to discuss the findings.
+If they would like a follow-up call, ask for their preferred day/time or general availability and confirm it clearly before ending the call.

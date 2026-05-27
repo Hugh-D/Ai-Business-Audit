@@ -43,6 +43,10 @@ function addSummarySheet(workbook, audit, report) {
     ['Review Notes', audit.reviewNotes || ''],
     ['Recipient Email', audit.recipientEmail || ''],
     ['Delivery Notes', audit.deliveryNotes || ''],
+    ['Follow-up Status', formatLabel(audit.followUpStatus || 'not_offered')],
+    ['Preferred Follow-up Time', audit.followUpPreferredTime || ''],
+    ['Scheduled Follow-up', audit.followUpScheduledFor || ''],
+    ['Follow-up Notes', audit.followUpNotes || ''],
     ['Generated At', new Date().toLocaleString()],
   ]);
 

@@ -45,7 +45,7 @@ The MVP should prove one workflow end to end:
 - Pass `metadata.industry` into calls and prefer it over transcript detection. Done for the MVP.
 - Store call ID, transcript, report, and status in local SQLite. Done for the MVP.
 - Require AI identity and recording/transcription consent at the start of each assessment.
-- Add a review step before sending the final report.
+- Add a review step before sending the final report. Done for the MVP.
 
 ### Phase 4: Business Workflow
 
@@ -54,6 +54,7 @@ The MVP should prove one workflow end to end:
 - Add email delivery for completed reports.
 - Add per-client audit history.
 - Add templates for follow-up offers.
+- Add follow-up booking capture to report review. Done for the MVP.
 
 ## First Differentiators
 

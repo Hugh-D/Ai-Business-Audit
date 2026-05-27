@@ -248,6 +248,10 @@ test('PATCH /voice/calls/:callId/review updates review workflow state', async ()
     reviewNotes: 'Tighten recommendation wording before sending.',
     recipientEmail: 'owner@example.com',
     deliveryNotes: 'Attach the editable workbook.',
+    followUpStatus: 'booked',
+    followUpPreferredTime: 'Weekday mornings',
+    followUpScheduledFor: '2026-06-03T10:30',
+    followUpNotes: 'Discuss implementation priorities.',
   });
 
   assert.equal(response.status, 200);
@@ -255,6 +259,12 @@ test('PATCH /voice/calls/:callId/review updates review workflow state', async ()
   assert.equal(response.body.call.reviewNotes, 'Tighten recommendation wording before sending.');
   assert.equal(response.body.call.recipientEmail, 'owner@example.com');
   assert.equal(response.body.call.deliveryNotes, 'Attach the editable workbook.');
+  assert.equal(response.body.call.followUpStatus, 'booked');
+  assert.equal(response.body.call.followUpPreferredTime, 'Weekday mornings');
+  assert.equal(response.body.call.followUpScheduledFor, '2026-06-03T10:30');
+  assert.equal(response.body.call.followUpNotes, 'Discuss implementation priorities.');
+  assert.ok(response.body.call.followUpRequestedAt);
+  assert.ok(response.body.call.followUpBookedAt);
   assert.ok(response.body.call.reviewedAt);
   assert.equal(callStore.get('call_review').reviewStatus, 'reviewed');
 });
@@ -305,6 +315,32 @@ test('PATCH /voice/calls/:callId/review validates recipient email', async () => 
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'recipientEmail must be a valid email address');
+});
+
+test('PATCH /voice/calls/:callId/review validates follow-up status and scheduled time', async () => {
+  callStore.save('call_invalid_follow_up', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const invalidStatus = await requestJson('PATCH', '/voice/calls/call_invalid_follow_up/review', {
+    followUpStatus: 'maybe',
+  });
+  const invalidDate = await requestJson('PATCH', '/voice/calls/call_invalid_follow_up/review', {
+    followUpStatus: 'booked',
+    followUpScheduledFor: 'sometime next Thursday',
+  });
+  const missingDate = await requestJson('PATCH', '/voice/calls/call_invalid_follow_up/review', {
+    followUpStatus: 'booked',
+  });
+
+  assert.equal(invalidStatus.status, 400);
+  assert.equal(invalidStatus.body.error, 'followUpStatus must be not_offered, declined, requested, booked, or completed');
+  assert.equal(invalidDate.status, 400);
+  assert.equal(invalidDate.body.error, 'followUpScheduledFor must be a valid date and time');
+  assert.equal(missingDate.status, 400);
+  assert.equal(missingDate.body.error, 'followUpScheduledFor is required when followUpStatus is booked or completed');
 });
 
 test('PATCH /voice/calls/:callId/review requires a report', async () => {
@@ -404,6 +440,7 @@ test('POST /webhook/retell accepts a signed call_ended webhook and stores the re
   const call = callStore.get('call_webhook');
   assert.equal(call.industry, 'lawn_care');
   assert.equal(call.reviewStatus, 'draft');
+  assert.equal(call.followUpStatus, 'not_offered');
   assert.equal(call.report.overallScore, 9);
   assert.equal(call.transcript, 'Client: lawn quote requests sit on a whiteboard!');
 });

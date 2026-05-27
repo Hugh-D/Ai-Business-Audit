@@ -31,6 +31,11 @@ const reviewNotesInput = document.querySelector('#reviewNotesInput');
 const recipientEmailInput = document.querySelector('#recipientEmailInput');
 const deliveryNotesInput = document.querySelector('#deliveryNotesInput');
 const reviewStatusBadge = document.querySelector('#reviewStatusBadge');
+const followUpStatusBadge = document.querySelector('#followUpStatusBadge');
+const followUpStatusSelect = document.querySelector('#followUpStatusSelect');
+const followUpPreferredTimeInput = document.querySelector('#followUpPreferredTimeInput');
+const followUpScheduledForInput = document.querySelector('#followUpScheduledForInput');
+const followUpNotesInput = document.querySelector('#followUpNotesInput');
 const reviewHint = document.querySelector('#reviewHint');
 const saveReviewButton = document.querySelector('#saveReviewButton');
 const sendEmailButton = document.querySelector('#sendEmailButton');
@@ -306,6 +311,10 @@ async function saveReviewWorkflow(options = {}) {
         reviewNotes: reviewNotesInput.value.trim(),
         recipientEmail: recipientEmailInput.value.trim(),
         deliveryNotes: deliveryNotesInput.value.trim(),
+        followUpStatus: followUpStatusSelect.value,
+        followUpPreferredTime: followUpPreferredTimeInput.value.trim(),
+        followUpScheduledFor: followUpScheduledForInput.value,
+        followUpNotes: followUpNotesInput.value.trim(),
       }),
     });
     const payload = await response.json();
@@ -394,6 +403,7 @@ function renderCalls(calls = []) {
         <div class="status-stack">
           <span class="status-tag ${call.report ? 'ready' : ''}">${escapeHtml(formatLabel(call.status || 'started'))}</span>
           ${call.report ? `<span class="status-tag review-${escapeHtml(call.reviewStatus || 'draft')}">${escapeHtml(formatLabel(call.reviewStatus || 'draft'))}</span>` : ''}
+          ${call.report && call.followUpStatus && call.followUpStatus !== 'not_offered' ? `<span class="status-tag follow-up-${escapeHtml(call.followUpStatus)}">${escapeHtml(formatLabel(call.followUpStatus))}</span>` : ''}
         </div>
       </div>
       <p>${escapeHtml(formatLabel(call.industry || 'unknown'))} - ${escapeHtml(call.phoneNumber || call.callId)}</p>
@@ -454,6 +464,13 @@ function applyCallToAudit(call) {
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
     deliveryNotes: call.deliveryNotes || '',
+    followUpStatus: call.followUpStatus || 'not_offered',
+    followUpPreferredTime: call.followUpPreferredTime || '',
+    followUpScheduledFor: call.followUpScheduledFor || '',
+    followUpNotes: call.followUpNotes || '',
+    followUpRequestedAt: call.followUpRequestedAt,
+    followUpBookedAt: call.followUpBookedAt,
+    followUpCompletedAt: call.followUpCompletedAt,
     reviewedAt: call.reviewedAt,
     sentAt: call.sentAt,
     lastDelivery: call.lastDelivery,
@@ -469,8 +486,15 @@ function renderReviewWorkflow(payload) {
   reviewNotesInput.value = payload.reviewNotes || '';
   recipientEmailInput.value = payload.recipientEmail || '';
   deliveryNotesInput.value = payload.deliveryNotes || '';
+  const followUpStatus = payload.followUpStatus || 'not_offered';
+  followUpStatusSelect.value = followUpStatus;
+  followUpPreferredTimeInput.value = payload.followUpPreferredTime || '';
+  followUpScheduledForInput.value = payload.followUpScheduledFor || '';
+  followUpNotesInput.value = payload.followUpNotes || '';
   reviewStatusBadge.textContent = formatLabel(status);
   reviewStatusBadge.className = `review-badge review-${status}`;
+  followUpStatusBadge.textContent = formatLabel(followUpStatus);
+  followUpStatusBadge.className = `review-badge follow-up-${followUpStatus}`;
   saveReviewButton.disabled = !hasSavedCall;
   prepareEmailButton.disabled = !hasSavedCall;
   sendEmailButton.disabled = !hasSavedCall;
@@ -478,12 +502,23 @@ function renderReviewWorkflow(payload) {
   reviewNotesInput.disabled = !hasSavedCall;
   recipientEmailInput.disabled = !hasSavedCall;
   deliveryNotesInput.disabled = !hasSavedCall;
+  followUpStatusSelect.disabled = !hasSavedCall;
+  followUpPreferredTimeInput.disabled = !hasSavedCall;
+  followUpScheduledForInput.disabled = !hasSavedCall;
+  followUpNotesInput.disabled = !hasSavedCall;
   reviewHint.textContent = hasSavedCall
     ? buildReviewHint(payload)
     : 'Manual transcript reports can be exported, but review status is only saved for phone-call reports.';
 }
 
 function buildReviewHint(payload) {
+  if (payload.followUpStatus === 'completed' && payload.followUpCompletedAt) {
+    return `Follow-up completed ${formatDateTime(payload.followUpCompletedAt)}.`;
+  }
+  if (payload.followUpStatus === 'booked' && payload.followUpScheduledFor) {
+    return `Follow-up booked for ${formatDateTime(payload.followUpScheduledFor)}.`;
+  }
+  if (payload.followUpStatus === 'requested') return 'Follow-up requested. Confirm a suitable time with the caller.';
   if (payload.lastDelivery?.sentAt) return `Email sent ${formatDateTime(payload.lastDelivery.sentAt)}.`;
   if (payload.sentAt) return `Sent ${formatDateTime(payload.sentAt)}.`;
   if (payload.reviewedAt) return `Reviewed ${formatDateTime(payload.reviewedAt)}.`;

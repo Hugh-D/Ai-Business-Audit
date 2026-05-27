@@ -133,7 +133,10 @@
           <section id="reviewPanel" class="review-panel" hidden>
             <div class="section-title-row">
               <h2>Review Workflow</h2>
-              <span id="reviewStatusBadge">Draft</span>
+              <div class="workflow-badges">
+                <span id="reviewStatusBadge">Draft</span>
+                <span id="followUpStatusBadge">Not Offered</span>
+              </div>
             </div>
             <form id="reviewForm" class="review-form">
               <label for="reviewStatusSelect">Status</label>
@@ -166,6 +169,38 @@
                 rows="4"
                 placeholder="What should be included in the client handoff?"
               ></textarea>
+
+              <div class="follow-up-fields">
+                <h3>Follow-up Call</h3>
+
+                <label for="followUpStatusSelect">Booking Status</label>
+                <select id="followUpStatusSelect" name="followUpStatus">
+                  <option value="not_offered">Not Offered</option>
+                  <option value="declined">Declined</option>
+                  <option value="requested">Requested</option>
+                  <option value="booked">Booked</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+                <label for="followUpPreferredTimeInput">Preferred Timing</label>
+                <input
+                  id="followUpPreferredTimeInput"
+                  name="followUpPreferredTime"
+                  type="text"
+                  placeholder="Weekday mornings, after 3pm..."
+                >
+
+                <label for="followUpScheduledForInput">Scheduled For</label>
+                <input id="followUpScheduledForInput" name="followUpScheduledFor" type="datetime-local">
+
+                <label for="followUpNotesInput">Booking Notes</label>
+                <textarea
+                  id="followUpNotesInput"
+                  name="followUpNotes"
+                  rows="3"
+                  placeholder="What should Hugh know before the follow-up?"
+                ></textarea>
+              </div>
 
               <div class="form-actions">
                 <button class="secondary-button" id="saveReviewButton" type="submit">Save Review</button>

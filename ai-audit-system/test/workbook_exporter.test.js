@@ -16,6 +16,10 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
     reviewNotes: 'Ready to send after checking phone number.',
     recipientEmail: 'mia@example.com',
     deliveryNotes: 'Attach the workbook before sending.',
+    followUpStatus: 'booked',
+    followUpPreferredTime: 'Tuesday morning',
+    followUpScheduledFor: '2026-06-02T09:30',
+    followUpNotes: 'Cover the priority automation plan.',
     report: {
       overallScore: 7,
       scores: {
@@ -46,6 +50,10 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
   assert.equal(workbook.getWorksheet('Summary').getCell('B10').value, 'Ready to send after checking phone number.');
   assert.equal(workbook.getWorksheet('Summary').getCell('B11').value, 'mia@example.com');
   assert.equal(workbook.getWorksheet('Summary').getCell('B12').value, 'Attach the workbook before sending.');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B13').value, 'Booked');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B14').value, 'Tuesday morning');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B15').value, '2026-06-02T09:30');
+  assert.equal(workbook.getWorksheet('Summary').getCell('B16').value, 'Cover the priority automation plan.');
   assert.equal(workbook.getWorksheet('Findings').getCell('A2').value, 'Strength');
   assert.equal(workbook.getWorksheet('Findings').getCell('B3').value, 'Quote tracking is manual');
   assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, 'Not Started');

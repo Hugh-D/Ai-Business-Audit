@@ -15,6 +15,7 @@ app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const REVIEW_STATUSES = new Set(['draft', 'reviewed', 'sent']);
+const FOLLOW_UP_STATUSES = new Set(['not_offered', 'declined', 'requested', 'booked', 'completed']);
 
 // GET /
 // MVP audit workbench.
@@ -149,8 +150,8 @@ app.get('/voice/calls/:callId', (req, res) => {
 });
 
 // PATCH /voice/calls/:callId/review
-// Body: { reviewStatus?: "draft"|"reviewed"|"sent", reviewNotes?: string, recipientEmail?: string, deliveryNotes?: string }
-// Updates internal review/send workflow state for a completed report.
+// Body: review/delivery fields plus optional follow-up booking fields.
+// Updates internal review, send, and follow-up workflow state for a completed report.
 app.patch('/voice/calls/:callId/review', (req, res) => {
   try {
     const call = callStore.get(req.params.callId);
@@ -162,12 +163,25 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
       reviewNotes = call.reviewNotes || '',
       recipientEmail = call.recipientEmail || '',
       deliveryNotes = call.deliveryNotes || '',
+      followUpStatus = call.followUpStatus || 'not_offered',
+      followUpPreferredTime = call.followUpPreferredTime || '',
+      followUpScheduledFor = call.followUpScheduledFor || '',
+      followUpNotes = call.followUpNotes || '',
     } = req.body || {};
     if (!REVIEW_STATUSES.has(reviewStatus)) {
       return res.status(400).json({ error: 'reviewStatus must be draft, reviewed, or sent' });
     }
     if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(recipientEmail))) {
       return res.status(400).json({ error: 'recipientEmail must be a valid email address' });
+    }
+    if (!FOLLOW_UP_STATUSES.has(followUpStatus)) {
+      return res.status(400).json({ error: 'followUpStatus must be not_offered, declined, requested, booked, or completed' });
+    }
+    if (followUpScheduledFor && Number.isNaN(Date.parse(String(followUpScheduledFor)))) {
+      return res.status(400).json({ error: 'followUpScheduledFor must be a valid date and time' });
+    }
+    if (['booked', 'completed'].includes(followUpStatus) && !followUpScheduledFor) {
+      return res.status(400).json({ error: 'followUpScheduledFor is required when followUpStatus is booked or completed' });
     }
 
     const now = new Date().toISOString();
@@ -176,12 +190,23 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
       reviewNotes: String(reviewNotes),
       recipientEmail: String(recipientEmail),
       deliveryNotes: String(deliveryNotes),
+      followUpStatus,
+      followUpPreferredTime: String(followUpPreferredTime),
+      followUpScheduledFor: String(followUpScheduledFor),
+      followUpNotes: String(followUpNotes),
     };
     if (reviewStatus === 'reviewed') patch.reviewedAt = call.reviewedAt || now;
     if (reviewStatus === 'sent') {
       patch.reviewedAt = call.reviewedAt || now;
       patch.sentAt = call.sentAt || now;
     }
+    if (['requested', 'booked', 'completed'].includes(followUpStatus)) {
+      patch.followUpRequestedAt = call.followUpRequestedAt || now;
+    }
+    if (['booked', 'completed'].includes(followUpStatus)) {
+      patch.followUpBookedAt = call.followUpBookedAt || now;
+    }
+    if (followUpStatus === 'completed') patch.followUpCompletedAt = call.followUpCompletedAt || now;
 
     const saved = callStore.save(call.callId, patch);
     res.json({ call: saved });
@@ -302,6 +327,7 @@ async function processEndedCall(call) {
   callStore.save(call_id, {
     status: 'report_ready',
     reviewStatus: 'draft',
+    followUpStatus: 'not_offered',
     industry: config.id,
     transcript: cleaned,
     report,
@@ -322,6 +348,13 @@ function callToAudit(call) {
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
     deliveryNotes: call.deliveryNotes || '',
+    followUpStatus: call.followUpStatus || 'not_offered',
+    followUpPreferredTime: call.followUpPreferredTime || '',
+    followUpScheduledFor: call.followUpScheduledFor || '',
+    followUpNotes: call.followUpNotes || '',
+    followUpRequestedAt: call.followUpRequestedAt,
+    followUpBookedAt: call.followUpBookedAt,
+    followUpCompletedAt: call.followUpCompletedAt,
     reviewedAt: call.reviewedAt,
     sentAt: call.sentAt,
     report: call.report,
