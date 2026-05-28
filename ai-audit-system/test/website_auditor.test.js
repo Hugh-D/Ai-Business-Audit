@@ -36,8 +36,9 @@ test('analyzeHtml detects customer journey signals and logo candidates', () => {
   assert.equal(review.title, 'Example Plumbing');
   assert.equal(review.description, 'Fast plumbing help.');
   assert.equal(review.logoUrl, 'https://example.com.au/favicon.png');
+  assert.equal(review.overallScore, 6);
   assert.deepEqual(
-    review.signals.map(signal => [signal.id, signal.status]),
+    review.signals.slice(0, 6).map(signal => [signal.id, signal.status]),
     [
       ['phoneVisibility', 'found'],
       ['primaryCta', 'found'],
@@ -47,6 +48,7 @@ test('analyzeHtml detects customer journey signals and logo candidates', () => {
       ['afterHoursCapture', 'found'],
     ]
   );
+  assert.equal(review.signals.find(signal => signal.id === 'schemaMarkup').status, 'missing');
 });
 
 test('reviewWebsite fetches and analyzes a normalized website URL', async () => {
@@ -61,4 +63,14 @@ test('reviewWebsite fetches and analyzes a normalized website URL', async () => 
   assert.equal(review.websiteUrl, 'https://example.com.au');
   assert.equal(review.title, 'Example');
   assert.ok(review.opportunities.length > 0);
+});
+
+test('analyzeHtml includes category scores and action plan', () => {
+  const review = websiteAuditor.analyzeHtml({
+    websiteUrl: 'https://example.com.au',
+    html: '<title>Tiny</title><h1>Help</h1><body>No obvious conversion path.</body>',
+  });
+
+  assert.ok(review.categoryScores.some(score => score.category === 'conversion'));
+  assert.ok(review.actionPlan.some(item => item.action.includes('phone number')));
 });

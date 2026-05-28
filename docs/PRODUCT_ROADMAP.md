@@ -57,6 +57,7 @@ The MVP should prove one workflow end to end:
 - Add follow-up booking capture to report review. Done for the MVP.
 - Capture the customer's website URL for later customer-journey checks and personalised reporting. Done for the MVP.
 - Add a first-pass website customer-journey review from the captured URL. Done for the MVP.
+- Extract website auditing into a shared core and create a standalone website audit tool. Done for the MVP.
 
 ## First Differentiators
 
@@ -75,5 +76,6 @@ The MVP should prove one workflow end to end:
 - Add frontend app.
 - Add PDF generation.
 - Improve website review with deeper crawling and brand/logo extraction.
+- Decide standalone website audit monetisation path: lead magnet, paid mini-audit, or internal sales qualifier.
 - Add deployment config.
 - Add CI.

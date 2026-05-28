@@ -18,7 +18,9 @@ The current wedge is trades and home services, with `trades`, `realtors`, and `l
 
 ## Current App State
 
-The app lives in `ai-audit-system`.
+The phone-led audit app lives in `ai-audit-system`.
+
+There is also a standalone first-pass website audit app in `website-audit-tool`, powered by the shared core in `packages/website-audit-core`.
 
 It is a Node/Express app with:
 
@@ -55,7 +57,8 @@ Important files:
 - `ai-audit-system/agents/voice_agent.js` - Retell call creation and webhook verification
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
 - `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation
-- `ai-audit-system/agents/website_auditor.js` - first-pass website customer-journey signal checks
+- `packages/website-audit-core/index.js` - shared website customer-journey, SEO, copy, trust, and technical signal checks
+- `ai-audit-system/agents/website_auditor.js` - compatibility wrapper around the shared website audit core
 - `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with workbook attachment
 - `ai-audit-system/agents/call_store.js` - local SQLite-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
@@ -75,6 +78,19 @@ Open:
 
 ```text
 http://localhost:3000
+```
+
+To run the standalone website audit tool:
+
+```bash
+cd website-audit-tool
+npm start
+```
+
+Open:
+
+```text
+http://localhost:3100
 ```
 
 ## Required Environment
@@ -190,7 +206,7 @@ Webhook behavior:
 - No external database or CRM integration yet.
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
 - Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with website URL, internal review notes, recipient email, delivery notes, and follow-up booking status/timing.
-- Website addresses can be reviewed for basic customer-journey signals such as phone visibility, primary CTA, contact path, trust signals, mobile viewport, and after-hours capture. This is a single-page heuristic review, not a full crawler or brand-system extractor yet.
+- Website addresses can be reviewed for customer-journey, SEO, copy, trust, and basic technical signals. This is still a single-page heuristic review, not a full crawler or brand-system extractor yet.
 - The UI can prepare a mailto email draft, or send the editable workbook by SMTP when SMTP env vars are configured.
 - PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
 - No deployed public URL yet.
@@ -208,9 +224,10 @@ Webhook behavior:
 5. Call the advertised number yourself and verify the consent-first inbound call-to-report loop.
 6. Replace local SQLite storage with a managed production database when moving beyond local MVP testing.
 7. Improve website review with deeper crawling, stronger logo/brand extraction, and optional report accenting from the captured URL.
-8. Add a scheduling/calendar link or integration once the preferred booking workflow is chosen.
-9. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
-10. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
+8. Decide whether the standalone website audit becomes a lead magnet, paid mini-audit, or internal sales tool before adding more features.
+9. Add a scheduling/calendar link or integration once the preferred booking workflow is chosen.
+10. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
+11. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
 

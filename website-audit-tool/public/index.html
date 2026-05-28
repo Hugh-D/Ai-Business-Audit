@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Website Audit Tool</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="tool-panel" aria-labelledby="toolTitle">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AI Business Audit</p>
+            <h1 id="toolTitle">Website Audit Tool</h1>
+          </div>
+          <span id="serviceStatus" class="status-pill">Checking</span>
+        </header>
+
+        <form id="auditForm" class="audit-form">
+          <div class="field-grid">
+            <label>
+              Business Name
+              <input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
+            </label>
+            <label>
+              Industry
+              <input id="industryInput" name="industry" type="text" placeholder="Trades, dental, real estate...">
+            </label>
+          </div>
+
+          <label>
+            Website URL
+            <div class="url-row">
+              <input id="websiteUrlInput" name="websiteUrl" type="text" inputmode="url" placeholder="example.com.au" required>
+              <button id="auditButton" class="primary-button" type="submit">Run Audit</button>
+            </div>
+          </label>
+        </form>
+
+        <div id="errorState" class="error-state" hidden></div>
+      </section>
+
+      <section class="results-panel" aria-labelledby="resultsTitle">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Report</p>
+            <h2 id="resultsTitle">Website Review</h2>
+          </div>
+          <div class="actions">
+            <button id="downloadJsonButton" class="ghost-button" type="button" disabled>Download JSON</button>
+            <button id="printButton" class="ghost-button" type="button" disabled>Print / PDF</button>
+          </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <strong>No audit yet.</strong>
+          <span>Enter a website to score conversion, trust, SEO, copy, and basic technical signals.</span>
+        </div>
+
+        <article id="reportOutput" class="report-output" hidden></article>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
