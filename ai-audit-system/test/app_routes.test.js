@@ -13,11 +13,13 @@ const reportEngine = require('../agents/report_engine');
 const voiceAgent = require('../agents/voice_agent');
 const callStore = require('../agents/call_store');
 const deliveryAgent = require('../agents/delivery_agent');
+const websiteAuditor = require('../agents/website_auditor');
 const { app } = require('../index');
 
 const originalGenerate = reportEngine.generate;
 const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
 const originalSendReportEmail = deliveryAgent.sendReportEmail;
+const originalReviewWebsite = websiteAuditor.reviewWebsite;
 const originalEnv = {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   AUDIT_PHONE_NUMBER: process.env.AUDIT_PHONE_NUMBER,
@@ -36,6 +38,7 @@ test.beforeEach(() => {
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
   deliveryAgent.sendReportEmail = originalSendReportEmail;
+  websiteAuditor.reviewWebsite = originalReviewWebsite;
   restoreEnv();
 });
 
@@ -44,6 +47,7 @@ test.afterEach(() => {
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
   deliveryAgent.sendReportEmail = originalSendReportEmail;
+  websiteAuditor.reviewWebsite = originalReviewWebsite;
   restoreEnv();
 });
 
@@ -358,6 +362,44 @@ test('PATCH /voice/calls/:callId/review validates follow-up status and scheduled
   assert.equal(invalidDate.body.error, 'followUpScheduledFor must be a valid date and time');
   assert.equal(missingDate.status, 400);
   assert.equal(missingDate.body.error, 'followUpScheduledFor is required when followUpStatus is booked or completed');
+});
+
+test('POST /voice/calls/:callId/website-review stores customer journey signals', async () => {
+  websiteAuditor.reviewWebsite = async (websiteUrl) => ({
+    websiteUrl,
+    checkedAt: '2026-06-01T00:00:00.000Z',
+    statusCode: 200,
+    title: 'Demo Plumbing',
+    signals: [{ id: 'phoneVisibility', label: 'Phone Visibility', status: 'found', detail: 'Phone found.' }],
+    strengths: ['Phone found.'],
+    opportunities: [],
+  });
+  callStore.save('call_website_review', {
+    status: 'report_ready',
+    industry: 'trades',
+    websiteUrl: 'demoplumbing.com.au',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('POST', '/voice/calls/call_website_review/website-review');
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.call.websiteUrl, 'https://demoplumbing.com.au');
+  assert.equal(response.body.call.websiteReview.title, 'Demo Plumbing');
+  assert.equal(callStore.get('call_website_review').websiteReview.strengths[0], 'Phone found.');
+});
+
+test('POST /voice/calls/:callId/website-review requires a website URL', async () => {
+  callStore.save('call_no_website', {
+    status: 'report_ready',
+    industry: 'trades',
+    report: { overallScore: 8 },
+  });
+
+  const response = await requestJson('POST', '/voice/calls/call_no_website/website-review');
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'websiteUrl is required before reviewing the website');
 });
 
 test('PATCH /voice/calls/:callId/review requires a report', async () => {

@@ -14,11 +14,61 @@ async function buildAuditWorkbookBuffer(audit) {
   const report = audit.report || {};
   addSummarySheet(workbook, audit, report);
   addScoresSheet(workbook, report);
+  if (audit.websiteReview) addWebsiteReviewSheet(workbook, audit.websiteReview);
   addFindingsSheet(workbook, report);
   addActionPlanSheet(workbook, report);
   addTranscriptSheet(workbook, audit);
 
   return workbook.xlsx.writeBuffer();
+}
+
+function addWebsiteReviewSheet(workbook, review) {
+  const sheet = workbook.addWorksheet('Website Review', {
+    views: [{ state: 'frozen', ySplit: 1 }],
+  });
+
+  sheet.columns = [
+    { header: 'Signal', key: 'signal', width: 28 },
+    { header: 'Status', key: 'status', width: 16 },
+    { header: 'Detail', key: 'detail', width: 90 },
+    { header: 'Notes', key: 'notes', width: 45 },
+  ];
+
+  sheet.addRows([
+    ['Website URL', '', review.websiteUrl || '', ''],
+    ['Page Title', '', review.title || '', ''],
+    ['Meta Description', '', review.description || '', ''],
+    ['Logo Candidate', '', review.logoUrl || '', ''],
+    ['Checked At', '', review.checkedAt || '', ''],
+  ]);
+
+  const signalStartRow = sheet.rowCount + 2;
+  sheet.getCell(`A${signalStartRow}`).value = 'Signal';
+  sheet.getCell(`B${signalStartRow}`).value = 'Status';
+  sheet.getCell(`C${signalStartRow}`).value = 'Detail';
+  sheet.getCell(`D${signalStartRow}`).value = 'Notes';
+  styleSectionHeader(sheet.getRow(signalStartRow));
+
+  for (const signal of Array.isArray(review.signals) ? review.signals : []) {
+    sheet.addRow([
+      signal.label || formatLabel(signal.id || 'signal'),
+      formatLabel(signal.status || 'missing'),
+      signal.detail || '',
+      '',
+    ]);
+  }
+
+  const opportunityStartRow = sheet.rowCount + 2;
+  sheet.getCell(`A${opportunityStartRow}`).value = 'Website Opportunities';
+  sheet.getCell(`B${opportunityStartRow}`).value = 'Notes';
+  styleSectionHeader(sheet.getRow(opportunityStartRow));
+  for (const item of normalizeList(review.opportunities)) {
+    sheet.addRow([item, '']);
+  }
+
+  styleTitle(sheet, 'A1:D1');
+  sheet.autoFilter = 'A1:D1';
+  applyBorders(sheet);
 }
 
 function addSummarySheet(workbook, audit, report) {

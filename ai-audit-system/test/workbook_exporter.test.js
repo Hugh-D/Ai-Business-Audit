@@ -21,6 +21,18 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
     followUpPreferredTime: 'Tuesday morning',
     followUpScheduledFor: '2026-06-02T09:30',
     followUpNotes: 'Cover the priority automation plan.',
+    websiteReview: {
+      websiteUrl: 'https://greenstripe.example.com.au',
+      title: 'Green Stripe Lawn Care',
+      description: 'Local lawn care help.',
+      logoUrl: 'https://greenstripe.example.com.au/logo.png',
+      checkedAt: '2026-06-01T00:00:00.000Z',
+      signals: [
+        { id: 'phoneVisibility', label: 'Phone Visibility', status: 'found', detail: 'Phone found.' },
+        { id: 'afterHoursCapture', label: 'After-hours Lead Capture', status: 'missing', detail: 'No after-hours capture found.' },
+      ],
+      opportunities: ['No after-hours capture found.'],
+    },
     report: {
       overallScore: 7,
       scores: {
@@ -57,6 +69,9 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
   assert.equal(workbook.getWorksheet('Summary').getCell('B16').value, '2026-06-02T09:30');
   assert.equal(workbook.getWorksheet('Summary').getCell('B17').value, 'Cover the priority automation plan.');
   assert.equal(workbook.getWorksheet('Findings').getCell('A2').value, 'Strength');
+  assert.equal(workbook.getWorksheet('Website Review').getCell('C2').value, 'https://greenstripe.example.com.au');
+  assert.equal(workbook.getWorksheet('Website Review').getCell('A9').value, 'Phone Visibility');
+  assert.equal(workbook.getWorksheet('Website Review').getCell('B10').value, 'Missing');
   assert.equal(workbook.getWorksheet('Findings').getCell('B3').value, 'Quote tracking is manual');
   assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, 'Not Started');
   assert.equal(workbook.getWorksheet('Transcript').getCell('B2').value, 'Client: Quotes are on a whiteboard.');

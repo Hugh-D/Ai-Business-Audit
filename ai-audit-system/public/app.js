@@ -41,6 +41,7 @@ const reviewHint = document.querySelector('#reviewHint');
 const saveReviewButton = document.querySelector('#saveReviewButton');
 const sendEmailButton = document.querySelector('#sendEmailButton');
 const prepareEmailButton = document.querySelector('#prepareEmailButton');
+const reviewWebsiteButton = document.querySelector('#reviewWebsiteButton');
 
 let lastAudit = null;
 
@@ -292,6 +293,44 @@ sendEmailButton.addEventListener('click', async () => {
   }
 });
 
+reviewWebsiteButton.addEventListener('click', async () => {
+  if (!lastAudit?.callId) {
+    showError('Load a saved phone-call report before reviewing the website.');
+    return;
+  }
+  if (!websiteUrlInput.value.trim()) {
+    showError('Enter the customer website before reviewing it.');
+    return;
+  }
+
+  const saved = await saveReviewWorkflow({ quiet: true });
+  if (!saved) return;
+
+  reviewWebsiteButton.disabled = true;
+  reviewWebsiteButton.textContent = 'Reviewing...';
+  clearError();
+
+  try {
+    const response = await fetch(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/website-review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ websiteUrl: websiteUrlInput.value.trim() }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Could not review website');
+
+    applyCallToAudit(payload.call);
+    renderReport(lastAudit);
+    await loadCalls();
+    reviewHint.textContent = 'Website customer journey review added to the report.';
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    reviewWebsiteButton.disabled = false;
+    reviewWebsiteButton.textContent = 'Review Website';
+  }
+});
+
 async function saveReviewWorkflow(options = {}) {
   if (!lastAudit?.callId) {
     showError('Load a saved phone-call report before saving review status.');
@@ -444,6 +483,7 @@ function renderReport(payload) {
 
   reportOutput.innerHTML = [
     renderScores(report),
+    renderWebsiteReview(payload.websiteReview),
     renderListBlock('Key Strengths', report.keyStrengths),
     renderListBlock('Critical Gaps', report.criticalGaps),
     renderSections(report.sections),
@@ -466,6 +506,7 @@ function applyCallToAudit(call) {
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
     websiteUrl: call.websiteUrl || '',
+    websiteReview: call.websiteReview,
     deliveryNotes: call.deliveryNotes || '',
     followUpStatus: call.followUpStatus || 'not_offered',
     followUpPreferredTime: call.followUpPreferredTime || '',
@@ -502,6 +543,7 @@ function renderReviewWorkflow(payload) {
   saveReviewButton.disabled = !hasSavedCall;
   prepareEmailButton.disabled = !hasSavedCall;
   sendEmailButton.disabled = !hasSavedCall;
+  reviewWebsiteButton.disabled = !hasSavedCall;
   reviewStatusSelect.disabled = !hasSavedCall;
   reviewNotesInput.disabled = !hasSavedCall;
   recipientEmailInput.disabled = !hasSavedCall;
@@ -546,6 +588,7 @@ function buildMailtoUrl(payload) {
     ...firstItems(payload.report?.actionPlan, 3).map(item => `- ${item.action || item}`),
     '',
     payload.websiteUrl ? `Website noted for assessment context: ${payload.websiteUrl}` : '',
+    payload.websiteReview ? `Website review completed: ${payload.websiteReview.strengths?.length || 0} strengths and ${payload.websiteReview.opportunities?.length || 0} opportunities found.` : '',
     '',
     payload.deliveryNotes ? `Notes:\n${payload.deliveryNotes}\n` : '',
     'I have also prepared an editable audit workbook for the detailed scores, findings, and action plan.',
@@ -812,6 +855,34 @@ function renderScores(report) {
         <span>/10</span>
       </div>
       <div class="score-grid">${metrics || '<p>No dimension scores returned.</p>'}</div>
+    </section>
+  `;
+}
+
+function renderWebsiteReview(review) {
+  if (!review) return '';
+  const signals = Array.isArray(review.signals) ? review.signals : [];
+  const strengths = firstItems(review.strengths, 3);
+  const opportunities = firstItems(review.opportunities, 3);
+
+  return `
+    <section class="website-review">
+      <div>
+        <span class="section-kicker">Website Customer Journey</span>
+        <h3>${escapeHtml(review.title || review.websiteUrl || 'Website Review')}</h3>
+        ${review.websiteUrl ? `<p>${escapeHtml(review.websiteUrl)}</p>` : ''}
+      </div>
+      <div class="website-signal-grid">
+        ${signals.map(signal => `
+          <div class="website-signal ${escapeHtml(signal.status || 'missing')}">
+            <strong>${escapeHtml(signal.label || formatLabel(signal.id || 'Signal'))}</strong>
+            <span>${escapeHtml(formatLabel(signal.status || 'missing'))}</span>
+            <p>${escapeHtml(signal.detail || '')}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${strengths.length ? renderListBlock('Website Strengths', strengths) : ''}
+      ${opportunities.length ? renderListBlock('Website Opportunities', opportunities) : ''}
     </section>
   `;
 }

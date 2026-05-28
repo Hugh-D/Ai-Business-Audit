@@ -9,6 +9,7 @@ const transcriptCleaner = require('./agents/transcript_cleaner');
 const callStore = require('./agents/call_store');
 const workbookExporter = require('./agents/workbook_exporter');
 const deliveryAgent = require('./agents/delivery_agent');
+const websiteAuditor = require('./agents/website_auditor');
 
 const app = express();
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
@@ -175,7 +176,7 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
     if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(recipientEmail))) {
       return res.status(400).json({ error: 'recipientEmail must be a valid email address' });
     }
-    const normalizedWebsiteUrl = normalizeWebsiteUrl(websiteUrl);
+    const normalizedWebsiteUrl = websiteAuditor.normalizeWebsiteUrl(websiteUrl);
     if (websiteUrl && !normalizedWebsiteUrl) {
       return res.status(400).json({ error: 'websiteUrl must be a valid website address' });
     }
@@ -215,6 +216,31 @@ app.patch('/voice/calls/:callId/review', (req, res) => {
     if (followUpStatus === 'completed') patch.followUpCompletedAt = call.followUpCompletedAt || now;
 
     const saved = callStore.save(call.callId, patch);
+    res.json({ call: saved });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// POST /voice/calls/:callId/website-review
+// Fetches the saved website URL, reviews basic customer-journey signals, and stores the result.
+app.post('/voice/calls/:callId/website-review', async (req, res) => {
+  try {
+    const call = callStore.get(req.params.callId);
+    if (!call) return res.status(404).json({ error: 'Call not found' });
+    if (!call.report) return res.status(400).json({ error: 'Call does not have a report to review' });
+
+    const websiteUrl = req.body?.websiteUrl || call.websiteUrl || call.report?.websiteUrl;
+    const normalizedWebsiteUrl = websiteAuditor.normalizeWebsiteUrl(websiteUrl);
+    if (!normalizedWebsiteUrl) return res.status(400).json({ error: 'websiteUrl is required before reviewing the website' });
+
+    const websiteReview = await websiteAuditor.reviewWebsite(normalizedWebsiteUrl);
+    const saved = callStore.save(call.callId, {
+      websiteUrl: normalizedWebsiteUrl,
+      websiteReview,
+    });
+
     res.json({ call: saved });
   } catch (err) {
     console.error(err);
@@ -336,7 +362,7 @@ async function processEndedCall(call) {
     followUpStatus: 'not_offered',
     industry: config.id,
     transcript: cleaned,
-    websiteUrl: normalizeWebsiteUrl(report.websiteUrl),
+    websiteUrl: websiteAuditor.normalizeWebsiteUrl(report.websiteUrl),
     report,
     auditId: uuidv4(),
   });
@@ -355,6 +381,7 @@ function callToAudit(call) {
     reviewNotes: call.reviewNotes || '',
     recipientEmail: call.recipientEmail || '',
     websiteUrl: call.websiteUrl || '',
+    websiteReview: call.websiteReview,
     deliveryNotes: call.deliveryNotes || '',
     followUpStatus: call.followUpStatus || 'not_offered',
     followUpPreferredTime: call.followUpPreferredTime || '',
@@ -458,17 +485,4 @@ function buildReadinessNextSteps(checks, readyForInboundAudits, auditPhoneNumber
     .map(check => check.detail);
 }
 
-function normalizeWebsiteUrl(value) {
-  const input = String(value || '').trim();
-  if (!input) return '';
-
-  try {
-    const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(input) ? input : `https://${input}`);
-    if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.')) return '';
-    return url.toString().replace(/\/$/, '');
-  } catch (_err) {
-    return '';
-  }
-}
-
-module.exports = { app, processEndedCall, buildReadiness, normalizeWebsiteUrl };
+module.exports = { app, processEndedCall, buildReadiness, normalizeWebsiteUrl: websiteAuditor.normalizeWebsiteUrl };
