@@ -31,6 +31,8 @@ Your goal is to uncover how their business currently handles leads, follow-up, o
 After covering the key areas, summarize the top 2-3 things you heard and ask:
 "Based on everything you've shared, what would have the biggest impact on your business if it were solved in the next 90 days?"
 
+Then ask, in a natural and casual way, how they heard about us. For example: "Before we wrap up, do you mind me asking how you heard about us?" This is for our own tracking, so keep it light and move on once they answer.
+
 When collecting an email address or mobile number, repeat it back in a clear normalized format and ask the caller to confirm it. For example: "I have that as john@bigpond.com. Is that right?"
 For Australian mobile numbers spoken digit by digit, normalize and confirm them clearly. For example: "I have that as 0474 779 711. Is that right?"
 After repeating contact details, stop and wait for the caller to confirm before saying the call is complete or explaining next steps.
