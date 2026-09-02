@@ -12,6 +12,17 @@ const downloadJsonButton = document.querySelector('#downloadJsonButton');
 const printButton = document.querySelector('#printButton');
 const toast = document.querySelector('#toast');
 
+const gbpToggle = document.querySelector('#gbpToggle');
+const gbpCategoryAccurate = document.querySelector('#gbpCategoryAccurate');
+const gbpNapConsistent = document.querySelector('#gbpNapConsistent');
+const gbpDescriptionComplete = document.querySelector('#gbpDescriptionComplete');
+const gbpOwnerResponds = document.querySelector('#gbpOwnerResponds');
+const gbpAppearsInPack = document.querySelector('#gbpAppearsInPack');
+const gbpCitationsConsistent = document.querySelector('#gbpCitationsConsistent');
+const gbpPhotoCount = document.querySelector('#gbpPhotoCount');
+const gbpReviewCount = document.querySelector('#gbpReviewCount');
+const gbpAverageRating = document.querySelector('#gbpAverageRating');
+
 let lastReview = null;
 
 checkHealth();
@@ -27,6 +38,7 @@ auditForm.addEventListener('submit', async (event) => {
 
   setLoading(true);
   try {
+    const gbpProfile = buildGbpProfile();
     const response = await fetch('/api/audit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,6 +46,7 @@ auditForm.addEventListener('submit', async (event) => {
         businessName: businessNameInput.value.trim(),
         industry: industryInput.value.trim(),
         websiteUrl: websiteUrlInput.value.trim(),
+        ...(gbpProfile ? { gbpProfile } : {}),
       }),
     });
     const payload = await response.json();
@@ -47,6 +60,21 @@ auditForm.addEventListener('submit', async (event) => {
     setLoading(false);
   }
 });
+
+function buildGbpProfile() {
+  if (!gbpToggle || !gbpToggle.checked) return null;
+  return {
+    categoryAccurate: gbpCategoryAccurate.checked,
+    napMatchesWebsite: gbpNapConsistent.checked,
+    descriptionComplete: gbpDescriptionComplete.checked,
+    ownerRespondsToReviews: gbpOwnerResponds.checked,
+    appearsInLocalPack: gbpAppearsInPack.checked,
+    citationsConsistent: gbpCitationsConsistent.checked,
+    photoCount: Number(gbpPhotoCount.value || 0),
+    reviewCount: Number(gbpReviewCount.value || 0),
+    averageRating: Number(gbpAverageRating.value || 0),
+  };
+}
 
 downloadJsonButton.addEventListener('click', () => {
   if (!lastReview) return;
@@ -328,6 +356,15 @@ function customerImpactForSignal(id) {
     metaDescription: 'The site may be missing a chance to earn more clicks from search results.',
     headingClarity: 'Visitors may not quickly understand what the business does and whether it fits their need.',
     schemaMarkup: 'Search engines may have less structured business information to work with.',
+    gbpCategoryAccurate: 'Google may show the profile for the wrong searches if the category is too broad or inaccurate.',
+    gbpNapConsistent: 'Mismatched business details can quietly hurt local ranking and confuse customers checking details.',
+    gbpDescriptionComplete: 'An empty description is a missed chance to explain services before the customer even visits the website.',
+    gbpPhotosSufficient: 'A thin photo gallery can make the business look less established than nearby competitors.',
+    gbpReviewCountHealthy: 'A lower review count can make the business look less proven next to competitors in the map pack.',
+    gbpReviewRatingHealthy: 'A lower average rating can push potential customers toward a higher-rated competitor.',
+    gbpOwnerRespondsToReviews: 'Not replying to reviews can look less engaged than competitors who respond to every review.',
+    gbpAppearsInLocalPack: 'Missing the local 3-pack for core searches means losing visibility to competitors who do appear there.',
+    gbpCitationConsistency: 'Inconsistent directory listings can quietly work against local ranking and confuse customers.',
   };
   return impacts[id] || 'This gap may reduce trust, clarity, or enquiry conversion.';
 }
