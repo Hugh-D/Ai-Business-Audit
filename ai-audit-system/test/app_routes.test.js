@@ -31,6 +31,9 @@ const originalEnv = {
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_FROM: process.env.SMTP_FROM,
+  NODE_ENV: process.env.NODE_ENV,
+  WORKBENCH_USERNAME: process.env.WORKBENCH_USERNAME,
+  WORKBENCH_PASSWORD: process.env.WORKBENCH_PASSWORD,
 };
 
 test.beforeEach(() => {
@@ -82,6 +85,61 @@ test('POST /audit validates required fields', async () => {
 
   assert.equal(response.status, 400);
   assert.equal(response.body.error, 'industry and transcript are required');
+});
+
+test('GET / serves the public branded website and /workbench serves the internal app', async () => {
+  const publicResponse = await requestRaw('GET', '/');
+  const workbenchResponse = await requestRaw('GET', '/workbench');
+
+  assert.equal(publicResponse.status, 200);
+  assert.match(publicResponse.buffer.toString('utf8'), /Volve Solutions/);
+  assert.match(publicResponse.buffer.toString('utf8'), /AI visibility and authority/);
+  assert.equal(workbenchResponse.status, 200);
+  assert.match(workbenchResponse.buffer.toString('utf8'), /Audit Workbench/);
+});
+
+test('production workbench and internal APIs require configured credentials', async () => {
+  process.env.NODE_ENV = 'production';
+  process.env.WORKBENCH_USERNAME = 'operator';
+  process.env.WORKBENCH_PASSWORD = 'a-long-test-password';
+
+  const unauthenticated = await requestRaw('GET', '/workbench');
+  const authenticated = await requestRaw('GET', '/workbench', undefined, {
+    authorization: `Basic ${Buffer.from('operator:a-long-test-password').toString('base64')}`,
+  });
+  const protectedApi = await requestJson('POST', '/audit', { industry: 'trades', transcript: 'test' });
+
+  assert.equal(unauthenticated.status, 401);
+  assert.equal(unauthenticated.headers.get('www-authenticate'), 'Basic realm="Volve audit workbench"');
+  assert.equal(authenticated.status, 200);
+  assert.equal(protectedApi.status, 401);
+});
+
+test('POST /api/website-audit returns website and GBP visibility signals', async () => {
+  let captured = null;
+  websiteAuditor.reviewWebsite = async (websiteUrl, options) => {
+    captured = { websiteUrl, options };
+    return { websiteUrl, overallScore: 7, signals: [{ id: 'schemaSameAs', status: 'found' }] };
+  };
+
+  const response = await requestJson('POST', '/api/website-audit', {
+    websiteUrl: 'example.com.au',
+    businessName: 'Example Plumbing',
+    industry: 'plumbing',
+    gbpProfile: { reviewCount: 30 },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.review.overallScore, 7);
+  assert.equal(captured.websiteUrl, 'https://example.com.au');
+  assert.equal(captured.options.gbpProfile.reviewCount, 30);
+});
+
+test('POST /api/website-audit rejects invalid website addresses', async () => {
+  const response = await requestJson('POST', '/api/website-audit', { websiteUrl: 'not-a-site' });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'Enter a valid public website address.');
 });
 
 test('POST /export/xlsx returns an editable workbook', async () => {

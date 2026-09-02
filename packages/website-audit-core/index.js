@@ -1,4 +1,5 @@
 const { GBP_CATEGORY_LABELS, GBP_ACTIONS, evaluateGbpSignals } = require('./gbp-signals');
+const net = require('node:net');
 
 const SIGNALS = [
   {
@@ -265,12 +266,34 @@ function normalizeWebsiteUrl(value) {
 
   try {
         const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(input) ? input : `https://${input}`);
-        if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.')) return '';
+        if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.') || isPrivateHostname(url.hostname)) return '';
         url.hash = '';
         return url.toString().replace(/\/$/, '');
   } catch (_err) {
         return '';
   }
+}
+
+function isPrivateHostname(hostname) {
+    const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+    if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) return true;
+
+    if (net.isIPv4(host)) {
+      const parts = host.split('.').map(Number);
+      return parts[0] === 10
+        || parts[0] === 127
+        || (parts[0] === 169 && parts[1] === 254)
+        || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
+        || (parts[0] === 192 && parts[1] === 168)
+        || (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127)
+        || parts[0] === 0;
+    }
+
+    if (net.isIPv6(host)) {
+      return host === '::1' || host === '::' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe8') || host.startsWith('fe9') || host.startsWith('fea') || host.startsWith('feb');
+    }
+
+    return false;
 }
 
 function extractTitle(html) {

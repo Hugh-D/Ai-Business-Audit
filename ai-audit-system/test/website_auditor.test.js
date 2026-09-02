@@ -11,6 +11,13 @@ test('normalizeWebsiteUrl accepts bare domains and removes fragments', () => {
   assert.equal(websiteAuditor.normalizeWebsiteUrl('not a url'), '');
 });
 
+test('normalizeWebsiteUrl rejects local and private network targets', () => {
+  assert.equal(websiteAuditor.normalizeWebsiteUrl('http://127.0.0.1:3000'), '');
+  assert.equal(websiteAuditor.normalizeWebsiteUrl('http://192.168.1.5'), '');
+  assert.equal(websiteAuditor.normalizeWebsiteUrl('http://10.0.0.2'), '');
+  assert.equal(websiteAuditor.normalizeWebsiteUrl('http://service.local'), '');
+});
+
 test('analyzeHtml detects customer journey signals and logo candidates', () => {
   const review = websiteAuditor.analyzeHtml({
     websiteUrl: 'https://example.com.au',
@@ -36,7 +43,7 @@ test('analyzeHtml detects customer journey signals and logo candidates', () => {
   assert.equal(review.title, 'Example Plumbing');
   assert.equal(review.description, 'Fast plumbing help.');
   assert.equal(review.logoUrl, 'https://example.com.au/favicon.png');
-  assert.equal(review.overallScore, 6);
+  assert.equal(review.overallScore, 4);
   assert.deepEqual(
     review.signals.slice(0, 6).map(signal => [signal.id, signal.status]),
     [

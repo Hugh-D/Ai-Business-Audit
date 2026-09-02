@@ -12,15 +12,67 @@ const deliveryAgent = require('./agents/delivery_agent');
 const websiteAuditor = require('./agents/website_auditor');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 const REVIEW_STATUSES = new Set(['draft', 'reviewed', 'sent']);
 const FOLLOW_UP_STATUSES = new Set(['not_offered', 'declined', 'requested', 'booked', 'completed']);
+const websiteAuditRequests = new Map();
+
+function requireWorkbenchAuth(req, res, next) {
+  const expectedUser = process.env.WORKBENCH_USERNAME;
+  const expectedPassword = process.env.WORKBENCH_PASSWORD;
+
+  if (!expectedUser || !expectedPassword) {
+    if (process.env.NODE_ENV !== 'production') return next();
+    return res.status(404).send('Not found');
+  }
+
+  const [scheme, encoded] = String(req.headers.authorization || '').split(' ');
+  let credentials = [];
+  try {
+    credentials = Buffer.from(encoded || '', 'base64').toString('utf8').split(':');
+  } catch (_err) {
+    credentials = [];
+  }
+
+  if (scheme === 'Basic' && credentials[0] === expectedUser && credentials.slice(1).join(':') === expectedPassword) {
+    return next();
+  }
+
+  res.set('WWW-Authenticate', 'Basic realm="Volve audit workbench"');
+  return res.status(401).send('Authentication required');
+}
+
+function limitWebsiteAudits(req, res, next) {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const limit = 10;
+  const key = req.ip || req.socket.remoteAddress || 'unknown';
+  const current = websiteAuditRequests.get(key);
+
+  if (!current || current.resetAt <= now) {
+    websiteAuditRequests.set(key, { count: 1, resetAt: now + windowMs });
+    return next();
+  }
+  if (current.count >= limit) {
+    res.set('Retry-After', String(Math.ceil((current.resetAt - now) / 1000)));
+    return res.status(429).json({ error: 'Too many website audits. Please try again shortly.' });
+  }
+  current.count += 1;
+  return next();
+}
 
 // GET /
-// MVP audit workbench.
+// Public Volve Solutions website.
 app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// GET /workbench
+// Internal audit workbench.
+app.get('/workbench', requireWorkbenchAuth, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -36,6 +88,28 @@ app.get('/flyer', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'flyer.html'));
 });
 
+// POST /api/website-audit
+// Public website, AI visibility, authority, and optional Google Business Profile audit.
+app.post('/api/website-audit', limitWebsiteAudits, async (req, res) => {
+  try {
+    const { websiteUrl, businessName = '', industry = '', gbpProfile = null } = req.body;
+    const normalizedWebsiteUrl = websiteAuditor.normalizeWebsiteUrl(websiteUrl);
+    if (!normalizedWebsiteUrl) {
+      return res.status(400).json({ error: 'Enter a valid public website address.' });
+    }
+
+    const review = await websiteAuditor.reviewWebsite(normalizedWebsiteUrl, {
+      businessName,
+      industry,
+      gbpProfile,
+    });
+    res.json({ review });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message || 'Website audit failed.' });
+  }
+});
+
 // GET /health
 // Minimal health check for deployment platforms.
 app.get('/health', (_req, res) => {
@@ -47,6 +121,9 @@ app.get('/health', (_req, res) => {
 app.get('/readiness', (_req, res) => {
   res.json(buildReadiness());
 });
+
+// Protect internal operations when the app is exposed publicly.
+app.use(['/audit', '/voice', '/export'], requireWorkbenchAuth);
 
 // POST /audit
 // Body: { industry: string, transcript: string }
