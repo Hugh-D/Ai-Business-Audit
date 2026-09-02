@@ -1,123 +1,117 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Website Audit Tool</title>
-  <link rel="stylesheet" href="/styles.css">
-  </head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website Audit Tool</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
 <body>
-  <main class="shell">
-    <section class="tool-panel" aria-labelledby="toolTitle">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">AI Business Audit</p>p>
-          <h1 id="toolTitle">Website Audit Tool</h1>h1>
-        </div>
-        <span id="serviceStatus" class="status-pill">Checking</span>span>
-      </header>header>
+<main class="shell">
+<section class="tool-panel" aria-labelledby="toolTitle">
+<header class="topbar">
+<div>
+<p class="eyebrow">AI Business Audit</p>
+<h1 id="toolTitle">Website Audit Tool</h1>
+</div>
+<span id="serviceStatus" class="status-pill">Checking</span>
+</header>
 
-      <form id="auditForm" class="audit-form">
-        <div class="field-grid">
-          <label>
-            Business Name
-            <input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
-          </label>
-          <label>
-            Industry
-            <input id="industryInput" name="industry" type="text" placeholder="Trades, dental, real estate...">
-          </label>
-        </div>
+<form id="auditForm" class="audit-form">
+<div class="field-grid">
+<label>
+Business Name
+<input id="businessNameInput" name="businessName" type="text" placeholder="Example Plumbing Co.">
+</label>
+<label>
+Industry
+<input id="industryInput" name="industry" type="text" placeholder="Trades, dental, real estate...">
+</label>
+</div>
 
-        <label>
-          Website URL
-          <div class="url-row">
-            <input id="websiteUrlInput" name="websiteUrl" type="text" inputmode="url" placeholder="example.com.au" required>
-            <button id="auditButton" class="primary-button" type="submit">Run Audit</button>button>
-          </div>
-        </label>
+<label>
+Website URL
+<div class="url-row">
+<input id="websiteUrlInput" name="websiteUrl" type="text" inputmode="url" placeholder="example.com.au" required>
+<button id="auditButton" class="primary-button" type="submit">Run Audit</button>
+</div>
+</label>
 
-        <fieldset class="gbp-fields">
-          <legend>
-            <label>
-              <input id="gbpToggle" type="checkbox">
-              Include Google Business Profile &amp; Local Pack scoring
-            </label>
-          </legend>
-          <div class="field-grid">
-            <label>
-              <input type="checkbox" id="gbpCategoryAccurate">
-              Primary category is specific and accurate
-            </label>
-            <label>
-              <input type="checkbox" id="gbpNapConsistent">
-              Name, address and phone match the website exactly
-            </label>
-            <label>
-              <input type="checkbox" id="gbpDescriptionComplete">
-              Business description is complete
-            </label>
-            <label>
-              <input type="checkbox" id="gbpOwnerResponds">
-              Owner responds to reviews
-            </label>
-            <label>
-              <input type="checkbox" id="gbpAppearsInPack">
-              Appears in the local 3-pack for core searches
-            </label>
-            <label>
-              <input type="checkbox" id="gbpCitationsConsistent">
-              NAP is consistent across major directories
-            </label>
-            <label>
-              Photo count
-              <input type="number" id="gbpPhotoCount" min="0" placeholder="0">
-            </label>
-            <label>
-              Review count
-              <input type="number" id="gbpReviewCount" min="0" placeholder="0">
-            </label>
-            <label>
-              Average rating
-              <input type="number" id="gbpAverageRating" min="0" max="5" step="0.1" placeholder="0.0">
-            </label>
-          </div>
-        </fieldset>fieldset>
-      </form>form>
+<fieldset class="gbp-fields">
+<legend>
+<label>
+<input id="gbpToggle" type="checkbox">
+Include Google Business Profile &amp; Local Pack scoring
+</label>
+</legend>
+<div class="field-grid">
+<label>
+<input type="checkbox" id="gbpCategoryAccurate">
+Primary category is specific and accurate
+</label>
+<label>
+<input type="checkbox" id="gbpNapConsistent">
+Name, address and phone match the website exactly
+</label>
+<label>
+<input type="checkbox" id="gbpDescriptionComplete">
+Business description is complete
+</label>
+<label>
+<input type="checkbox" id="gbpOwnerResponds">
+Owner responds to reviews
+</label>
+<label>
+<input type="checkbox" id="gbpAppearsInPack">
+Appears in the local 3-pack for core searches
+</label>
+<label>
+<input type="checkbox" id="gbpCitationsConsistent">
+NAP is consistent across major directories
+</label>
+<label>
+Photo count
+<input type="number" id="gbpPhotoCount" min="0" placeholder="0">
+</label>
+<label>
+Review count
+<input type="number" id="gbpReviewCount" min="0" placeholder="0">
+</label>
+<label>
+Average rating
+<input type="number" id="gbpAverageRating" min="0" max="5" step="0.1" placeholder="0.0">
+</label>
+</div>
+</fieldset>
+</form>
 
-      <div id="errorState" class="error-state" hidden></div>
-    </section>section>
+<div id="errorState" class="error-state" hidden></div>
+</section>
 
-    <section class="results-panel" aria-labelledby="resultsTitle">
-      <div class="panel-header">
-        <div>
-          <p class="eyebrow">Report</p>p>
-          <h2 id="resultsTitle">Website Review</h2>h2>
-        </div>
-        <div class="actions">
-          <button id="copySummaryButton" class="ghost-button" type="button" disabled>Copy Report</button>button>
-          <button id="downloadJsonButton" class="ghost-button" type="button" disabled>Download JSON</button>button>
-          <button id="printButton" class="ghost-button" type="button" disabled>Print / PDF</button>button>
-        </div>
-      </div>
+<section class="results-panel" aria-labelledby="resultsTitle">
+<div class="panel-header">
+<div>
+<p class="eyebrow">Report</p>
+<h2 id="resultsTitle">Website Review</h2>
+</div>
+<div class="actions">
+<button id="copySummaryButton" class="ghost-button" type="button" disabled>Copy Report</button>
+<button id="downloadJsonButton" class="ghost-button" type="button" disabled>Download JSON</button>
+<button id="printButton" class="ghost-button" type="button" disabled>Print / PDF</button>
+</div>
+</div>
 
-      <div id="emptyState" class="empty-state">
-        <strong>No audit yet.</strong>
-      <span>Enter a website to score conversion, trust, SEO, copy, and basic technical signals.</span>
-      </div>
-    
-    <article id="reportOutput" class="report-output" hidden></article>article>
-    </section>section>
-  </main>main>
+<div id="emptyState" class="empty-state">
+<strong>No audit yet.</strong>
+<span>Enter a website to score conversion, trust, SEO, copy, and basic technical signals.</span>
+</div>
+
+<article id="reportOutput" class="report-output" hidden></article>
+</section>
+</main>
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="/app.js"></script>
 </body>
-</html>html></span></strong>
-          </legend>
-          </label>
-          </label>
-        </div>
-</body></title>
-  </head>
+</html>
