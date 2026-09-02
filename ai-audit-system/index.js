@@ -82,6 +82,16 @@ app.get('/landing', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 
+app.get('/automations', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'automations.html'));
+});
+
+app.get('/automations/:slug', (req, res, next) => {
+  const supported = new Set(['phone-agent', 'missed-call-recovery', 'quote-follow-up', 'review-requests', 'quoting-agent']);
+  if (!supported.has(req.params.slug)) return next();
+  return res.sendFile(path.join(__dirname, 'public', 'automation-detail.html'));
+});
+
 // GET /flyer
 // Printable A4 one-pager for physical distribution (wholesaler counter, etc.).
 app.get('/flyer', (_req, res) => {

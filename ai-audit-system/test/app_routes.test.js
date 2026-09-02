@@ -98,6 +98,19 @@ test('GET / serves the public branded website and /workbench serves the internal
   assert.match(workbenchResponse.buffer.toString('utf8'), /Audit Workbench/);
 });
 
+test('GET /automations serves the catalogue and supported detail pages', async () => {
+  const catalogue = await requestRaw('GET', '/automations');
+  const detail = await requestRaw('GET', '/automations/phone-agent');
+  const unknown = await requestRaw('GET', '/automations/not-a-product');
+
+  assert.equal(catalogue.status, 200);
+  assert.match(catalogue.buffer.toString('utf8'), /Practical systems/);
+  assert.match(catalogue.buffer.toString('utf8'), /Quoting Agent/);
+  assert.equal(detail.status, 200);
+  assert.match(detail.buffer.toString('utf8'), /automation-detail\.js/);
+  assert.equal(unknown.status, 404);
+});
+
 test('production workbench and internal APIs require configured credentials', async () => {
   process.env.NODE_ENV = 'production';
   process.env.WORKBENCH_USERNAME = 'operator';
