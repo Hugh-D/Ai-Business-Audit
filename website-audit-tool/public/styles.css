@@ -438,6 +438,20 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.gbp-fields > :not(legend),
+.ai-visibility-fields > :not(legend) {
+  display: none;
+}
+
+.gbp-fields.active > :not(legend),
+.ai-visibility-fields.active > :not(legend) {
+  display: grid;
+}
+
+.ai-visibility-fields.active > label {
+  display: grid;
+}
+
 @media print {
   body {
     background: #ffffff;

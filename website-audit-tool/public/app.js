@@ -31,6 +31,17 @@ const aiCustomQueriesInput = document.querySelector('#aiCustomQueriesInput');
 let lastReview = null;
 let lastAiVisibilityResults = null;
 
+function bindFieldsetToggle(toggle, fieldset) {
+  if (!toggle || !fieldset) return;
+  fieldset.classList.toggle('active', toggle.checked);
+  toggle.addEventListener('change', () => {
+    fieldset.classList.toggle('active', toggle.checked);
+  });
+}
+
+bindFieldsetToggle(gbpToggle, document.querySelector('.gbp-fields'));
+bindFieldsetToggle(aiVisibilityToggle, document.querySelector('.ai-visibility-fields'));
+
 checkHealth();
 
 auditForm.addEventListener('submit', async (event) => {
