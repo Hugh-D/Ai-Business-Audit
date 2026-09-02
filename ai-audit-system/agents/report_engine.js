@@ -15,8 +15,8 @@ async function generate({ config, transcript }) {
   const userMessage = buildUserMessage(config, transcript);
 
   const response = await client.messages.create({
-    model: process.env.AUDIT_MODEL || 'claude-sonnet-4-20250514',
-    max_tokens: parseInt(process.env.AUDIT_MAX_TOKENS || '2000', 10),
+    model: process.env.AUDIT_MODEL || 'claude-sonnet-4-6',
+    max_tokens: parseInt(process.env.AUDIT_MAX_TOKENS || '5000', 10),
     system: systemPrompt,
     messages: [
       { role: 'user', content: userMessage },
@@ -25,6 +25,9 @@ async function generate({ config, transcript }) {
 
   const raw = response.content.find(b => b.type === 'text')?.text;
   if (!raw) throw new Error('No text content in Anthropic response');
+  if (response.stop_reason === 'max_tokens') {
+    throw new Error('Anthropic report response was truncated; increase AUDIT_MAX_TOKENS');
+  }
   return parseJsonReport(raw);
 }
 

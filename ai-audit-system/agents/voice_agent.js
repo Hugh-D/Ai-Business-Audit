@@ -14,7 +14,7 @@ async function createSession(config) {
 
   return {
     systemPrompt,
-    model: process.env.VOICE_MODEL || 'claude-sonnet-4-20250514',
+    model: process.env.VOICE_MODEL || 'claude-sonnet-4-6',
     industry: config.id,
     hints: config.voicePromptHints,
   };

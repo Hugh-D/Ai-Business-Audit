@@ -526,6 +526,79 @@ test('POST /webhook/retell accepts a signed call_ended webhook and stores the re
   assert.equal(call.transcript, 'Client: lawn quote requests sit on a whiteboard!');
 });
 
+test('POST /webhook/retell defaults inbound calls without industry metadata to trades', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  delete process.env.DEFAULT_INBOUND_INDUSTRY;
+  reportEngine.generate = async ({ config }) => ({
+    overallScore: 8,
+    scores: {},
+    keyStrengths: [config.id],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_inbound_default_industry',
+      direction: 'inbound',
+      from_number: '+61400000000',
+      transcript: 'Caller: We need help improving the business.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_inbound_default_industry')?.status === 'report_ready');
+
+  const call = callStore.get('call_inbound_default_industry');
+  assert.equal(call.industry, 'trades');
+  assert.deepEqual(call.report.keyStrengths, ['trades']);
+});
+
+test('POST /webhook/retell preserves valid industry metadata on inbound calls', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  process.env.DEFAULT_INBOUND_INDUSTRY = 'trades';
+  reportEngine.generate = async ({ config }) => ({
+    overallScore: 8,
+    scores: {},
+    keyStrengths: [config.id],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_inbound_metadata_industry',
+      direction: 'inbound',
+      from_number: '+61400000001',
+      metadata: { industry: 'lawn_care' },
+      transcript: 'Caller: We need help improving the business.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_inbound_metadata_industry')?.status === 'report_ready');
+
+  const call = callStore.get('call_inbound_metadata_industry');
+  assert.equal(call.industry, 'lawn_care');
+  assert.deepEqual(call.report.keyStrengths, ['lawn_care']);
+});
+
 test('POST /webhook/retell rejects unsigned webhooks', async () => {
   process.env.RETELL_API_KEY = 'test_retell_key';
 

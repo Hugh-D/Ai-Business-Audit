@@ -145,9 +145,9 @@ PORT=3000
 NODE_ENV=development
 CALL_STORE_PATH=./data/calls.sqlite
 RETELL_WEBHOOK_URL=https://your-public-url/webhook/retell
-AUDIT_MAX_TOKENS=2000
-AUDIT_MODEL=claude-sonnet-4-20250514
-VOICE_MODEL=claude-sonnet-4-20250514
+AUDIT_MAX_TOKENS=5000
+AUDIT_MODEL=claude-sonnet-4-6
+VOICE_MODEL=claude-sonnet-4-6
 ```
 
 ## Retell Setup

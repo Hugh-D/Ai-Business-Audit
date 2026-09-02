@@ -344,7 +344,7 @@ if (require.main === module) {
 }
 
 async function processEndedCall(call) {
-  const { transcript, metadata = {}, call_id } = call;
+  const { transcript, metadata = {}, call_id, direction } = call;
   if (!transcript) {
     throw new Error('call.transcript is required');
   }
@@ -357,14 +357,22 @@ async function processEndedCall(call) {
     try {
       config = industryRouter.resolve(metadata.industry);
     } catch (err) {
-      console.warn(`Could not resolve metadata industry "${metadata.industry}"; falling back to transcript detection.`);
+      console.warn(`Could not resolve metadata industry "${metadata.industry}"; falling back to inbound default or transcript detection.`);
+    }
+  }
+  if (!config && direction === 'inbound') {
+    const defaultInboundIndustry = process.env.DEFAULT_INBOUND_INDUSTRY || 'trades';
+    try {
+      config = industryRouter.resolve(defaultInboundIndustry);
+    } catch (err) {
+      console.warn(`Could not resolve default inbound industry "${defaultInboundIndustry}"; falling back to transcript detection.`);
     }
   }
   if (!config) {
     config = industryRouter.detect(cleaned);
   }
   if (!config) {
-    throw new Error('Could not detect industry from transcript and no metadata.industry fallback was provided');
+    throw new Error('Could not resolve an industry from metadata, inbound default, or transcript');
   }
 
   const report = await reportEngine.generate({ config, transcript: cleaned });
