@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .faq-item summary { list-style: none; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item .faq-chev { transition: transform 0.2s ease; }
+    .faq-item[open] .faq-chev { transform: rotate(180deg); }
+  </style>
+</helmet>
+<div style="width:390px; background:#6B5E52; padding:40px 20px 44px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box;">
+  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#E8A84A;">AI Business Audit</div>
+
+  <h1 style="margin:14px 0 0; font-size:28px; font-weight:700; line-height:1.15; letter-spacing:-0.5px; color:#F9F6F1;">In 12 minutes, we'll tell you exactly where your business is <span style="color:#E8A84A;">leaking money</span>.</h1>
+
+  <p style="margin:16px 0 0; font-size:14px; font-weight:400; line-height:1.55; color:#DDD5C8;">A short phone assessment that finds your top three revenue leaks, with practical fixes reviewed personally by Hugh.</p>
+
+  <a href="tel:1300244769" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; box-sizing:border-box; margin:24px 0 0; padding:16px 20px; background:#C47B2E; border-radius:14px; text-decoration:none; font-size:16px; font-weight:700; color:#FDF4E7;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FDF4E7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    Call 1300 AI GROW
+  </a>
+
+  <a href="#how-it-works" style="display:flex; align-items:center; justify-content:center; width:100%; box-sizing:border-box; margin:10px 0 0; padding:13px 20px; background:transparent; border:2px solid #A89880; border-radius:14px; text-decoration:none; font-size:14px; font-weight:600; color:#DDD5C8;">See how it works</a>
+
+  <div style="margin:24px 0 0; display:flex; flex-direction:column; gap:7px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="width:5px; height:5px; border-radius:9999px; background:#C47B2E; border:none; outline:none; flex:none;"></span>
+      <span style="font-size:12px; color:#A89880;">$297 flat fee, no surprises</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="width:5px; height:5px; border-radius:9999px; background:#C47B2E; border:none; outline:none; flex:none;"></span>
+      <span style="font-size:12px; color:#A89880;">12 minutes by phone</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="width:5px; height:5px; border-radius:9999px; background:#C47B2E; border:none; outline:none; flex:none;"></span>
+      <span style="font-size:12px; color:#A89880;">Personal callback included</span>
+    </div>
+  </div>
+</div>
+
+<div style="width:390px; background:#F9F6F1; padding:48px 20px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box;">
+  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#7A4F1E;">Sample report</div>
+  <h2 style="margin:10px 0 24px; font-size:24px; font-weight:700; line-height:1.2; letter-spacing:-0.3px; color:#1C1410;">Here is what your audit could find.</h2>
+
+  <div style="background:#fff; border:0.5px solid #DDD5C8; border-radius:14px; overflow:hidden;">
+    <!-- Header -->
+    <div style="background:#1C1410; padding:12px 14px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#A89880;">Audit report</div>
+        <div style="margin-top:3px; font-size:12px; font-weight:700; color:#F9F6F1;">Your top 3 revenue leaks</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#A89880;">Est. impact</div>
+        <div style="margin-top:3px; font-size:14px; font-weight:700; color:#E8A84A;">$34k+/yr</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div style="background:#fff; padding:10px; display:flex; flex-direction:column; gap:7px;">
+      <!-- Leak 1 -->
+      <div style="background:#F9F6F1; border:0.5px solid #DDD5C8; border-radius:8px; padding:10px 11px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:18px; height:18px; flex:none; border-radius:9999px; background:#C47B2E; color:#FDF4E7; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
+          <span style="font-size:11px; font-weight:700; color:#1C1410;">Missed calls going to voicemail</span>
+          <span style="margin-left:auto; font-size:9px; font-weight:700; color:#C47B2E; background:#FDF4E7; border:0.5px solid #E8A84A; border-radius:9999px; padding:2px 8px;">High</span>
+        </div>
+        <p style="margin:8px 0 0; font-size:11px; line-height:1.5; color:#6B5E52;">Roughly 1 in 4 inbound calls go unanswered during jobs. Each missed call is a quote you never got to give.</p>
+        <div style="margin-top:8px; background:#F2EDE5; border-radius:6px; padding:7px 8px;">
+          <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#7A4F1E;">Fix</div>
+          <div style="margin-top:2px; font-size:10px; line-height:1.5; color:#1C1410;">Auto-reply by text within 60 seconds so the lead never goes cold.</div>
+        </div>
+      </div>
+
+      <!-- Leak 2 -->
+      <div style="background:#F9F6F1; border:0.5px solid #DDD5C8; border-radius:8px; padding:10px 11px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:18px; height:18px; flex:none; border-radius:9999px; background:#C47B2E; color:#FDF4E7; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
+          <span style="font-size:11px; font-weight:700; color:#1C1410;">Quotes sent, never followed up</span>
+          <span style="margin-left:auto; font-size:9px; font-weight:700; color:#C47B2E; background:#FDF4E7; border:0.5px solid #E8A84A; border-radius:9999px; padding:2px 8px;">High</span>
+        </div>
+        <p style="margin:8px 0 0; font-size:11px; line-height:1.5; color:#6B5E52;">Quotes that take days to send win less often. No follow-up means warm leads quietly go elsewhere.</p>
+        <div style="margin-top:8px; background:#F2EDE5; border-radius:6px; padding:7px 8px;">
+          <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#7A4F1E;">Fix</div>
+          <div style="margin-top:2px; font-size:10px; line-height:1.5; color:#1C1410;">Same-day quote template plus an automatic two-day follow-up.</div>
+        </div>
+      </div>
+
+      <!-- Leak 3 — faded preview -->
+      <div style="position:relative; background:#F9F6F1; border:0.5px solid #DDD5C8; border-radius:8px; padding:10px 11px; opacity:0.4;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:18px; height:18px; flex:none; border-radius:9999px; background:#DDD5C8; color:#fff; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span>
+          <span style="height:9px; width:140px; border-radius:9999px; background:#DDD5C8;"></span>
+        </div>
+        <div style="margin-top:10px; height:8px; width:100%; border-radius:9999px; background:#DDD5C8;"></div>
+        <div style="margin-top:6px; height:8px; width:75%; border-radius:9999px; background:#DDD5C8;"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#1C1410; padding:11px 14px; display:flex; align-items:center; justify-content:space-between;">
+      <span style="font-size:10px; color:#A89880;">Reviewed by <span style="color:#E8A84A;">Hugh</span> within 48 hrs</span>
+      <span style="display:flex; align-items:center; gap:7px;">
+        <span style="font-size:11px; font-weight:600; color:#F9F6F1;">Get yours</span>
+        <span style="width:22px; height:22px; flex:none; border-radius:9999px; background:#C47B2E; display:flex; align-items:center; justify-content:center;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FDF4E7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div style="width:390px; background:#F2EDE5; padding:48px 20px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box;">
+  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#7A4F1E;">How it works</div>
+  <h2 style="margin:10px 0 28px; font-size:26px; font-weight:700; line-height:1.2; letter-spacing:-0.5px; color:#1C1410;">Three steps. No sales pitch.</h2>
+
+  <div style="display:flex; flex-direction:column; gap:26px;">
+    <!-- Step 1 -->
+    <div style="display:flex; gap:14px; align-items:stretch;">
+      <div style="width:32px; flex:none; position:relative; display:flex; justify-content:center;">
+        <div style="position:absolute; top:16px; bottom:-42px; left:50%; transform:translateX(-50%); width:2px; background:#DDD5C8; z-index:0;"></div>
+        <span style="position:relative; z-index:1; width:32px; height:32px; border-radius:9999px; background:#C47B2E; color:#FDF4E7; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
+      </div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#1C1410;">Call</div>
+        <p style="margin:5px 0 0; font-size:14px; line-height:1.6; color:#6B5E52;">Call 1300 AI GROW and tell the agent you want the audit. It costs $297. The call is recorded so we can build your report, and the agent asks first. Say no and the call ends there.</p>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div style="display:flex; gap:14px; align-items:stretch;">
+      <div style="width:32px; flex:none; position:relative; display:flex; justify-content:center;">
+        <div style="position:absolute; top:16px; bottom:-30px; left:50%; transform:translateX(-50%); width:2px; background:#DDD5C8; z-index:0;"></div>
+        <span style="position:relative; z-index:1; width:32px; height:32px; border-radius:9999px; background:#C47B2E; color:#FDF4E7; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
+      </div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#1C1410;">Audit</div>
+        <p style="margin:5px 0 0; font-size:14px; line-height:1.6; color:#6B5E52;">Answer plain questions about how your business handles calls, quotes, follow-up and other day-to-day operations. Twelve minutes. No jargon, no AI talk.</p>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div style="display:flex; gap:14px; align-items:stretch;">
+      <div style="width:32px; flex:none; display:flex; justify-content:center;">
+        <span style="position:relative; z-index:1; width:32px; height:32px; border-radius:9999px; background:#C47B2E; color:#FDF4E7; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span>
+      </div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#1C1410;">Report</div>
+        <p style="margin:5px 0 0; font-size:14px; line-height:1.6; color:#6B5E52;">You'll get a payment link by email after the call. Pay $297 and Hugh, a real person, reviews your findings and prepares your report within 48 hours: your top three revenue leaks, what they're costing you, and what to do about each one.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="width:390px; background:#F9F6F1; padding:48px 20px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box;">
+  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#7A4F1E;">Common questions</div>
+  <h2 style="margin:10px 0 24px; font-size:26px; font-weight:700; line-height:1.2; letter-spacing:-0.5px; color:#1C1410;">Straight answers before you call.</h2>
+
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    <details class="faq-item" data-faq-first="1" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>Is this a sales call?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">No. The call is the audit. You answer questions, we build your report. Nobody pitches you software or upsells you during the call, because there is nothing to pitch. You get a report. What you do with it is yours to decide.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>Will this replace my staff or change how I run things?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">No. The audit shows you where money is slipping through, not how to run your business. Your report can flag ways to run more efficiently or clear bottlenecks, but what you do with the findings, fix it yourself, bring in help, or do nothing, is entirely up to you.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>What happens to the call recording?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">The agent records the call to build your report accurately, because the report is generated from what you say, not a generic template. It asks for your permission before the call starts. Say no and it ends there. Nothing is recorded without it.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>Do I have to commit to anything?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">No. You pay $297 for the audit and the report. No contract, no upsell on the call, no obligation beyond the audit itself.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>What if my report doesn't find much?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">You may not be losing money outright, but there's almost always a way to run more efficiently or capture revenue you're currently missing. Either way, you'll know within 48 hours, not after months of guessing.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>How is this different to a free online quiz?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">A quiz gives you a template answer. This comes from a real 12-minute conversation about your business, and Hugh checks every report personally before it goes out.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>Do I get to talk to someone about my report?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">Yes, if you want to. Once your report lands, you can book a call with Hugh to walk through the findings together. It's included, and entirely your choice.</p>
+    </details>
+
+    <details class="faq-item" style="background:#fff; border:0.5px solid #DDD5C8; border-radius:12px; overflow:hidden;">
+      <summary style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; cursor:pointer; font-size:15px; font-weight:600; color:#1C1410;">
+        <span>What number do I call?</span>
+        <svg class="faq-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </summary>
+      <p style="margin:0; padding:0 16px 16px; font-size:14px; line-height:1.6; color:#6B5E52;">1300 AI GROW is 1300 244 769. On a phone, tap any call button on this page and it dials for you. On a desktop, just dial the digits.</p>
+    </details>
+  </div>
+</div>
+
+<div style="width:390px; background:#1C1410; padding:40px 20px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; text-align:center;">
+  <h2 style="margin:0; font-size:28px; font-weight:700; line-height:1.15; letter-spacing:-0.3px; color:#F9F6F1;">Stop guessing where the money goes.</h2>
+  <p style="margin:14px 0 0; font-size:15px; font-weight:400; line-height:1.5; color:#DDD5C8;">Twelve minutes on the phone. Your top three revenue leaks, found.</p>
+
+  <a href="tel:1300244769" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; box-sizing:border-box; margin:24px 0 0; padding:16px 20px; background:#C47B2E; border-radius:14px; text-decoration:none; font-size:16px; font-weight:700; color:#FDF4E7;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FDF4E7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    Call 1300 AI GROW
+  </a>
+
+  <p style="margin:14px 0 0; font-size:12px; font-weight:400; color:#A89880;">$297 flat. No software pitch. Personal callback if you want it.</p>
+</div>
+
+<div style="width:390px; background:#1C1410; padding:28px 20px; font-family:Inter,system-ui,sans-serif; box-sizing:border-box; border-top:0.5px solid #6B5E52;">
+  <div style="font-size:16px; font-weight:700; color:#F9F6F1;">Volve Solutions</div>
+  <div style="margin-top:5px; font-size:13px; font-weight:400; color:#A89880;">Straight answers for Australian trade businesses.</div>
+
+  <a href="tel:1300244769" style="display:inline-flex; align-items:center; gap:8px; margin-top:18px; text-decoration:none; font-size:17px; font-weight:700; color:#E8A84A;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8A84A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    Call 1300 AI GROW
+  </a>
+  <div style="margin-top:8px; font-size:13px; font-weight:400; color:#A89880;">1300 244 769</div>
+
+  <div style="margin-top:22px; padding-top:16px; border-top:0.5px solid #6B5E52;">
+    <p style="margin:0; font-size:12px; font-weight:400; line-height:1.55; color:#8A7D72;">Calls are recorded with your permission, used only to build your report. We don't share your data.</p>
+    <p style="margin:12px 0 0; font-size:12px; font-weight:400; color:#6B5E52;">© 2026 Volve Solutions. Sydney, Australia.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:480}}">class Component extends DCLogic {
+  componentDidMount() {
+    const openFirst = () => {
+      const first = document.querySelector('.faq-item');
+      if (first) first.open = true;
+      else setTimeout(openFirst, 50);
+    };
+    openFirst();
+  }
+}</script>
+</body>
+</html>

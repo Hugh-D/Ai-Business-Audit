@@ -24,6 +24,18 @@ app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// GET /landing
+// Public marketing landing page for the AI Business Audit ($297 phone audit).
+app.get('/landing', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// GET /flyer
+// Printable A4 one-pager for physical distribution (wholesaler counter, etc.).
+app.get('/flyer', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'flyer.html'));
+});
+
 // GET /health
 // Minimal health check for deployment platforms.
 app.get('/health', (_req, res) => {

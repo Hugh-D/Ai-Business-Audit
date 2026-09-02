@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Business Audit — Volve Solutions (A4 flyer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* A4 print one-pager. Self-contained: inline styles + inline QR.
+       Parchment sheet, ochre accents, one espresso action band at the
+       bottom, so it stays on-brand without flooding ink. */
+    :root {
+      --ink: #1C1410; --slate: #6B5E52; --parchment: #F9F6F1;
+      --canvas-soft: #F2EDE5; --ochre: #C47B2E; --gold: #E8A84A;
+      --pale-ochre: #FDF4E7; --ochre-brown: #7A4F1E;
+      --text-body: #6B5E52; --muted: #A89880; --border: #DDD5C8;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #cfcabf;             /* screen-only backdrop around the sheet */
+      color: var(--ink);
+    }
+    .sheet {
+      width: 210mm; min-height: 297mm;
+      margin: 12mm auto;
+      padding: 15mm 16mm 0;
+      background: var(--parchment);
+      display: flex; flex-direction: column;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);   /* screen only */
+    }
+
+    .top { display: flex; justify-content: space-between; align-items: baseline; }
+    .brand { font-size: 15pt; font-weight: 700; color: var(--ink); }
+    .eyebrow {
+      font-size: 9pt; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--ochre-brown);
+    }
+
+    .headline {
+      margin: 9mm 0 0; font-size: 30pt; font-weight: 700;
+      line-height: 1.1; letter-spacing: -0.5px; max-width: 165mm;
+    }
+    .headline .accent { color: var(--ochre); }
+    .sub {
+      margin: 5mm 0 0; font-size: 12.5pt; line-height: 1.5;
+      color: var(--text-body); max-width: 150mm;
+    }
+
+    .mid { display: flex; gap: 8mm; margin: 9mm 0 0; align-items: flex-start; }
+
+    /* Sample report card (condensed) */
+    .card { flex: 1.15; border: 0.5px solid var(--border); border-radius: 4mm; overflow: hidden; background: #fff; }
+    .card__head {
+      background: var(--ink); padding: 3mm 4mm;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card__label { font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .card__title { margin-top: 1mm; font-size: 9.5pt; font-weight: 700; color: var(--parchment); }
+    .card__impact { margin-top: 1mm; font-size: 11pt; font-weight: 700; color: var(--gold); text-align: right; }
+    .card__body { padding: 3mm; display: flex; flex-direction: column; gap: 2.5mm; }
+    .leak { background: var(--parchment); border: 0.5px solid var(--border); border-radius: 2.5mm; padding: 3mm; }
+    .leak__top { display: flex; align-items: center; gap: 2.5mm; }
+    .leak__num {
+      width: 5mm; height: 5mm; flex: none; border-radius: 50%;
+      background: var(--ochre); color: var(--pale-ochre);
+      font-size: 7pt; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .leak__name { font-size: 9pt; font-weight: 700; }
+    .leak__tag {
+      margin-left: auto; font-size: 6.5pt; font-weight: 700; color: var(--ochre);
+      background: var(--pale-ochre); border: 0.5px solid var(--gold);
+      border-radius: 999px; padding: 0.6mm 2.5mm;
+    }
+    .leak__desc { margin: 2mm 0 0; font-size: 8pt; line-height: 1.45; color: var(--text-body); }
+    .leak--faded { opacity: 0.4; }
+    .leak--faded .leak__num { background: var(--border); color: #fff; }
+    .pill { border-radius: 999px; background: var(--border); }
+
+    /* Steps + price column */
+    .rail { flex: 1; display: flex; flex-direction: column; gap: 5mm; }
+    .step { display: flex; gap: 3.5mm; align-items: flex-start; }
+    .step__n {
+      width: 7mm; height: 7mm; flex: none; border-radius: 50%;
+      background: var(--ochre); color: var(--pale-ochre);
+      font-size: 10pt; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step__t { font-size: 11pt; font-weight: 700; }
+    .step__b { margin: 0.5mm 0 0; font-size: 9pt; line-height: 1.4; color: var(--text-body); }
+    .price {
+      margin-top: 1mm; padding-top: 4mm; border-top: 0.5px solid var(--border);
+      font-size: 9.5pt; color: var(--text-body);
+    }
+    .price b { font-size: 13pt; color: var(--ink); }
+
+    .spacer { flex: 1; }
+
+    /* Action band */
+    .cta {
+      margin: 9mm -16mm 0; padding: 8mm 16mm;
+      background: var(--ink); color: var(--parchment);
+      display: flex; align-items: center; gap: 8mm;
+    }
+    .cta__qr {
+      width: 34mm; height: 34mm; flex: none; background: #fff;
+      border-radius: 3mm; padding: 2.5mm;
+    }
+    .cta__qr svg { width: 100%; height: 100%; display: block; }
+    .cta__copy { flex: 1; }
+    .cta__scan { font-size: 13pt; font-weight: 700; color: var(--gold); }
+    .cta__num { margin-top: 2mm; font-size: 22pt; font-weight: 700; line-height: 1.05; }
+    .cta__digits { margin-top: 1mm; font-size: 13pt; font-weight: 600; color: var(--on-dark, #DDD5C8); }
+    .cta__foot { margin-top: 3mm; font-size: 9pt; color: var(--muted); }
+
+    .legal {
+      padding: 4mm 0 8mm; font-size: 7.5pt; line-height: 1.4; color: var(--muted);
+    }
+
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { background: #fff; }
+      .sheet { margin: 0; box-shadow: none; width: auto; min-height: auto; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="top">
+      <span class="brand">Volve Solutions</span>
+      <span class="eyebrow">AI Business Audit</span>
+    </div>
+
+    <h1 class="headline">In 12 minutes, we'll tell you exactly where your business is <span class="accent">leaking money</span>.</h1>
+    <p class="sub">A short phone assessment that finds your top three revenue leaks, with practical fixes reviewed personally by Hugh. $297 flat.</p>
+
+    <div class="mid">
+      <!-- Sample report -->
+      <div class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__label">Audit report</div>
+            <div class="card__title">Your top 3 revenue leaks</div>
+          </div>
+          <div>
+            <div class="card__label" style="text-align:right;">Est. impact</div>
+            <div class="card__impact">$34k+/yr</div>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="leak">
+            <div class="leak__top">
+              <span class="leak__num">1</span>
+              <span class="leak__name">Missed calls going to voicemail</span>
+              <span class="leak__tag">High</span>
+            </div>
+            <p class="leak__desc">Roughly 1 in 4 inbound calls go unanswered during jobs. Each missed call is a quote you never got to give.</p>
+          </div>
+          <div class="leak">
+            <div class="leak__top">
+              <span class="leak__num">2</span>
+              <span class="leak__name">Quotes sent, never followed up</span>
+              <span class="leak__tag">High</span>
+            </div>
+            <p class="leak__desc">Quotes that take days to send win less often. No follow-up means warm leads quietly go elsewhere.</p>
+          </div>
+          <div class="leak leak--faded" aria-hidden="true">
+            <div class="leak__top">
+              <span class="leak__num">3</span>
+              <span class="pill" style="height:2.4mm; width:38mm;"></span>
+            </div>
+            <div class="pill" style="height:2mm; width:100%; margin-top:2.5mm;"></div>
+            <div class="pill" style="height:2mm; width:70%; margin-top:1.5mm;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Steps + price -->
+      <div class="rail">
+        <div class="step"><span class="step__n">1</span><div><div class="step__t">Call</div><p class="step__b">Call and tell the agent you want the audit. The call is recorded, and the agent asks first.</p></div></div>
+        <div class="step"><span class="step__n">2</span><div><div class="step__t">Audit</div><p class="step__b">Answer plain questions about calls, quotes and follow-up. Twelve minutes. No jargon.</p></div></div>
+        <div class="step"><span class="step__n">3</span><div><div class="step__t">Report</div><p class="step__b">Hugh reviews your findings and sends your report within 48 hours.</p></div></div>
+        <div class="price"><b>$297 flat.</b> No contract. No software pitch. Personal callback if you want it.</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Action band -->
+    <div class="cta">
+      <div class="cta__qr">
+        <svg viewBox="0 0 29 29" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" d="M0 0h29v29H0z"/><path stroke="#000000" d="M4 4.5h7m1 0h2m4 0h7M4 5.5h1m5 0h1m2 0h1m1 0h2m1 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m3 0h3m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m1 0h1m5 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h3M4 12.5h1m1 0h1m3 0h2m1 0h1m1 0h2m2 0h1m2 0h1m1 0h1M4 13.5h4m1 0h1m4 0h1m2 0h1m3 0h1m2 0h1M4 14.5h5m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1M4 15.5h1m1 0h1m4 0h2m1 0h1m1 0h1m3 0h2M4 16.5h3m3 0h2m6 0h4m2 0h1M12 17.5h2m1 0h1m1 0h2m2 0h4M4 18.5h7m1 0h2m1 0h2m1 0h2m1 0h2m1 0h1M4 19.5h1m5 0h1m4 0h1m1 0h2M4 20.5h1m1 0h3m1 0h1m3 0h6m4 0h1M4 21.5h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1M4 22.5h1m1 0h3m1 0h1m1 0h2m4 0h4m1 0h2M4 23.5h1m5 0h1m3 0h1m1 0h1M4 24.5h7m1 0h1m4 0h4m1 0h1m1 0h1"/></svg>
+      </div>
+      <div class="cta__copy">
+        <div class="cta__scan">Scan to book your audit</div>
+        <div class="cta__num">1300 AI GROW</div>
+        <div class="cta__digits">1300 244 769</div>
+        <div class="cta__foot">Or dial the number. Scanning starts the call.</div>
+      </div>
+    </div>
+
+    <p class="legal">Straight answers for Australian trade businesses. Sydney, Australia. Calls are recorded with your permission, used only to build your report. We don't share your data. © 2026 Volve Solutions.</p>
+  </div>
+</body>
+</html>
