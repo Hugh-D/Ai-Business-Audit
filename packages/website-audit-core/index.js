@@ -1,4 +1,5 @@
 const { GBP_CATEGORY_LABELS, GBP_ACTIONS, evaluateGbpSignals } = require('./gbp-signals');
+const { AI_VISIBILITY_CATEGORY_LABELS, AI_VISIBILITY_ACTIONS, evaluateAiVisibilitySignals } = require('./ai-visibility');
 
 const SIGNALS = [
   {
@@ -130,7 +131,7 @@ const CATEGORY_LABELS = {
     schema: 'Structured Data',
 };
 
-const ALL_CATEGORY_LABELS = { ...CATEGORY_LABELS, ...GBP_CATEGORY_LABELS };
+const ALL_CATEGORY_LABELS = { ...CATEGORY_LABELS, ...GBP_CATEGORY_LABELS, ...AI_VISIBILITY_CATEGORY_LABELS };
 
 async function reviewWebsite(websiteUrl, options = {}) {
     const normalizedUrl = normalizeWebsiteUrl(websiteUrl);
@@ -161,6 +162,7 @@ async function reviewWebsite(websiteUrl, options = {}) {
                 businessName: options.businessName,
                 industry: options.industry,
                 gbpProfile: options.gbpProfile,
+                aiVisibilityResults: options.aiVisibilityResults,
         });
   } catch (err) {
         const wrapped = new Error(`Could not review website: ${err.name === 'AbortError' ? 'request timed out' : err.message}`);
@@ -171,7 +173,7 @@ async function reviewWebsite(websiteUrl, options = {}) {
   }
 }
 
-function analyzeHtml({ html, websiteUrl, statusCode = 200, finalUrl = websiteUrl, businessName = '', industry = '', gbpProfile = null }) {
+function analyzeHtml({ html, websiteUrl, statusCode = 200, finalUrl = websiteUrl, businessName = '', industry = '', gbpProfile = null, aiVisibilityResults = null }) {
     const source = String(html || '');
     const text = decodeEntities(stripHtml(source)).replace(/\s+/g, ' ').trim();
     const websiteSignals = SIGNALS.map(signal => {
@@ -187,7 +189,8 @@ function analyzeHtml({ html, websiteUrl, statusCode = 200, finalUrl = websiteUrl
     });
 
   const gbpSignals = gbpProfile ? evaluateGbpSignals(gbpProfile) : [];
-    const signals = [...websiteSignals, ...gbpSignals];
+    const aiVisibilitySignals = aiVisibilityResults ? evaluateAiVisibilitySignals(aiVisibilityResults) : [];
+    const signals = [...websiteSignals, ...gbpSignals, ...aiVisibilitySignals];
 
   const foundSignals = signals.filter(signal => signal.status === 'found');
     const missingSignals = signals.filter(signal => signal.status === 'missing');
@@ -255,6 +258,7 @@ function actionForSignal(id) {
           schemaSameAs: 'Add a sameAs array to your schema linking to your Google Business Profile, social profiles, and other verified listings.',
           schemaFaqPresent: 'Add FAQPage schema with real customer questions so AI assistants can surface accurate answers about your business.',
           ...GBP_ACTIONS,
+          ...AI_VISIBILITY_ACTIONS,
     };
     return actions[id] || 'Review and improve this website signal.';
 }

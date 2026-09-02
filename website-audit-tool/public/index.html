@@ -83,6 +83,29 @@ Average rating
 </label>
 </div>
 </fieldset>
+
+<fieldset class="ai-visibility-fields">
+<legend>
+<label>
+<input id="aiVisibilityToggle" type="checkbox">
+Include AI Visibility scoring (requires OpenAI API key on server)
+</label>
+</legend>
+<div class="field-grid">
+<label>
+Location / Service Area
+<input id="aiLocationInput" type="text" placeholder="Sydney, NSW">
+</label>
+<label>
+Services (comma-separated)
+<input id="aiServicesInput" type="text" placeholder="switchboard upgrades, emergency repairs">
+</label>
+</div>
+<label>
+Custom search queries (one per line)
+<textarea id="aiCustomQueriesInput" rows="3" placeholder="emergency electrician near Parramatta&#10;who fixes solar panels in Western Sydney"></textarea>
+</label>
+</fieldset>
 </form>
 
 <div id="errorState" class="error-state" hidden></div>

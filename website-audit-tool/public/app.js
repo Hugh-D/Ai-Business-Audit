@@ -23,7 +23,13 @@ const gbpPhotoCount = document.querySelector('#gbpPhotoCount');
 const gbpReviewCount = document.querySelector('#gbpReviewCount');
 const gbpAverageRating = document.querySelector('#gbpAverageRating');
 
+const aiVisibilityToggle = document.querySelector('#aiVisibilityToggle');
+const aiLocationInput = document.querySelector('#aiLocationInput');
+const aiServicesInput = document.querySelector('#aiServicesInput');
+const aiCustomQueriesInput = document.querySelector('#aiCustomQueriesInput');
+
 let lastReview = null;
+let lastAiVisibilityResults = null;
 
 checkHealth();
 
@@ -39,6 +45,7 @@ auditForm.addEventListener('submit', async (event) => {
   setLoading(true);
   try {
     const gbpProfile = buildGbpProfile();
+    const aiVisibility = buildAiVisibility();
     const response = await fetch('/api/audit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,13 +54,15 @@ auditForm.addEventListener('submit', async (event) => {
         industry: industryInput.value.trim(),
         websiteUrl: websiteUrlInput.value.trim(),
         ...(gbpProfile ? { gbpProfile } : {}),
+        ...(aiVisibility ? { aiVisibility } : {}),
       }),
     });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'Website audit failed');
 
     lastReview = payload.review;
-    renderReport(lastReview);
+    lastAiVisibilityResults = payload.aiVisibilityResults || null;
+    renderReport(lastReview, lastAiVisibilityResults);
   } catch (err) {
     showError(err.message);
   } finally {
@@ -73,6 +82,24 @@ function buildGbpProfile() {
     photoCount: Number(gbpPhotoCount.value || 0),
     reviewCount: Number(gbpReviewCount.value || 0),
     averageRating: Number(gbpAverageRating.value || 0),
+  };
+}
+
+function buildAiVisibility() {
+  if (!aiVisibilityToggle || !aiVisibilityToggle.checked) return null;
+  const location = aiLocationInput.value.trim();
+  if (!location) return null;
+
+  const servicesRaw = aiServicesInput.value.trim();
+  const services = servicesRaw ? servicesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  const customRaw = aiCustomQueriesInput.value.trim();
+  const customQueries = customRaw ? customRaw.split('\n').map(q => q.trim()).filter(Boolean) : [];
+
+  return {
+    location,
+    ...(services.length ? { services } : {}),
+    ...(customQueries.length ? { customQueries } : {}),
   };
 }
 
@@ -117,7 +144,7 @@ async function checkHealth() {
   }
 }
 
-function renderReport(review) {
+function renderReport(review, aiVisibilityResults) {
   emptyState.hidden = true;
   reportOutput.hidden = false;
   copySummaryButton.disabled = false;
@@ -130,6 +157,7 @@ function renderReport(review) {
     renderTopLeaks(review),
     renderActionPlan(review.actionPlan),
     renderCategoryScores(review.categoryScores),
+    aiVisibilityResults ? renderAiQueryDetails(aiVisibilityResults) : '',
     renderSignals(review.signals),
     renderListBlock('Priority Opportunities', review.opportunities),
     renderFollowUpPrompt(review),
@@ -365,8 +393,60 @@ function customerImpactForSignal(id) {
     gbpOwnerRespondsToReviews: 'Not replying to reviews can look less engaged than competitors who respond to every review.',
     gbpAppearsInLocalPack: 'Missing the local 3-pack for core searches means losing visibility to competitors who do appear there.',
     gbpCitationConsistency: 'Inconsistent directory listings can quietly work against local ranking and confuse customers.',
+    aiCategoryMentioned: 'When customers ask AI assistants for recommendations, your business may not appear as an option.',
+    aiMentionBreadth: 'Your business may only show up for some types of queries but not others, like urgent or service-specific searches.',
+    aiCompetitorPosition: 'Competitors may appear before your business when AI assistants recommend options in your category.',
+    aiDirectRecognised: 'AI assistants may not have enough information about your business to describe it when asked directly.',
+    aiNameAccurate: 'AI assistants may use an incorrect name for your business, creating confusion for potential customers.',
+    aiLocationAccurate: 'AI assistants may not accurately describe where your business is located or your service area.',
+    aiServicesAccurate: 'AI assistants may not accurately describe the services your business offers.',
+    aiSentimentPositive: 'AI assistants may describe your business in a neutral or negative tone rather than recommending it.',
   };
   return impacts[id] || 'This gap may reduce trust, clarity, or enquiry conversion.';
+}
+
+function renderAiQueryDetails(aiResults) {
+  if (!aiResults || !aiResults.categoryResults) return '';
+
+  const rows = aiResults.categoryResults.map(r => {
+    const statusClass = r.mentioned ? 'found' : 'missing';
+    const statusLabel = r.mentioned ? `Mentioned (position ${r.position})` : 'Not mentioned';
+    const competitorList = Array.isArray(r.competitors) && r.competitors.length
+      ? r.competitors.slice(0, 5).map(c => escapeHtml(c)).join(', ')
+      : 'None listed';
+
+    return `
+      <div class="signal ${statusClass}">
+        <strong>${escapeHtml(r.query)}</strong>
+        <span>${escapeHtml(statusLabel)}</span>
+        <p>Competitors: ${competitorList}</p>
+      </div>
+    `;
+  });
+
+  let directSection = '';
+  if (aiResults.directResult) {
+    const d = aiResults.directResult;
+    const statusClass = d.recognised ? 'found' : 'missing';
+    directSection = `
+      <div class="signal ${statusClass}">
+        <strong>Direct recognition query</strong>
+        <span>${d.recognised ? 'Recognised' : 'Not recognised'}</span>
+        ${d.description ? `<p>${escapeHtml(d.description)}</p>` : ''}
+      </div>
+    `;
+  }
+
+  return `
+    <section>
+      <h3>AI Visibility Query Results</h3>
+      <p style="color:var(--muted);margin-bottom:10px">Tested via ${escapeHtml(aiResults.provider || 'openai')} (${escapeHtml(aiResults.model || 'gpt-4o-mini')})</p>
+      <div class="signal-grid">
+        ${rows.join('')}
+        ${directSection}
+      </div>
+    </section>
+  `;
 }
 
 function formatSeries(items) {

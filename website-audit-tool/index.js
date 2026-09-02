@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const websiteAuditor = require('../packages/website-audit-core');
+const { checkAiVisibility, evaluateAiVisibilitySignals } = require('../packages/website-audit-core/ai-visibility');
 
 const PORT = Number(process.env.PORT || 3100);
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -27,12 +28,51 @@ const server = http.createServer(async (req, res) => {
                   const normalizedWebsiteUrl = websiteAuditor.normalizeWebsiteUrl(websiteUrl);
                   if (!normalizedWebsiteUrl) return sendJson(res, 400, { error: 'websiteUrl must be a valid website address' });
 
+                let aiVisibilityResults = null;
+                if (body.aiVisibility) {
+                    const apiKey = process.env.OPENAI_API_KEY;
+                    if (!apiKey) return sendJson(res, 400, { error: 'OPENAI_API_KEY is not configured on the server' });
+                    aiVisibilityResults = await checkAiVisibility({
+                        businessName: body.businessName,
+                        location: body.aiVisibility.location,
+                        industry: body.industry,
+                        services: body.aiVisibility.services,
+                        customQueries: body.aiVisibility.customQueries,
+                        apiKey,
+                    });
+                }
+
                 const review = await websiteAuditor.reviewWebsite(normalizedWebsiteUrl, {
                             businessName: body.businessName,
                             industry: body.industry,
                             gbpProfile: body.gbpProfile,
+                            aiVisibilityResults,
                 });
-                  return sendJson(res, 200, { review });
+                  return sendJson(res, 200, {
+                      review,
+                      ...(aiVisibilityResults ? { aiVisibilityResults } : {}),
+                  });
+        }
+
+        if (req.method === 'POST' && url.pathname === '/api/ai-visibility') {
+                  const body = await readJson(req);
+                  if (!body.businessName) return sendJson(res, 400, { error: 'businessName is required' });
+                  if (!body.location) return sendJson(res, 400, { error: 'location is required' });
+                  if (!body.industry) return sendJson(res, 400, { error: 'industry is required' });
+
+                const apiKey = process.env.OPENAI_API_KEY;
+                if (!apiKey) return sendJson(res, 400, { error: 'OPENAI_API_KEY is not configured on the server' });
+
+                const results = await checkAiVisibility({
+                    businessName: body.businessName,
+                    location: body.location,
+                    industry: body.industry,
+                    services: body.services,
+                    customQueries: body.customQueries,
+                    apiKey,
+                });
+                const signals = evaluateAiVisibilitySignals(results);
+                return sendJson(res, 200, { results, signals });
         }
 
         if (req.method === 'POST' && url.pathname === '/api/analyze-html') {
@@ -46,6 +86,7 @@ const server = http.createServer(async (req, res) => {
                                             businessName: body.businessName,
                                             industry: body.industry,
                                             gbpProfile: body.gbpProfile,
+                                            aiVisibilityResults: body.aiVisibilityResults,
                               }),
                   });
         }
