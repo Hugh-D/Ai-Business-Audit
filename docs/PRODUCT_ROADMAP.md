@@ -16,6 +16,22 @@ The MVP should prove one workflow end to end:
 4. Present the report in a clean web view.
 5. Offer report delivery and an optional booked follow-up call with Hugh.
 
+## Current Shipping Gate
+
+The app should now be treated as validation-ready, not feature-hungry.
+
+The next gate is commercial proof with electricians:
+
+1. A real prospect completes the audit by public audit number or the temporary Hugh-led fallback.
+2. Retell completes the consent-first assessment.
+3. The webhook generates a report without manual transcript copying.
+4. Hugh reviews and delivers the report.
+5. The prospect either books a follow-up call, declines, or gives clear feedback.
+
+Until this has happened with at least 10 opt-in electrician or small electrical contractor prospects, avoid expanding scope. New ideas should be judged by whether they increase completed audits, delivered reports, or booked implementation conversations in the next 30 days.
+
+If the public number is delayed by SIPCity, Twilio compliance, or another provider issue, use [PHONE_NUMBER_BLOCKED_FALLBACK.md](PHONE_NUMBER_BLOCKED_FALLBACK.md) and keep validating with Hugh-led discovery calls.
+
 ## Build Phases
 
 ### Phase 1: API You Can Trust
@@ -68,14 +84,33 @@ The MVP should prove one workflow end to end:
 
 ## Near-Term Technical Backlog
 
-- Add `npm test`.
+Shipping blockers:
+
+- Buy/configure the inbound audit number. Current likely path is SIPCity 1300 number plus SIP trunk; see [SIPCITY_RETELL_SETUP.md](SIPCITY_RETELL_SETUP.md).
+- Configure SIPcity/Retell routing and the public webhook URL.
+- Verify the live inbound call-to-report loop with Hugh as the first caller.
+- Run 10 opt-in audits with electricians or small electrical contractors.
+- Track completed audits, delivered reports, follow-up bookings, paid conversions, and repeated implementation opportunities.
+
+Number blocked fallback:
+
+- Run Hugh-led discovery calls using normal phone, Zoom, Google Meet, or Teams.
+- Paste the transcript or structured notes into the manual audit workflow.
+- Count these toward validation when the report is reviewed, delivered, and tracked.
+
+Only after the live loop works:
+
+- Add deployment config.
+- Add CI.
 - Add `eslint` or a minimal formatter.
 - Add schema validation with `zod` or `joi`.
 - Add model output schema enforcement.
-- Add persistent storage.
-- Add frontend app.
-- Add PDF generation.
-- Improve website review with deeper crawling and brand/logo extraction.
+- Add server-side PDF generation if browser print/PDF is not enough.
 - Decide standalone website audit monetisation path: lead magnet, paid mini-audit, or internal sales qualifier.
-- Add deployment config.
-- Add CI.
+
+Explicitly parked until revenue signal:
+
+- More industries.
+- Deeper website crawling and brand/logo extraction.
+- Accounts, CRM sync, payments, or calendar integration.
+- More report features that do not improve conversion to a follow-up or implementation sprint.

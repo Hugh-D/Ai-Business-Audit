@@ -41,6 +41,24 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
       },
       keyStrengths: ['Good seasonal demand'],
       criticalGaps: ['Quote tracking is manual'],
+      diagnosticFindings: [
+        {
+          problemArea: 'Quote Follow-Up',
+          status: 'red',
+          maturity: 'Quote tracking is manual and not centrally visible.',
+          evidence: 'Client: Quotes are on a whiteboard.',
+          likelyImpact: 'Lost quote conversions and slower follow-up.',
+          urgency: 'high',
+          implementationPotential: 'high',
+          fastestWin: 'Centralize quote intake and follow-up reminders.',
+        },
+      ],
+      priorityAnalysis: {
+        highestImpactIssue: 'Manual quote tracking',
+        fastestVisibleWin: 'Centralize quote intake',
+        implementationConfidence: 'high',
+        reasoning: 'The transcript shows a clear manual process with a straightforward workflow fix.',
+      },
       sections: {
         leadFlow: 'Requests arrive from calls and Facebook.',
       },
@@ -72,8 +90,10 @@ test('buildAuditWorkbookBuffer creates an editable audit workbook structure', as
   assert.equal(workbook.getWorksheet('Website Review').getCell('C2').value, 'https://greenstripe.example.com.au');
   assert.equal(workbook.getWorksheet('Website Review').getCell('A9').value, 'Phone Visibility');
   assert.equal(workbook.getWorksheet('Website Review').getCell('B10').value, 'Missing');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('A2').value, 'Quote Follow-Up');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('B2').value, 'Red');
   assert.equal(workbook.getWorksheet('Findings').getCell('B3').value, 'Quote tracking is manual');
-  assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, 'Not Started');
+  assert.equal(workbook.getWorksheet('Action Plan').getCell('G2').value, 'Not Started');
   assert.equal(workbook.getWorksheet('Transcript').getCell('B2').value, 'Client: Quotes are on a whiteboard.');
 });
 

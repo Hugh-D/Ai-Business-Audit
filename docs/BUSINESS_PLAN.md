@@ -8,6 +8,8 @@ The strongest initial wedge is:
 
 > A fast AI-readiness and revenue-leak audit for trades and home service companies.
 
+The first validation niche is electricians and small electrical contractors. Keep the next 10 audits focused there before expanding back to other trades.
+
 ## Ideal First Customer
 
 - Owner-operated or manager-led home service business.
@@ -41,7 +43,7 @@ The strongest initial wedge is:
 
 ## Validation Plan
 
-1. Pick one niche first: plumbers, HVAC, roofers, electricians, or lawn care.
+1. Start with electricians and small electrical contractors.
 2. Run 10 opt-in inbound audits using the app and the public audit number.
 3. Track the most common pain points.
 4. Turn repeated recommendations into implementation packages.
@@ -74,3 +76,11 @@ Week 2: Talk to 10 business owners and refine the report.
 Week 3: Package the top 2 implementation offers.
 
 Week 4: Sell the first paid implementation sprint.
+
+## Current Launch Asset
+
+Use [ELECTRICIAN_LAUNCH_PACK.md](ELECTRICIAN_LAUNCH_PACK.md) for outreach copy, objection handling, the 10-audit tracker, and the first implementation sprint offer.
+
+Use [ELECTRICIAN_PROSPECTING_SOP.md](ELECTRICIAN_PROSPECTING_SOP.md) to build the first 20 to 30 prospect list and start outreach.
+
+Use [PHONE_NUMBER_BLOCKED_FALLBACK.md](PHONE_NUMBER_BLOCKED_FALLBACK.md) if SIPCity, Twilio compliance, or another phone provider slows down the public audit number.

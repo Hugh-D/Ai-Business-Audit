@@ -136,6 +136,7 @@ Current known environment status:
 - `RETELL_AGENT_ID` is set and verified against Retell.
 - The customer path is now inbound-first; `RETELL_FROM_NUMBER` is not required for launch.
 - SIPcity confirmed it can provide an Australian number connected to Retell for inbound calling, and permit AI service use for opt-in callers.
+- As of 2026-06-01, SIPCity said the likely setup is a 1300 number plan at AUD $10/month plus AUD $0.04/minute inbound, and a SIP trunk plan at AUD $17.95/month including 1,000 outbound minutes. See `docs/SIPCITY_RETELL_SETUP.md`.
 
 Useful defaults:
 
@@ -186,6 +187,8 @@ https://your-public-url/webhook/retell
 
 Set `RETELL_WEBHOOK_URL` or `PUBLIC_BASE_URL` in `.env` so the launch readiness panel can show whether public webhook setup has been filled in.
 
+Use `docs/PUBLIC_WEBHOOK_RUNBOOK.md` for the repeatable tunnel, environment, Retell, and first inbound test procedure.
+
 The app verifies Retell signatures using the current `x-retell-signature` format:
 
 ```text
@@ -217,11 +220,11 @@ Webhook behavior:
 
 ## Recommended Next Steps
 
-1. Respond to SIPcity with the inbound, opt-in pilot traffic profile and request the recommended local/1300 inbound number setup for Retell.
-2. Purchase/configure the inbound audit number, with `1300 AI HELP` retained as the preferred branded option if available.
-3. Set up ngrok or deploy the app so Retell can reach `/webhook/retell`.
-4. Configure Retell webhook to `https://your-public-url/webhook/retell` and set `AUDIT_PHONE_NUMBER` plus `RETELL_WEBHOOK_URL` in `.env`.
-5. Call the advertised number yourself and verify the consent-first inbound call-to-report loop.
+1. Confirm SIPCity setup details in `docs/SIPCITY_RETELL_SETUP.md`, then purchase/configure the 1300 number and SIP trunk if there are no hidden setup/minimum-term issues.
+2. Set up ngrok or deploy the app so Retell can reach `/webhook/retell`.
+3. Configure Retell webhook to `https://your-public-url/webhook/retell` and set `AUDIT_PHONE_NUMBER` plus `RETELL_WEBHOOK_URL` in `.env`.
+4. Call the advertised number yourself and verify the consent-first inbound call-to-report loop.
+5. Run the first 10 electrician audits, using Hugh-led fallback calls only if number setup stalls again.
 6. Replace local SQLite storage with a managed production database when moving beyond local MVP testing.
 7. Improve website review with deeper crawling, stronger logo/brand extraction, and optional report accenting from the captured URL.
 8. Decide whether the standalone website audit becomes a lead magnet, paid mini-audit, or internal sales tool before adding more features.

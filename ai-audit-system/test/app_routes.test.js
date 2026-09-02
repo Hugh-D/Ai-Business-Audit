@@ -95,6 +95,24 @@ test('POST /export/xlsx returns an editable workbook', async () => {
       scores: { leadResponse: 7 },
       keyStrengths: ['Strong repeat customers'],
       criticalGaps: ['Missed after-hours calls'],
+      diagnosticFindings: [
+        {
+          problemArea: 'Lead Response',
+          status: 'red',
+          maturity: 'After-hours lead capture is reactive.',
+          evidence: 'Client: We miss calls.',
+          likelyImpact: 'Lost service enquiries.',
+          urgency: 'high',
+          implementationPotential: 'high',
+          fastestWin: 'Missed-call text-back.',
+        },
+      ],
+      priorityAnalysis: {
+        highestImpactIssue: 'Missed after-hours calls',
+        fastestVisibleWin: 'Missed-call text-back',
+        implementationConfidence: 'high',
+        reasoning: 'The gap is specific and easy to automate.',
+      },
       sections: { leadFlow: 'Leads arrive by phone.' },
       actionPlan: [{ priority: 'High', action: 'Automate missed-call follow-up.', timeframe: '14 days' }],
     },
@@ -113,12 +131,14 @@ test('POST /export/xlsx returns an editable workbook', async () => {
   assert.deepEqual(workbook.worksheets.map(sheet => sheet.name), [
     'Summary',
     'Scores',
+    'Diagnostics',
     'Findings',
     'Action Plan',
     'Transcript',
   ]);
   assert.equal(workbook.getWorksheet('Summary').getCell('B2').value, 'Demo Plumbing Co');
   assert.equal(workbook.getWorksheet('Scores').getCell('A2').value, 'Lead Response');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('A2').value, 'Lead Response');
   assert.equal(workbook.getWorksheet('Action Plan').getCell('B2').value, 'Automate missed-call follow-up.');
 });
 
@@ -158,7 +178,7 @@ test('GET /readiness summarizes missing inbound launch configuration', async () 
 test('GET /readiness marks inbound audit testing ready without outbound number', async () => {
   process.env.ANTHROPIC_API_KEY = 'test_anthropic_key';
   process.env.RETELL_API_KEY = 'test_retell_key';
-  process.env.AUDIT_PHONE_NUMBER = '1300 244 357';
+  process.env.AUDIT_PHONE_NUMBER = '1300 244 769';
   process.env.RETELL_WEBHOOK_URL = 'https://audit.example.com/webhook/retell';
   delete process.env.RETELL_AGENT_ID;
   delete process.env.RETELL_FROM_NUMBER;
@@ -175,7 +195,7 @@ test('GET /readiness marks inbound audit testing ready without outbound number',
   assert.equal(response.body.readyForEmailDelivery, true);
   assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'optional');
   assert.deepEqual(response.body.nextSteps, [
-    'Call 1300 244 357 and confirm Retell posts the completed assessment to /webhook/retell.',
+    'Call 1300 244 769 and confirm Retell posts the completed assessment to /webhook/retell.',
   ]);
 });
 

@@ -267,7 +267,8 @@ button:disabled {
 }
 
 .metric-grid,
-.signal-grid {
+.signal-grid,
+.quick-read {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -275,12 +276,74 @@ button:disabled {
 
 .metric,
 .signal,
+.quick-read,
 .list-block,
-.action-item {
+.action-item,
+.leak-item,
+.follow-up-block {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 14px;
   background: #fbfcfb;
+}
+
+.quick-read {
+  align-items: start;
+  background: #f8faf9;
+}
+
+.quick-read h3 {
+  margin-bottom: 8px;
+  font-size: 1.08rem;
+}
+
+.quick-read p,
+.quick-read ol {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.quick-read ol {
+  padding-left: 20px;
+}
+
+.quick-read li + li {
+  margin-top: 6px;
+}
+
+.leak-list {
+  display: grid;
+  gap: 10px;
+}
+
+.leak-item {
+  border-left: 4px solid var(--warning);
+}
+
+.leak-item span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--warning);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.leak-item strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.leak-item p,
+.follow-up-block p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.follow-up-block {
+  background: #f8faf9;
 }
 
 .metric span,
@@ -350,6 +413,20 @@ button:disabled {
   margin-bottom: 6px;
 }
 
+.toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  border-radius: 6px;
+  padding: 11px 14px;
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+}
+
 @media print {
   body {
     background: #ffffff;
@@ -375,7 +452,8 @@ button:disabled {
   .shell,
   .field-grid,
   .metric-grid,
-  .signal-grid {
+  .signal-grid,
+  .quick-read {
     grid-template-columns: 1fr;
   }
 }

@@ -486,6 +486,8 @@ function renderReport(payload) {
     renderWebsiteReview(payload.websiteReview),
     renderListBlock('Key Strengths', report.keyStrengths),
     renderListBlock('Critical Gaps', report.criticalGaps),
+    renderPriorityAnalysis(report.priorityAnalysis),
+    renderDiagnosticFindings(report.diagnosticFindings),
     renderSections(report.sections),
     renderActionPlan(report.actionPlan),
   ].join('');
@@ -583,6 +585,7 @@ function buildMailtoUrl(payload) {
     '',
     'The biggest opportunities we identified:',
     ...firstItems(payload.report?.criticalGaps, 3).map(item => `- ${item}`),
+    payload.report?.priorityAnalysis?.fastestVisibleWin ? `\nFastest visible win: ${payload.report.priorityAnalysis.fastestVisibleWin}` : '',
     '',
     'Recommended next actions:',
     ...firstItems(payload.report?.actionPlan, 3).map(item => `- ${item.action || item}`),
@@ -790,6 +793,8 @@ function renderExportReport(report) {
     renderExportScores(report.scores),
     renderExportList('Key Strengths', report.keyStrengths),
     renderExportList('Critical Gaps', report.criticalGaps),
+    renderExportPriorityAnalysis(report.priorityAnalysis),
+    renderExportDiagnosticFindings(report.diagnosticFindings),
     renderExportSections(report.sections),
     renderExportActions(report.actionPlan),
   ].join('');
@@ -813,6 +818,53 @@ function renderExportList(title, items = []) {
     <section>
       <h2>${escapeHtml(title)}</h2>
       <div class="box"><ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>
+    </section>
+  `;
+}
+
+function renderExportPriorityAnalysis(analysis = {}) {
+  const entries = [
+    ['Highest Impact Issue', analysis.highestImpactIssue],
+    ['Fastest Visible Win', analysis.fastestVisibleWin],
+    ['Implementation Confidence', analysis.implementationConfidence ? formatLabel(analysis.implementationConfidence) : ''],
+    ['Reasoning', analysis.reasoning],
+  ].filter(([, value]) => value);
+
+  if (!entries.length) return '';
+  return `
+    <section>
+      <h2>Priority Analysis</h2>
+      <div class="grid">
+        ${entries.map(([label, value]) => `
+          <div class="box">
+            <span class="metric-label">${escapeHtml(label)}</span>
+            <p>${escapeHtml(String(value))}</p>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderExportDiagnosticFindings(findings = []) {
+  if (!Array.isArray(findings) || findings.length === 0) return '';
+  return `
+    <section>
+      <h2>Diagnostic Findings</h2>
+      <div class="grid">
+        ${findings.map(finding => `
+          <div class="box">
+            <span class="metric-label">${escapeHtml(formatLabel(finding.status || 'unknown'))}</span>
+            <h3>${escapeHtml(finding.problemArea || 'Problem Area')}</h3>
+            <p><strong>Maturity:</strong> ${escapeHtml(finding.maturity || '')}</p>
+            <p><strong>Evidence:</strong> ${escapeHtml(finding.evidence || '')}</p>
+            <p><strong>Impact:</strong> ${escapeHtml(finding.likelyImpact || '')}</p>
+            <p><strong>Urgency:</strong> ${escapeHtml(formatLabel(finding.urgency || ''))}</p>
+            <p><strong>Implementation:</strong> ${escapeHtml(formatLabel(finding.implementationPotential || ''))}</p>
+            <p><strong>Fastest win:</strong> ${escapeHtml(finding.fastestWin || '')}</p>
+          </div>
+        `).join('')}
+      </div>
     </section>
   `;
 }
@@ -913,12 +965,61 @@ function renderActionPlan(actions = []) {
       <div class="priority">${escapeHtml(item.priority || 'next')}</div>
       <p><strong>${escapeHtml(item.action || 'Action needed')}</strong></p>
       <p>${escapeHtml(item.timeframe || 'Set timeframe')}</p>
+      ${item.problemArea ? `<p>${escapeHtml(item.problemArea)}</p>` : ''}
+      ${item.expectedImpact ? `<p>${escapeHtml(item.expectedImpact)}</p>` : ''}
     </div>
   `).join('');
 
   return `
     <section>
       <h3>Action Plan</h3>
+      <div class="action-list">${items}</div>
+    </section>
+  `;
+}
+
+function renderPriorityAnalysis(analysis = {}) {
+  const entries = [
+    ['Highest Impact Issue', analysis.highestImpactIssue],
+    ['Fastest Visible Win', analysis.fastestVisibleWin],
+    ['Implementation Confidence', analysis.implementationConfidence ? formatLabel(analysis.implementationConfidence) : ''],
+    ['Reasoning', analysis.reasoning],
+  ].filter(([, value]) => value);
+
+  if (!entries.length) return '';
+  return `
+    <section>
+      <h3>Priority Analysis</h3>
+      <div class="action-list">
+        ${entries.map(([label, value]) => `
+          <div class="action-item">
+            <div class="priority">${escapeHtml(label)}</div>
+            <p>${escapeHtml(String(value))}</p>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderDiagnosticFindings(findings = []) {
+  if (!Array.isArray(findings) || findings.length === 0) return '';
+  const items = findings.map((finding) => `
+    <div class="action-item">
+      <div class="priority">${escapeHtml(formatLabel(finding.status || 'unknown'))}</div>
+      <p><strong>${escapeHtml(finding.problemArea || 'Problem Area')}</strong></p>
+      ${finding.maturity ? `<p>${escapeHtml(finding.maturity)}</p>` : ''}
+      ${finding.evidence ? `<p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p>` : ''}
+      ${finding.likelyImpact ? `<p><strong>Impact:</strong> ${escapeHtml(finding.likelyImpact)}</p>` : ''}
+      ${finding.urgency ? `<p><strong>Urgency:</strong> ${escapeHtml(formatLabel(finding.urgency))}</p>` : ''}
+      ${finding.implementationPotential ? `<p><strong>Implementation:</strong> ${escapeHtml(formatLabel(finding.implementationPotential))}</p>` : ''}
+      ${finding.fastestWin ? `<p><strong>Fastest win:</strong> ${escapeHtml(finding.fastestWin)}</p>` : ''}
+    </div>
+  `).join('');
+
+  return `
+    <section>
+      <h3>Diagnostic Findings</h3>
       <div class="action-list">${items}</div>
     </section>
   `;

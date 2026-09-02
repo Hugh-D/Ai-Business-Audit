@@ -15,6 +15,7 @@ async function buildAuditWorkbookBuffer(audit) {
   addSummarySheet(workbook, audit, report);
   addScoresSheet(workbook, report);
   if (audit.websiteReview) addWebsiteReviewSheet(workbook, audit.websiteReview);
+  addDiagnosticsSheet(workbook, report);
   addFindingsSheet(workbook, report);
   addActionPlanSheet(workbook, report);
   addTranscriptSheet(workbook, audit);
@@ -98,6 +99,9 @@ function addSummarySheet(workbook, audit, report) {
     ['Preferred Follow-up Time', audit.followUpPreferredTime || ''],
     ['Scheduled Follow-up', audit.followUpScheduledFor || ''],
     ['Follow-up Notes', audit.followUpNotes || ''],
+    ['Highest Impact Issue', report.priorityAnalysis?.highestImpactIssue || ''],
+    ['Fastest Visible Win', report.priorityAnalysis?.fastestVisibleWin || ''],
+    ['Implementation Confidence', formatLabel(report.priorityAnalysis?.implementationConfidence || '')],
     ['Generated At', new Date().toLocaleString()],
   ]);
 
@@ -116,6 +120,55 @@ function addSummarySheet(workbook, audit, report) {
   }
 
   styleSectionHeader(sheet.getRow(startRow));
+  applyBorders(sheet);
+}
+
+function addDiagnosticsSheet(workbook, report) {
+  const sheet = workbook.addWorksheet('Diagnostics', {
+    views: [{ state: 'frozen', ySplit: 1 }],
+  });
+
+  sheet.columns = [
+    { header: 'Problem Area', key: 'problemArea', width: 28 },
+    { header: 'Status', key: 'status', width: 14 },
+    { header: 'Maturity', key: 'maturity', width: 45 },
+    { header: 'Evidence', key: 'evidence', width: 65 },
+    { header: 'Likely Impact', key: 'likelyImpact', width: 50 },
+    { header: 'Urgency', key: 'urgency', width: 14 },
+    { header: 'Implementation Potential', key: 'implementationPotential', width: 24 },
+    { header: 'Fastest Win', key: 'fastestWin', width: 55 },
+    { header: 'Notes', key: 'notes', width: 40 },
+  ];
+
+  for (const finding of Array.isArray(report.diagnosticFindings) ? report.diagnosticFindings : []) {
+    sheet.addRow([
+      finding.problemArea || '',
+      formatLabel(finding.status || ''),
+      finding.maturity || '',
+      finding.evidence || '',
+      finding.likelyImpact || '',
+      formatLabel(finding.urgency || ''),
+      formatLabel(finding.implementationPotential || ''),
+      finding.fastestWin || '',
+      '',
+    ]);
+  }
+
+  const priorityStartRow = Math.max(sheet.rowCount + 2, 4);
+  sheet.getCell(`A${priorityStartRow}`).value = 'Priority Analysis';
+  sheet.getCell(`B${priorityStartRow}`).value = 'Value';
+  styleSectionHeader(sheet.getRow(priorityStartRow));
+
+  const analysis = report.priorityAnalysis || {};
+  sheet.addRows([
+    ['Highest Impact Issue', analysis.highestImpactIssue || ''],
+    ['Fastest Visible Win', analysis.fastestVisibleWin || ''],
+    ['Implementation Confidence', formatLabel(analysis.implementationConfidence || '')],
+    ['Reasoning', analysis.reasoning || ''],
+  ]);
+
+  styleTitle(sheet, 'A1:I1');
+  sheet.autoFilter = 'A1:I1';
   applyBorders(sheet);
 }
 
@@ -172,6 +225,8 @@ function addActionPlanSheet(workbook, report) {
     { header: 'Priority', key: 'priority', width: 16 },
     { header: 'Action', key: 'action', width: 70 },
     { header: 'Timeframe', key: 'timeframe', width: 22 },
+    { header: 'Problem Area', key: 'problemArea', width: 28 },
+    { header: 'Expected Impact', key: 'expectedImpact', width: 55 },
     { header: 'Owner', key: 'owner', width: 22 },
     { header: 'Status', key: 'status', width: 18 },
     { header: 'Notes', key: 'notes', width: 45 },
@@ -182,16 +237,18 @@ function addActionPlanSheet(workbook, report) {
       item.priority || '',
       item.action || '',
       item.timeframe || '',
+      item.problemArea || '',
+      item.expectedImpact || '',
       '',
       'Not Started',
       '',
     ]);
   }
 
-  styleTitle(sheet, 'A1:F1');
-  sheet.autoFilter = 'A1:F1';
+  styleTitle(sheet, 'A1:H1');
+  sheet.autoFilter = 'A1:H1';
   for (let rowNumber = 2; rowNumber <= Math.max(sheet.rowCount, 25); rowNumber += 1) {
-    sheet.getCell(`E${rowNumber}`).dataValidation = {
+    sheet.getCell(`G${rowNumber}`).dataValidation = {
       type: 'list',
       allowBlank: true,
       formulae: ['"Not Started,In Progress,Blocked,Done"'],
