@@ -87,6 +87,38 @@ const SIGNALS = [
         foundDetail: 'JSON-LD structured data appears in the page HTML.',
         missingDetail: 'No JSON-LD structured data was detected in the static page HTML.',
   },
+  {
+        id: 'schemaBusinessType',
+        category: 'schema',
+        label: 'Business Type Schema',
+        found: html => /"@type"\s*:\s*"(?:[A-Za-z]*Business|Organization)"/i.test(html),
+        foundDetail: 'The structured data declares a recognised LocalBusiness or Organization type.',
+        missingDetail: 'No LocalBusiness, Organization, or similar schema type was detected.',
+  },
+  {
+        id: 'schemaContactDetails',
+        category: 'schema',
+        label: 'Schema Contact Details',
+        found: html => /"name"\s*:/i.test(html) && /"telephone"\s*:/i.test(html) && /"address"\s*:/i.test(html),
+        foundDetail: 'The structured data includes name, address, and telephone details.',
+        missingDetail: 'The structured data is missing name, address, or telephone details.',
+  },
+  {
+        id: 'schemaSameAs',
+        category: 'schema',
+        label: 'Entity Linking (sameAs)',
+        found: html => /"sameAs"\s*:\s*\[/i.test(html),
+        foundDetail: 'A sameAs array links this business to other profiles, helping AI systems confirm one consistent entity.',
+        missingDetail: 'No sameAs array was found linking this business to other profiles or platforms.',
+  },
+  {
+        id: 'schemaFaqPresent',
+        category: 'schema',
+        label: 'FAQ Schema',
+        found: html => /"@type"\s*:\s*"FAQPage"/i.test(html),
+        foundDetail: 'FAQ schema markup was detected, which can help the page appear in AI-generated answers.',
+        missingDetail: 'No FAQPage schema was detected.',
+  },
   ];
 
 const CATEGORY_LABELS = {
@@ -95,6 +127,7 @@ const CATEGORY_LABELS = {
     technical: 'Technical',
     seo: 'SEO',
     copy: 'Copy',
+    schema: 'Structured Data',
 };
 
 const ALL_CATEGORY_LABELS = { ...CATEGORY_LABELS, ...GBP_CATEGORY_LABELS };
@@ -217,6 +250,10 @@ function actionForSignal(id) {
           metaDescription: 'Write a concise meta description that explains the offer and gives a reason to click.',
           headingClarity: 'Use a clear H1 that says what the business does and who it helps.',
           schemaMarkup: 'Add LocalBusiness or Organization JSON-LD that matches the visible business details.',
+          schemaBusinessType: 'Add a LocalBusiness or Organization type to your JSON-LD schema so search and AI systems know what kind of business this is.',
+          schemaContactDetails: 'Include name, address, and telephone fields inside your JSON-LD schema so your business details are machine-readable.',
+          schemaSameAs: 'Add a sameAs array to your schema linking to your Google Business Profile, social profiles, and other verified listings.',
+          schemaFaqPresent: 'Add FAQPage schema with real customer questions so AI assistants can surface accurate answers about your business.',
           ...GBP_ACTIONS,
     };
     return actions[id] || 'Review and improve this website signal.';
