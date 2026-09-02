@@ -99,8 +99,6 @@ const CATEGORY_LABELS = {
 
 const ALL_CATEGORY_LABELS = { ...CATEGORY_LABELS, ...GBP_CATEGORY_LABELS };
 
-const ALL_CATEGORY_LABELS = { ...CATEGORY_LABELS, ...GBP_CATEGORY_LABELS };
-
 async function reviewWebsite(websiteUrl, options = {}) {
     const normalizedUrl = normalizeWebsiteUrl(websiteUrl);
     if (!normalizedUrl) {
@@ -265,13 +263,13 @@ function extractLogoUrl(html, baseUrl) {
     return imgMatch ? resolveUrl(imgMatch[1], baseUrl) : '';
 }
 
-              function resolveUrl(value, baseUrl) {
-                  try {
-                        return new URL(value, baseUrl).toString();
-                  } catch (_err) {
-                        return '';
-                  }
-              }
+function resolveUrl(value, baseUrl) {
+    try {
+          return new URL(value, baseUrl).toString();
+    } catch (_err) {
+          return '';
+    }
+}
 
 function stripHtml(value) {
     return String(value)
