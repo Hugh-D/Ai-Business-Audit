@@ -1,0 +1,14 @@
+{
+  "name": "volve-ai-business-audit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production entry point for the Volve AI Business Audit monorepo",
+  "scripts": {
+    "build": "npm ci --prefix ai-audit-system",
+    "start": "npm start --prefix ai-audit-system",
+    "test": "npm test --prefix ai-audit-system"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
