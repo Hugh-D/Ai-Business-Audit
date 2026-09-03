@@ -104,6 +104,12 @@ app.get('/automations/:slug', (req, res, next) => {
   return res.sendFile(path.join(__dirname, 'public', 'automation-detail.html'));
 });
 
+// GET /privacy
+// Privacy and call-recording policy, linked from the FAQ and the footer.
+app.get('/privacy', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+
 // GET /flyer
 // Printable A4 one-pager for physical distribution (wholesaler counter, etc.).
 app.get('/flyer', (_req, res) => {

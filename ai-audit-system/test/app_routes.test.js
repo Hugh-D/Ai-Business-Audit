@@ -98,6 +98,19 @@ test('GET / serves the public branded website and /workbench serves the internal
   assert.match(workbenchResponse.buffer.toString('utf8'), /Audit Workbench/);
 });
 
+test('GET /privacy serves the call recording policy linked from the site', async () => {
+  const privacy = await requestRaw('GET', '/privacy');
+  const landing = await requestRaw('GET', '/');
+
+  assert.equal(privacy.status, 200);
+  const body = privacy.buffer.toString('utf8');
+  assert.match(body, /Privacy and Call Recording/);
+  assert.match(body, /the call ends there and nothing is recorded/);
+  // The footer and the FAQ both point here, so a missing route would leave
+  // dead links on the page that asks people to be recorded.
+  assert.match(landing.buffer.toString('utf8'), /href="\/privacy"/);
+});
+
 test('GET /automations serves the catalogue and supported detail pages', async () => {
   const catalogue = await requestRaw('GET', '/automations');
   const detail = await requestRaw('GET', '/automations/phone-agent');

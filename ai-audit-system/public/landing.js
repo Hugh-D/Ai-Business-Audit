@@ -27,6 +27,27 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && mobileNav?.classList.contains('open')) closeMenu();
 });
 
+// Sticky call bar. Shows once the hero has scrolled away, so the phone number
+// is always one tap from anywhere on the page. CSS hides it above 560px.
+const callBar = document.querySelector('#callBar');
+const hero = document.querySelector('.hero');
+
+if (callBar && hero && 'IntersectionObserver' in window) {
+  const callBarLink = callBar.querySelector('a');
+
+  const setCallBarVisible = (visible) => {
+    callBar.classList.toggle('visible', visible);
+    callBar.setAttribute('aria-hidden', String(!visible));
+    if (visible) callBarLink?.removeAttribute('tabindex');
+    else callBarLink?.setAttribute('tabindex', '-1');
+  };
+
+  new IntersectionObserver(
+    ([entry]) => setCallBarVisible(!entry.isIntersecting),
+    { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
+  ).observe(hero);
+}
+
 // Scroll-reveal
 if (!reducedMotion()) {
   const observer = new IntersectionObserver(

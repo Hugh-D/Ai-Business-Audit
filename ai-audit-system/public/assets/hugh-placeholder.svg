@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="title desc">
+  <title id="title">Hugh, Volve Solutions</title>
+  <desc id="desc">Placeholder monogram standing in for Hugh's photograph.</desc>
+  <rect width="400" height="400" fill="#6B5E52"/>
+  <text x="200" y="238" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+        font-size="168" fill="#FDF4E7">H</text>
+  <rect x="160" y="278" width="80" height="2" fill="#C47B2E"/>
+</svg>
