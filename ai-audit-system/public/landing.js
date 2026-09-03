@@ -3,6 +3,47 @@ const submitButton = document.querySelector('#auditSubmit');
 const errorBox = document.querySelector('#auditError');
 const results = document.querySelector('#auditResults');
 
+// Mobile menu
+const menuToggle = document.querySelector('.menu-toggle');
+const mobileNav = document.querySelector('#mobileNav');
+const mobileNavClose = mobileNav?.querySelector('.mobile-nav-close');
+
+menuToggle?.addEventListener('click', () => {
+  mobileNav.classList.add('open');
+  menuToggle.setAttribute('aria-expanded', 'true');
+  mobileNavClose?.focus();
+});
+
+function closeMenu() {
+  mobileNav?.classList.remove('open');
+  menuToggle?.setAttribute('aria-expanded', 'false');
+}
+
+mobileNavClose?.addEventListener('click', closeMenu);
+mobileNav?.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', closeMenu);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && mobileNav?.classList.contains('open')) closeMenu();
+});
+
+// Scroll-reveal
+if (!reducedMotion()) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+}
+
+// Audit form
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
   setError('');

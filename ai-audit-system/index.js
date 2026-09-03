@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const industryRouter = require('./agents/industry_router');
@@ -13,6 +14,18 @@ const websiteAuditor = require('./agents/website_auditor');
 
 const app = express();
 app.set('trust proxy', 1);
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
@@ -76,10 +89,9 @@ app.get('/workbench', requireWorkbenchAuth, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// GET /landing
-// Public marketing landing page for the AI Business Audit ($297 phone audit).
+// GET /landing → canonical redirect to /
 app.get('/landing', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  res.redirect(301, '/');
 });
 
 app.get('/automations', (_req, res) => {
@@ -591,5 +603,48 @@ function buildReadinessNextSteps(checks, readyForInboundAudits, auditPhoneNumber
     .filter(check => !check.ready && !check.optional)
     .map(check => check.detail);
 }
+
+// GET /sitemap.xml
+app.get('/sitemap.xml', (_req, res) => {
+  const baseUrl = 'https://ai-business-audit-production.up.railway.app';
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${baseUrl}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+</urlset>`);
+});
+
+// 404 handler
+app.use((_req, res) => {
+  res.status(404).send(`<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found | Volve Solutions</title>
+  <link rel="icon" href="/assets/volve-symbol-on-slate.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: 'DM Sans', system-ui, sans-serif; color: #1c1410; background: #f9f6f1; text-align: center; padding: 40px 20px; }
+    h1 { font-family: 'Outfit', system-ui, sans-serif; font-size: 48px; margin: 0 0 12px; letter-spacing: -.03em; }
+    p { color: #594c43; font-size: 16px; line-height: 1.6; margin: 0 0 28px; max-width: 400px; }
+    a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: #c47b2e; color: #fdf4e7; border-radius: 12px; text-decoration: none; font-weight: 700; font-family: 'Outfit', system-ui, sans-serif; transition: background .2s; }
+    a:hover { background: #a96525; }
+    .code { color: #a89880; font-size: 14px; margin-top: 20px; }
+    @media (prefers-color-scheme: dark) { body { background: #151210; color: #f0ebe4; } p { color: #c4b9ab; } .code { color: #6e6358; } }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Page not found</h1>
+    <p>The page you are looking for does not exist or has been moved. Head back to the homepage or call us directly.</p>
+    <a href="/">Back to homepage</a>
+    <p class="code">Error 404</p>
+  </div>
+</body>
+</html>`);
+});
 
 module.exports = { app, processEndedCall, buildReadiness, normalizeWebsiteUrl: websiteAuditor.normalizeWebsiteUrl };
