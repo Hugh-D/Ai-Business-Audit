@@ -378,13 +378,26 @@ h1 {
 .logo-strip:hover .logo-item img { filter: brightness(0) opacity(.6) }
 .logo-item:hover img { filter: none }
 
-/* Optical sizing. A wordmark and a symbol-plus-wordmark do not read as the
-   same size at the same pixel height. Nudge individual logos here. */
-.logo-item[data-logo="xero"] { --h: 30px }
-.logo-item[data-logo="myob"] { --h: 22px }
-.logo-item[data-logo="servicetitan"] { --h: 22px }
-.logo-item[data-logo="quickbooks"] { --h: 24px }
-.logo-item[data-logo="hubspot"] { --h: 24px }
+/* Exception: a logo that is a solid container with a knocked-out mark (an app
+   icon rather than a wordmark) collapses to a black block under brightness(0),
+   because the container and the knockout both go to black. ServiceM8 is a
+   green gradient square with a #F5F9FF mark. grayscale keeps the luminance
+   difference, so the mark stays visible. */
+.logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.6) }
+.logo-strip:hover .logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.8) }
+
+/* Optical sizing, tuned against the real artwork. Height alone does not give
+   equal weight: a wide wordmark at 26px dominates, and ServiceM8's square
+   symbol at 26px disappears next to eight wordmarks. Ratios in comments. */
+.logo-item[data-logo="servicem8"]    { --h: 34px }  /* 1.00, square symbol */
+.logo-item[data-logo="myob"]         { --h: 24px }  /* 2.65 */
+.logo-item[data-logo="hubspot"]      { --h: 24px }  /* 3.53 */
+.logo-item[data-logo="xero"]         { --h: 26px }  /* 3.59 */
+.logo-item[data-logo="quickbooks"]   { --h: 24px }  /* 3.90 */
+.logo-item[data-logo="deputy"]       { --h: 24px }  /* 4.23 */
+.logo-item[data-logo="simpro"]       { --h: 22px }  /* 4.86 */
+.logo-item[data-logo="jobber"]       { --h: 20px }  /* 5.59 */
+.logo-item[data-logo="servicetitan"] { --h: 20px }  /* 5.71 */
 
 @keyframes scroll-logos { to { transform: translateX(-50%) } }
 
@@ -849,6 +862,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   }
   :root:not([data-theme="light"]) .logo-item img { filter: brightness(0) invert(1) opacity(.55) }
   :root:not([data-theme="light"]) .logo-strip:hover .logo-item img { filter: brightness(0) invert(1) opacity(.72) }
+  :root:not([data-theme="light"]) .logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.75) }
+  :root:not([data-theme="light"]) .logo-strip:hover .logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.9) }
   :root:not([data-theme="light"]) .form-error { color: #e87c6f }
 }
 
@@ -876,4 +891,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 }
 :root[data-theme="dark"] .logo-item img { filter: brightness(0) invert(1) opacity(.55) }
 :root[data-theme="dark"] .logo-strip:hover .logo-item img { filter: brightness(0) invert(1) opacity(.72) }
+:root[data-theme="dark"] .logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.75) }
+:root[data-theme="dark"] .logo-strip:hover .logo-item[data-logo="servicem8"] img { filter: grayscale(1) opacity(.9) }
 :root[data-theme="dark"] .form-error { color: #e87c6f }
