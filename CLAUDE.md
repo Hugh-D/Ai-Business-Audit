@@ -66,6 +66,10 @@ The public site is built on a token system in `public/landing.css`. `automations
 
 **No fake trust signals.** The testimonial slot stays commented out rather than filled with invented quotes. The ABN (60 928 990 855, checksum verified) is now live in the footer of every page and in the privacy policy.
 
+**Hugh's portrait is cropped to head and shoulders on purpose.** The original is a full-torso corporate headshot with another company's logo on the shirt. `assets/hugh.jpg` is cropped from it so the logo is out of frame entirely, rather than blurred or patched. Do not restore the wider framing: it puts that logo back and shrinks the face to almost nothing at the 220px display size. The source file is not kept in the repo.
+
+**Two layout traps that cost time here, worth remembering.** A `<figure>` carries a default `1em 40px` margin, which silently shrank the portrait to 140px inside its 220px column. And an `<img>` `height` attribute overrides CSS `aspect-ratio`, so `height: auto` is required alongside it.
+
 **The privacy policy states no fixed retention period, on purpose.** It says we keep recordings and transcripts only as long as we need them, and that anyone can ask for deletion at any time. Both are true today, and deletion on request is handled manually.
 
 A specific number was drafted and pulled before shipping. The reasoning is in the next section, and it is the rule to follow if anyone is tempted to add one back.
