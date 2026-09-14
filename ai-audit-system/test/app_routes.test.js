@@ -106,9 +106,13 @@ test('GET /privacy serves the call recording policy linked from the site', async
   const body = privacy.buffer.toString('utf8');
   assert.match(body, /Privacy and Call Recording/);
   assert.match(body, /the call ends there and nothing is recorded/);
-  // A stated retention period and a correct ABN are compliance commitments,
-  // not copy. Losing either silently is worse than a broken layout.
-  assert.match(body, /60 days after our engagement with you ends/);
+  // The policy deliberately states no fixed retention period, because nothing
+  // in the app deletes on a schedule. Do not publish a number here until a
+  // purge exists to honour it.
+  assert.match(body, /only as long as we need them/);
+  assert.doesNotMatch(body, /\d+ days after/);
+  // A correct ABN is a compliance detail, not copy. Losing it silently is
+  // worse than a broken layout.
   assert.match(body, /ABN 60 928 990 855/);
   assert.match(landing.buffer.toString('utf8'), /ABN 60 928 990 855/);
   // The footer and the FAQ both point here, so a missing route would leave

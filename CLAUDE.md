@@ -66,33 +66,31 @@ The public site is built on a token system in `public/landing.css`. `automations
 
 **No fake trust signals.** The testimonial slot stays commented out rather than filled with invented quotes. The ABN (60 928 990 855, checksum verified) is now live in the footer of every page and in the privacy policy.
 
-**Stated retention is 60 days after the engagement ends.** For a one-off audit that means 60 days after the report is delivered; for ongoing work, 60 days after that work finishes. This is written into `public/privacy.html` and the landing page FAQ.
+**The privacy policy states no fixed retention period, on purpose.** It says we keep recordings and transcripts only as long as we need them, and that anyone can ask for deletion at any time. Both are true today, and deletion on request is handled manually.
+
+A specific number was drafted and pulled before shipping. The reasoning is in the next section, and it is the rule to follow if anyone is tempted to add one back.
 
 ---
 
-## Outstanding: retention is promised but not implemented
+## Retention: do not publish a period without a purge
 
-The privacy policy now commits to deleting recordings and transcripts 60 days after an engagement ends. **Nothing in the codebase does this yet.** Before taking real audit calls, this needs building, because an unkept privacy commitment is worse than a vague one.
+The Privacy Act's small business exemption (turnover under $3M) means APP 11.2 probably does not bind Volve yet, and APP 11.2 never prescribes a number anyway. So there is no legal requirement to state a retention period.
 
-Two systems hold the data:
+What does apply, at any turnover, is **Australian Consumer Law section 18**: a published claim you do not honour is misleading conduct. That makes a stated period a liability rather than a feature until something enforces it.
 
-1. **Local SQLite** (`agents/call_store.js`). It exposes `save`, `get`, `list`, `clear`, `reload`, `close`. There is no age-based delete and no scheduled job. `clear()` wipes everything and is test-only. Needs a `purgeOlderThan(date)` plus a scheduled caller.
-2. **Retell** holds the audio recording and its transcript. Deleting the local row does not delete their copy. Their API has to be called too, or a retention policy set on their side.
+So the rule is: **do not publish a retention period until the purge exists.** If you want to publish one, build these first.
 
-The clock starts at "engagement end", which is not currently a stored field. The call record would need something like `engagementEndedAt`, defaulting to the report delivery date, so the purge has something to measure from.
+1. **Local SQLite** (`agents/call_store.js`) exposes `save`, `get`, `list`, `clear`, `reload`, `close`. There is no age-based delete and no scheduled job. `clear()` wipes everything and is test-only. Needs a `purgeOlderThan(date)` plus a scheduled caller.
+2. **Retell** holds the audio recording and its own transcript. Deleting the local row does not touch their copy. Their API has to be called, or a retention policy set on their side.
+3. **There is no engagement-end date stored** for a purge to measure from. The call record would need something like `engagementEndedAt`, defaulting to the report delivery date.
+4. **Check the SMTP provider**, since delivered reports sit in sent mail.
 
-Also check what the SMTP provider retains, since delivered reports sit in sent mail.
+The call record persists transcript, phone number, contact name, email, business name and website, so this is personal information about identifiable people, exemption or not.
 
----
+A route test asserts the policy contains no `N days after` phrasing. If you implement the purge and want to publish a period, update that test in the same change.
 
-## Verifying the Public Site
+## Call recording consent is the part that is legally load-bearing
 
-Design changes to the public site should be checked by rendering, not by reading CSS.
+Recording is governed by state surveillance devices law, not the Privacy Act. Volve is in NSW, where the Surveillance Devices Act 2007 requires **all parties** to consent. WA, SA, Tasmania and the ACT are the same.
 
-1. Serve `ai-audit-system/public` on a local port.
-2. Download the Google Fonts CSS and its woff2 files, then intercept `fonts.googleapis.com` and `fonts.gstatic.com` in Playwright and fulfil from disk. Without this the screenshots use fallback fonts.
-3. Walk the rendered DOM checking every text node's computed colour against its effective background. Resolve the background by compositing ancestors, and hit-test with `elementsFromPoint` for out-of-flow elements (otherwise the header over the hero reads as a false failure).
-4. Assert every interactive element is at least 44px tall at 390px wide. Links inline in a sentence are exempt under WCAG 2.5.8.
-5. Check both `colorScheme: light` and `dark`, at 390px and 1440px.
-
-Targets: zero contrast failures, zero tap-target failures, no horizontal overflow, and no rendered font size below 11px.
+The voice agent asks permission before recording and ends the call on a refusal. That covers every state including the strictest. **Do not weaken or bypass this flow.**
