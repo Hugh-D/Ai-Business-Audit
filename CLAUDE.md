@@ -64,7 +64,24 @@ The public site is built on a token system in `public/landing.css`. `automations
 
 **The report card in the hero is an illustration, not a real report.** If a real anonymised report page becomes available, swap it in. Keep the third finding faded.
 
-**No fake trust signals.** The ABN is left as an HTML comment rather than a placeholder number, and the testimonial slot is commented out rather than filled with invented quotes. A wrong ABN is worse than no ABN.
+**No fake trust signals.** The testimonial slot stays commented out rather than filled with invented quotes. The ABN (60 928 990 855, checksum verified) is now live in the footer of every page and in the privacy policy.
+
+**Stated retention is 60 days after the engagement ends.** For a one-off audit that means 60 days after the report is delivered; for ongoing work, 60 days after that work finishes. This is written into `public/privacy.html` and the landing page FAQ.
+
+---
+
+## Outstanding: retention is promised but not implemented
+
+The privacy policy now commits to deleting recordings and transcripts 60 days after an engagement ends. **Nothing in the codebase does this yet.** Before taking real audit calls, this needs building, because an unkept privacy commitment is worse than a vague one.
+
+Two systems hold the data:
+
+1. **Local SQLite** (`agents/call_store.js`). It exposes `save`, `get`, `list`, `clear`, `reload`, `close`. There is no age-based delete and no scheduled job. `clear()` wipes everything and is test-only. Needs a `purgeOlderThan(date)` plus a scheduled caller.
+2. **Retell** holds the audio recording and its transcript. Deleting the local row does not delete their copy. Their API has to be called too, or a retention policy set on their side.
+
+The clock starts at "engagement end", which is not currently a stored field. The call record would need something like `engagementEndedAt`, defaulting to the report delivery date, so the purge has something to measure from.
+
+Also check what the SMTP provider retains, since delivered reports sit in sent mail.
 
 ---
 

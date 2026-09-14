@@ -106,6 +106,11 @@ test('GET /privacy serves the call recording policy linked from the site', async
   const body = privacy.buffer.toString('utf8');
   assert.match(body, /Privacy and Call Recording/);
   assert.match(body, /the call ends there and nothing is recorded/);
+  // A stated retention period and a correct ABN are compliance commitments,
+  // not copy. Losing either silently is worse than a broken layout.
+  assert.match(body, /60 days after our engagement with you ends/);
+  assert.match(body, /ABN 60 928 990 855/);
+  assert.match(landing.buffer.toString('utf8'), /ABN 60 928 990 855/);
   // The footer and the FAQ both point here, so a missing route would leave
   // dead links on the page that asks people to be recorded.
   assert.match(landing.buffer.toString('utf8'), /href="\/privacy"/);
