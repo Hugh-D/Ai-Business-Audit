@@ -1,5 +1,39 @@
-/* Integrations scroll strip */
-.integrations{background:var(--paper)}.logo-strip{position:relative;overflow:hidden;margin-top:42px;-webkit-mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}.logo-track{display:flex;gap:20px;width:max-content;animation:scroll-logos 30s linear infinite}.logo-strip:hover .logo-track{animation-play-state:paused}.logo-item{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:168px;height:64px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.55);white-space:nowrap}.logo-item img{display:block;height:40px;width:auto;max-width:140px;object-fit:contain;opacity:.95;transform-origin:center center}.logo-item--simpro img{transform:scale(.88)}.logo-item--servicem8 img{transform:scale(1.45)}.logo-item--xero img{transform:scale(.98)}.logo-item--myob img{transform:scale(1.15)}.logo-item--fergus img{transform:scale(1.08)}.logo-item--servicetitan img{transform:scale(.9)}.logo-item--jobber img{transform:scale(.98)}.logo-item--quickbooks img{transform:scale(1.28)}.logo-item--hubspot img{transform:scale(1.12)}.logo-item--deputy img{transform:scale(1.05)}.logo-item--aroflo img{transform:scale(1.08)}@keyframes scroll-logos{to{transform:translateX(-50%)}}
+/* Logo strip size + dark-mode chips (loads after landing.css) */
+.logo-track{gap:20px}
+.logo-item{
+  width:168px;
+  height:64px;
+  padding:10px 16px;
+  border-radius:12px;
+  background:rgba(255,255,255,.55);
+}
+.logo-item img{
+  max-width:140px;
+  max-height:none;
+  height:40px;
+  width:auto;
+  opacity:.95;
+  transform-origin:center center;
+}
+.logo-item img[src*="simprologo"]{transform:scale(.88)}
+.logo-item img[src*="servicem8"]{transform:scale(1.45)}
+.logo-item img[src*="xerologo"]{transform:scale(.98)}
+.logo-item img[src*="myoblogo"]{transform:scale(1.15)}
+.logo-item img[src*="fergus"]{transform:scale(1.08)}
+.logo-item img[src*="servicetitanlogo"]{transform:scale(.9)}
+.logo-item img[src*="jobberlogo"]{transform:scale(.98)}
+.logo-item img[src*="quickbookslogo"]{transform:scale(1.28)}
+.logo-item img[src*="hubspotlogo"]{transform:scale(1.12)}
+.logo-item img[src*="deputylogo"]{transform:scale(1.05)}
+.logo-item img[src*="aroflo"]{transform:scale(1.08)}
 
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo-item{background:#f5f0e8;box-shadow:0 0 0 1px rgba(255,255,255,.06)}}
-:root[data-theme="dark"] .logo-item{background:#f5f0e8;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .logo-item{
+    background:#f5f0e8;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+:root[data-theme="dark"] .logo-item{
+  background:#f5f0e8;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06);
+}
