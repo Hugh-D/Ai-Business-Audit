@@ -1,3 +1,10 @@
+(function () {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/logo-strip-overrides.css';
+  document.head.appendChild(link);
+})();
+
 const form = document.querySelector('#websiteAuditForm');
 const submitButton = document.querySelector('#auditSubmit');
 const errorBox = document.querySelector('#auditError');
