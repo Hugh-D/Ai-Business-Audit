@@ -1,0 +1,39 @@
+/* Logo strip size + dark-mode chips (loads after landing.css) */
+.logo-track{gap:20px}
+.logo-item{
+  width:168px;
+  height:64px;
+  padding:10px 16px;
+  border-radius:12px;
+  background:rgba(255,255,255,.55);
+}
+.logo-item img{
+  max-width:140px;
+  max-height:none;
+  height:40px;
+  width:auto;
+  opacity:.95;
+  transform-origin:center center;
+}
+.logo-item img[src*="simprologo"]{transform:scale(.88)}
+.logo-item img[src*="servicem8"]{transform:scale(1.45)}
+.logo-item img[src*="xerologo"]{transform:scale(.98)}
+.logo-item img[src*="myoblogo"]{transform:scale(1.15)}
+.logo-item img[src*="fergus"]{transform:scale(1.08)}
+.logo-item img[src*="servicetitanlogo"]{transform:scale(.9)}
+.logo-item img[src*="jobberlogo"]{transform:scale(.98)}
+.logo-item img[src*="quickbookslogo"]{transform:scale(1.28)}
+.logo-item img[src*="hubspotlogo"]{transform:scale(1.12)}
+.logo-item img[src*="deputylogo"]{transform:scale(1.05)}
+.logo-item img[src*="aroflo"]{transform:scale(1.08)}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .logo-item{
+    background:#f5f0e8;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+:root[data-theme="dark"] .logo-item{
+  background:#f5f0e8;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06);
+}
