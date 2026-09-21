@@ -37,3 +37,15 @@
   background:#f5f0e8;
   box-shadow:0 0 0 1px rgba(255,255,255,.06);
 }
+
+/* Stack meta + title on audit result cards (fixes ConversionPhone Visibility) */
+.action-item span,
+.action-item strong,
+.signal-item span,
+.signal-item strong{
+  display:block;
+}
+.action-item strong,
+.signal-item strong{
+  margin-top:4px;
+}
