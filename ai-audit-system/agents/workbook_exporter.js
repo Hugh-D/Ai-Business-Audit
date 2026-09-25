@@ -1,9 +1,11 @@
 const ExcelJS = require('exceljs');
 
-const HEADER_FILL = '0D6B57';
-const HEADER_FONT = 'FFFFFF';
-const SUBTLE_FILL = 'E5F3EE';
-const BORDER = { style: 'thin', color: { argb: 'D9DFDC' } };
+// Volve design system v2.0 palette. ExcelJS expects 8-digit ARGB, so each hex carries an FF alpha prefix.
+const HEADER_FILL = 'FF1C1410'; // espresso
+const HEADER_FONT = 'FFF9F6F1'; // parchment
+const SUBTLE_FILL = 'FFFDF4E7'; // accent-bg (pale ochre)
+const SECTION_FONT = 'FF7A4F1E'; // ochre-brown
+const BORDER = { style: 'thin', color: { argb: 'FFDDD5C8' } }; // border (dust)
 
 async function buildAuditWorkbookBuffer(audit) {
   const workbook = new ExcelJS.Workbook();
@@ -286,7 +288,7 @@ function styleTitle(sheet, headerRange) {
 
 function styleSectionHeader(row) {
   row.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: '084C3E' } };
+    cell.font = { bold: true, color: { argb: SECTION_FONT } };
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: SUBTLE_FILL } };
   });
 }
@@ -307,7 +309,11 @@ function applyBorders(sheet) {
     });
   });
 
-  sheet.getColumn(1).font = { bold: true };
+  // Bold column A without wiping the header/section font colour set earlier
+  // (a column-level font replaces each cell's font, which hid the A1 header text on the dark fill).
+  sheet.getColumn(1).eachCell((cell) => {
+    cell.font = { ...(cell.font || {}), bold: true };
+  });
 }
 
 function normalizeList(value) {
