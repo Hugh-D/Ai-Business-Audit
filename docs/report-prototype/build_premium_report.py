@@ -11,19 +11,25 @@ from docx.shared import Inches, Pt, RGBColor
 OUT_DIR = Path(__file__).resolve().parent
 OUT_PATH = OUT_DIR / "AI-Business-Audit-Premium-Report-Prototype.docx"
 
-FONT = "Aptos"
-INK = "18211F"
-GREEN = "0B6655"
-GREEN_DARK = "08483D"
-MINT = "E8F2EF"
-PALE = "F5F7F6"
-LINE = "CBD5D1"
-MUTED = "5F6C68"
-WHITE = "FFFFFF"
-AMBER = "A46411"
-AMBER_PALE = "F7EEDF"
-RED = "9C3630"
-RED_PALE = "F8E8E6"
+# Volve design system v2.0 (design/CLAUDE.md): Inter only, Volve palette.
+FONT = "Inter"
+ESPRESSO = "1C1410"
+SLATE = "6B5E52"
+PARCHMENT = "F9F6F1"
+CANVAS_SOFT = "F2EDE5"
+OCHRE = "C47B2E"
+GOLD = "E8A84A"
+PALE_OCHRE = "FDF4E7"
+OCHRE_BROWN = "7A4F1E"
+TEXT_SECONDARY = "8A7D72"
+BORDER = "DDD5C8"
+# Status colours for RAG findings. Red stays as the one semantic exception so urgent findings read clearly.
+DANGER = "A43B35"
+DANGER_PALE = "F9E8E6"
+
+INK = ESPRESSO
+MUTED = SLATE
+LINE = BORDER
 
 
 def set_cell_shading(cell, fill):
@@ -139,7 +145,7 @@ def add_text(doc, text="", size=10.5, color=INK, bold=False, italic=False,
 
 def add_heading(doc, text, level=1):
     sizes = {1: 18, 2: 13.5, 3: 11.5}
-    colors = {1: GREEN_DARK, 2: GREEN, 3: INK}
+    colors = {1: ESPRESSO, 2: OCHRE_BROWN, 3: INK}
     befores = {1: 18, 2: 13, 3: 9}
     afters = {1: 8, 2: 6, 3: 4}
     p = doc.add_paragraph(style=f"Heading {level}")
@@ -148,12 +154,12 @@ def add_heading(doc, text, level=1):
     return p
 
 
-def add_kicker(doc, text, color=GREEN, after=8):
+def add_kicker(doc, text, color=OCHRE_BROWN, after=8):
     return add_text(doc, text.upper(), 8.5, color, True, False,
                     before=0, after=after, line=1.0, keep=True, all_caps=True)
 
 
-def add_rule(doc, color=GREEN, size=14, after=12):
+def add_rule(doc, color=OCHRE_BROWN, size=14, after=12):
     p = doc.add_paragraph()
     set_paragraph(p, 0, after, 1.0)
     p_pr = p._p.get_or_add_pPr()
@@ -182,8 +188,8 @@ def add_numbered(doc, number, title, detail):
     set_table_widths(table, [720, 8640])
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     left, right = table.rows[0].cells
-    set_cell_shading(left, GREEN)
-    set_cell_shading(right, PALE)
+    set_cell_shading(left, OCHRE_BROWN)
+    set_cell_shading(right, CANVAS_SOFT)
     for cell in (left, right):
         set_cell_margins(cell, 120, 150, 120, 150)
         set_cell_border(cell, bottom={"val": "single", "sz": 6, "color": LINE})
@@ -191,7 +197,7 @@ def add_numbered(doc, number, title, detail):
     p = left.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_paragraph(p, 0, 0, 1.0)
-    set_run(p.add_run(str(number)), 14, WHITE, True)
+    set_run(p.add_run(str(number)), 14, PARCHMENT, True)
     p = right.paragraphs[0]
     set_paragraph(p, 0, 2, 1.15)
     set_run(p.add_run(title), 10.75, INK, True)
@@ -203,9 +209,9 @@ def add_numbered(doc, number, title, detail):
 
 def add_status_finding(doc, status, title, maturity, impact, fastest_win):
     colors = {
-        "RED": (RED, RED_PALE),
-        "YELLOW": (AMBER, AMBER_PALE),
-        "GREEN": (GREEN, MINT),
+        "RED": (DANGER, DANGER_PALE),
+        "YELLOW": (OCHRE, PALE_OCHRE),
+        "GREEN": (SLATE, CANVAS_SOFT),
     }
     accent, fill = colors[status]
     table = doc.add_table(rows=1, cols=2)
@@ -220,7 +226,7 @@ def add_status_finding(doc, status, title, maturity, impact, fastest_win):
     p = status_cell.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_paragraph(p, 0, 0, 1.0)
-    set_run(p.add_run(status), 9, WHITE, True, all_caps=True)
+    set_run(p.add_run(status), 9, PARCHMENT, True, all_caps=True)
     p = body_cell.paragraphs[0]
     set_paragraph(p, 0, 4, 1.1)
     set_run(p.add_run(title), 11.5, INK, True)
@@ -239,7 +245,7 @@ def add_metric_strip(doc, metrics):
     set_table_widths(table, widths)
     for idx, (value, label) in enumerate(metrics):
         cell = table.rows[0].cells[idx]
-        set_cell_shading(cell, GREEN_DARK if idx == 0 else PALE)
+        set_cell_shading(cell, ESPRESSO if idx == 0 else CANVAS_SOFT)
         set_cell_margins(cell, 150, 130, 150, 130)
         set_cell_border(
             cell,
@@ -252,15 +258,15 @@ def add_metric_strip(doc, metrics):
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         set_paragraph(p, 0, 2, 1.0)
-        set_run(p.add_run(value), 19, WHITE if idx == 0 else GREEN_DARK, True)
+        set_run(p.add_run(value), 19, PARCHMENT if idx == 0 else ESPRESSO, True)
         p = cell.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         set_paragraph(p, 0, 0, 1.0)
-        set_run(p.add_run(label.upper()), 7.5, WHITE if idx == 0 else MUTED, True, all_caps=True)
+        set_run(p.add_run(label.upper()), 7.5, PARCHMENT if idx == 0 else MUTED, True, all_caps=True)
     return table
 
 
-def add_callout(doc, label, headline, detail, fill=MINT, accent=GREEN):
+def add_callout(doc, label, headline, detail, fill=PALE_OCHRE, accent=OCHRE_BROWN):
     table = doc.add_table(rows=1, cols=1)
     set_table_widths(table, [9360])
     cell = table.cell(0, 0)
@@ -300,8 +306,8 @@ def configure_styles(doc):
         style._element.rPr.rFonts.set(qn("w:ascii"), FONT)
         style._element.rPr.rFonts.set(qn("w:hAnsi"), FONT)
         style.font.bold = True
-        style.font.color.rgb = RGBColor.from_string({1: GREEN_DARK, 2: GREEN, 3: INK}[level])
-        style.font.size = Pt({1: 18, 2: 13.5, 3: 11.5}[level])
+        style.font.color.rgb = RGBColor.from_string({1: ESPRESSO, 2: OCHRE_BROWN, 3: INK}[level])
+        style.font.size = Pt({1: 18, 2: 15, 3: 12}[level])
         style.paragraph_format.keep_with_next = True
 
     bullet = doc.styles["List Bullet"]
@@ -331,7 +337,7 @@ def add_running_furniture(section):
     header = section.header
     p = header.paragraphs[0]
     set_paragraph(p, 0, 0, 1.0)
-    set_run(p.add_run("AI BUSINESS AUDIT"), 8, GREEN, True, all_caps=True)
+    set_run(p.add_run("AI BUSINESS AUDIT"), 8, OCHRE_BROWN, True, all_caps=True)
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
     footer = section.footer
@@ -364,15 +370,15 @@ def build():
     core.keywords = "business audit, revenue leakage, electrician, automation"
 
     # Cover
-    add_text(doc, "AI BUSINESS AUDIT", 9, GREEN, True, before=14, after=38, line=1.0, all_caps=True)
-    add_text(doc, "Revenue & Operations\nReadiness Report", 31, GREEN_DARK, True, after=14, line=0.98)
+    add_text(doc, "AI BUSINESS AUDIT", 9, OCHRE_BROWN, True, before=14, after=38, line=1.0, all_caps=True)
+    add_text(doc, "Revenue & Operations\nReadiness Report", 31, ESPRESSO, True, after=14, line=0.98)
     add_text(doc, "A practical diagnosis of where leads, follow-up and operational capacity are leaking revenue.", 14, MUTED, after=30, line=1.2)
-    add_rule(doc, GREEN, 18, 22)
+    add_rule(doc, OCHRE_BROWN, 18, 22)
     add_text(doc, "PREPARED FOR", 8, MUTED, True, after=4, line=1.0, all_caps=True)
     add_text(doc, "BrightSpark Electrical", 19, INK, True, after=3, line=1.05)
     add_text(doc, "Electricians & Small Electrical Contractors", 10.5, MUTED, after=30)
     add_metric_strip(doc, [("6.2", "Readiness score"), ("3", "Priority leaks"), ("30 days", "First action horizon")])
-    add_text(doc, "DESIGN PROTOTYPE", 8, AMBER, True, align=WD_ALIGN_PARAGRAPH.RIGHT, before=36, after=2, all_caps=True)
+    add_text(doc, "DESIGN PROTOTYPE", 8, OCHRE, True, align=WD_ALIGN_PARAGRAPH.RIGHT, before=36, after=2, all_caps=True)
     add_text(doc, "Illustrative content only. Final reports are generated from the customer’s assessment evidence.", 8.5, MUTED, italic=True, align=WD_ALIGN_PARAGRAPH.RIGHT, after=0)
 
     add_page_break(doc)
@@ -417,8 +423,8 @@ def build():
         "Commercial interpretation",
         "The first investment should improve conversion, not generate more traffic.",
         "Until missed calls and quotes are followed through consistently, increasing ad spend risks feeding more opportunities into the same leakage points.",
-        fill=AMBER_PALE,
-        accent=AMBER,
+        fill=PALE_OCHRE,
+        accent=OCHRE,
     )
 
     add_page_break(doc)
@@ -493,16 +499,16 @@ def build():
     set_repeat_table_header(hdr)
     for idx, text in enumerate(("Measure", "Initial standard")):
         cell = hdr.cells[idx]
-        set_cell_shading(cell, GREEN_DARK)
+        set_cell_shading(cell, ESPRESSO)
         set_cell_margins(cell)
         set_cell_border(cell, bottom={"val": "single", "sz": 6, "color": LINE})
         p = cell.paragraphs[0]
         set_paragraph(p, 0, 0, 1.0)
-        set_run(p.add_run(text), 9, WHITE, True)
+        set_run(p.add_run(text), 9, PARCHMENT, True)
     for measure, standard in measures:
         cells = table.add_row().cells
         for idx, text in enumerate((measure, standard)):
-            set_cell_shading(cells[idx], WHITE if len(table.rows) % 2 else PALE)
+            set_cell_shading(cells[idx], PARCHMENT if len(table.rows) % 2 else CANVAS_SOFT)
             set_cell_margins(cells[idx])
             set_cell_border(cells[idx], bottom={"val": "single", "sz": 5, "color": LINE})
             p = cells[idx].paragraphs[0]
@@ -540,7 +546,7 @@ def build():
         after=18,
     )
     add_rule(doc, LINE, 6, 12)
-    add_text(doc, "AI Business Audit", 13, GREEN_DARK, True, after=3)
+    add_text(doc, "AI Business Audit", 13, ESPRESSO, True, after=3)
     add_text(doc, "Find the revenue leaks. Fix the highest-impact workflow first.", 10, MUTED, after=12)
     add_text(doc, "Prepared for discussion with Hugh.", 9, MUTED, italic=True, after=0)
 

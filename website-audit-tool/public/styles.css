@@ -1,16 +1,29 @@
+/* Inter (SIL OFL 1.1), bundled so reports render the same everywhere. See /assets/fonts/OFL.txt */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/assets/fonts/inter-latin-var.woff2") format("woff2");
+}
+
 :root {
-  --bg: #f4f2ed;
-  --surface: #ffffff;
-  --surface-alt: #eef3f1;
-  --ink: #202524;
-  --muted: #65706d;
-  --line: #d9dfdc;
-  --accent: #0d6b57;
-  --accent-dark: #084c3e;
-  --warning: #a16809;
+  --espresso: #1C1410;
+  --slate: #6B5E52;
+  --parchment: #F9F6F1;
+  --gold: #E8A84A;
+  --bg: #F2EDE5;
+  --surface: #F9F6F1;
+  --surface-alt: #F2EDE5;
+  --ink: #1C1410;
+  --muted: #8A7D72;
+  --line: #DDD5C8;
+  --accent: #C47B2E;
+  --accent-dark: #7A4F1E;
+  --warning: #7A4F1E;
   --danger: #a43b35;
-  --shadow: 0 18px 50px rgba(28, 35, 33, 0.11);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --shadow: 0 18px 50px rgba(28, 20, 16, 0.11);
+  font-family: Inter, Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -71,7 +84,7 @@ input {
   margin: 0 0 6px;
   color: var(--accent);
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -109,11 +122,11 @@ h3 {
   color: var(--muted);
   text-align: center;
   font-size: 0.84rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .status-pill.ok {
-  background: #e5f3ee;
+  background: #FDF4E7;
   color: var(--accent-dark);
 }
 
@@ -138,7 +151,7 @@ label {
   display: grid;
   gap: 7px;
   font-size: 0.86rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 input {
@@ -147,13 +160,13 @@ input {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0 12px;
-  background: #fbfcfb;
+  background: #F9F6F1;
   color: var(--ink);
 }
 
 input:focus,
 button:focus-visible {
-  outline: 3px solid rgba(13, 107, 87, 0.22);
+  outline: 3px solid rgba(196, 123, 46, 0.22);
   outline-offset: 2px;
 }
 
@@ -176,13 +189,13 @@ button:focus-visible {
   border: 1px solid transparent;
   border-radius: 6px;
   padding: 0 14px;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .primary-button {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--parchment);
 }
 
 .primary-button:hover:not(:disabled) {
@@ -257,11 +270,12 @@ button:disabled {
   width: 96px;
   aspect-ratio: 1;
   border-radius: 8px;
-  background: var(--accent-dark);
-  color: #ffffff;
+  background: var(--espresso);
+  color: var(--parchment);
 }
 
 .score-badge strong {
+  color: var(--gold);
   font-size: 2rem;
   line-height: 1;
 }
@@ -284,12 +298,12 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 14px;
-  background: #fbfcfb;
+  background: #F9F6F1;
 }
 
 .quick-read {
   align-items: start;
-  background: #f8faf9;
+  background: #F9F6F1;
 }
 
 .quick-read h3 {
@@ -326,7 +340,7 @@ button:disabled {
   margin-bottom: 4px;
   color: var(--warning);
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -343,16 +357,16 @@ button:disabled {
 }
 
 .follow-up-block {
-  background: #f8faf9;
+  background: #F9F6F1;
 }
 
 .metric span,
 .action-item span {
   display: block;
   margin-bottom: 4px;
-  color: var(--muted);
+  color: var(--accent-dark);
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -382,24 +396,24 @@ button:disabled {
   background: var(--surface-alt);
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .signal.found span {
-  background: #e5f3ee;
+  background: #FDF4E7;
   color: var(--accent-dark);
 }
 
 .signal.missing span {
-  background: #f2eadb;
+  background: #FDF4E7;
   color: var(--warning);
 }
 
 .list-block ul {
   margin: 0;
   padding-left: 18px;
-  color: #38413f;
+  color: #6B5E52;
   line-height: 1.55;
 }
 
@@ -421,15 +435,15 @@ button:disabled {
   border-radius: 6px;
   padding: 11px 14px;
   background: var(--ink);
-  color: #ffffff;
+  color: var(--parchment);
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: var(--shadow);
 }
 
 @media print {
   body {
-    background: #ffffff;
+    background: #F9F6F1;
   }
 
   .tool-panel,
@@ -476,4 +490,66 @@ button:disabled {
   .ghost-button {
     width: 100%;
   }
+}
+
+/* Volve report theme (design/CLAUDE.md v2.0): espresso header band, shared heading scale */
+.topbar {
+  align-items: center;
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  padding: 20px 24px;
+  background: var(--espresso);
+  color: var(--parchment);
+}
+
+.topbar .eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.topbar h1 {
+  margin: 0;
+  color: var(--parchment);
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.eyebrow {
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: var(--espresso);
+}
+
+.primary-button:hover,
+.primary-button:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--espresso);
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.75rem; }
 }
