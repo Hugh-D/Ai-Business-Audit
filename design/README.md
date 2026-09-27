@@ -119,9 +119,10 @@ Minimal. The only interactive state is the FAQ accordion (which items are open) 
 - Ochre-brown: `#7A4F1E` — eyebrow on light surfaces, "Fix" label
 - Text body: `#6B5E52` · Secondary: `#8A7D72` · Muted: `#A89880` · On-dark: `#DDD5C8`
 - Border/dust: `#DDD5C8`
+- Status / alert: red `#A43B35` on pale red `#F9E8E6`. Only for error states and urgent findings in reports and apps. Never for decoration or CTAs.
 - White: `#FFFFFF` (report card body only)
 
-**Typography** — Inter throughout (400 / 600 / 700). No other families.
+**Typography** (design system v2.1): the live public website uses DM Serif Display for headings (including the italic gold / ochre accent phrases) with Inter for body text. Reports, documents (PDF / DOCX / XLSX), emails and app screens use Inter only (400 / 600 / 700) with an Arial fallback. This prototype predates v2.1 and shows Inter headings; follow `CLAUDE.md` for the current rule.
 - Hero/CTA headline 28px/700, section heading 24–26px/700, step/subheading 15–18px, body 14–16px/400, eyebrow 11px/700 uppercase 0.1em, caption/label 9–12px.
 
 **Spacing** — 8 / 12 / 16 / 24 / 32 / 48px scale. Section padding `48px 20px` (light) and `28–40px 20px` (dark bands). Container padding 20px.
@@ -132,7 +133,7 @@ Minimal. The only interactive state is the FAQ accordion (which items are open) 
 
 ## Assets
 - **Icons**: inline SVG only (Feather-style). Phone icon (hero, final CTA, footer), right-arrow (report card footer), chevron-down (FAQ). No raster assets. Recreate with the codebase's icon library (e.g. lucide/feather) at the sizes noted.
-- **Fonts**: Inter via Google Fonts (weights 400/600/700). Use the codebase's existing font pipeline.
+- **Fonts**: website: DM Serif Display (regular and italic) for headings plus Inter 400/600/700, via Google Fonts. Reports and apps: Inter 400/600/700 only, bundled where possible. Use the codebase's existing font pipeline.
 - No images or logos in this prototype.
 
 ## Files
