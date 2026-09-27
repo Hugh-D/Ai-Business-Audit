@@ -103,3 +103,25 @@ test('buildWorkbookFilename returns a safe xlsx filename', () => {
     'lawn-care-audit-123.xlsx'
   );
 });
+
+test('buildAuditWorkbookBuffer uses Inter and the Volve palette on every sheet', async () => {
+  const buffer = await workbookExporter.buildAuditWorkbookBuffer({
+    auditId: 'audit_fonts',
+    industry: 'trades',
+    businessName: 'Spark Co',
+    transcript: 'Client: We miss calls after hours.',
+    report: { overallScore: 6, scores: { leadResponse: 5 }, keyStrengths: ['Busy'], criticalGaps: ['Missed calls'] },
+  });
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+
+  workbook.eachSheet((sheet) => {
+    const header = sheet.getCell('A1');
+    assert.equal(header.font.name, 'Inter', `${sheet.name} header font`);
+    assert.equal(header.font.color.argb, 'FFF9F6F1', `${sheet.name} header text colour`);
+    assert.equal(header.fill.fgColor.argb, 'FF1C1410', `${sheet.name} header fill`);
+    sheet.eachRow((row) => row.eachCell((cell) => {
+      assert.equal(cell.font && cell.font.name, 'Inter', `${sheet.name}!${cell.address} font`);
+    }));
+  });
+});

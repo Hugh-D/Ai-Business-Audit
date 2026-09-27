@@ -230,8 +230,12 @@ printButton.addEventListener('click', () => {
   win.document.write(buildExportDocument(lastAudit));
   win.document.close();
   win.addEventListener('load', () => {
-    win.focus();
-    win.print();
+    // Wait for the bundled Inter font so the saved PDF never falls back to another face.
+    const fontsReady = win.document.fonts ? win.document.fonts.ready : Promise.resolve();
+    fontsReady.then(() => {
+      win.focus();
+      win.print();
+    });
   }, { once: true });
 });
 
@@ -611,6 +615,9 @@ function buildExportDocument(payload) {
   const title = `${formatLabel(industry || 'Business')} Readiness Audit`;
   const preparedFor = businessName || contactName || phoneNumber || 'Business Owner';
   const generatedAt = new Date().toLocaleString();
+  const fontUrl = typeof window !== 'undefined' && window.location
+    ? new URL('/assets/fonts/inter-latin-var.woff2', window.location.href).href
+    : '/assets/fonts/inter-latin-var.woff2';
 
   return `<!doctype html>
 <html lang="en">
@@ -619,34 +626,61 @@ function buildExportDocument(payload) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <style>
+      /* Inter (SIL OFL 1.1), bundled with the app so saved PDFs render the same everywhere. */
+      @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: block;
+        src: url("${fontUrl}") format("woff2");
+      }
+
       :root {
-        color: #202524;
-        font-family: Inter, Arial, sans-serif;
+        --espresso: #1C1410;
+        --slate: #6B5E52;
+        --parchment: #F9F6F1;
+        --canvas-soft: #F2EDE5;
+        --ochre: #C47B2E;
+        --gold: #E8A84A;
+        --pale-ochre: #FDF4E7;
+        --ochre-brown: #7A4F1E;
+        --text-secondary: #8A7D72;
+        --text-muted: #A89880;
+        --border: #DDD5C8;
+        color: var(--espresso);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
       body {
         margin: 0;
-        background: #f5f4ef;
+        background: var(--canvas-soft);
       }
 
       main {
         max-width: 920px;
         margin: 0 auto;
-        padding: 42px 28px;
-        background: #ffffff;
+        padding: 0 0 42px;
+        background: var(--parchment);
+      }
+
+      .report-body {
+        padding: 0 28px;
       }
 
       header {
-        border-bottom: 2px solid #0d6b57;
-        padding-bottom: 22px;
         margin-bottom: 24px;
+        padding: 28px;
+        background: var(--espresso);
+        color: var(--parchment);
       }
 
       .eyebrow {
         margin: 0 0 8px;
-        color: #0d6b57;
+        color: var(--gold);
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
@@ -656,27 +690,39 @@ function buildExportDocument(payload) {
       }
 
       h1 {
-        margin-bottom: 10px;
-        font-size: 34px;
-        line-height: 1.05;
+        margin-bottom: 14px;
+        color: var(--parchment);
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
       }
 
       h2 {
         margin-bottom: 12px;
-        font-size: 19px;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
       }
 
       h3 {
         margin-bottom: 8px;
-        font-size: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.35;
       }
 
       .meta {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px 18px;
-        color: #65706d;
+        color: var(--border);
         font-size: 13px;
+      }
+
+      .meta strong {
+        color: var(--parchment);
+        font-weight: 600;
       }
 
       .score {
@@ -692,14 +738,15 @@ function buildExportDocument(payload) {
         width: 86px;
         aspect-ratio: 1;
         border-radius: 8px;
-        background: #084c3e;
-        color: #ffffff;
-        font-size: 30px;
+        background: var(--espresso);
+        color: var(--gold);
+        font-size: 32px;
+        font-weight: 700;
       }
 
       .score span {
-        color: #65706d;
-        font-weight: 700;
+        color: var(--slate);
+        font-weight: 600;
       }
 
       .grid {
@@ -715,15 +762,23 @@ function buildExportDocument(payload) {
       }
 
       .box {
-        border: 1px solid #d9dfdc;
+        border: 1px solid var(--border);
         border-radius: 8px;
         padding: 14px;
+        background: var(--parchment);
       }
 
       .box p,
       li {
-        color: #38413f;
+        color: var(--slate);
+        font-size: 14px;
         line-height: 1.55;
+      }
+
+      .box p strong,
+      li strong {
+        color: var(--espresso);
+        font-weight: 600;
       }
 
       ul {
@@ -732,17 +787,20 @@ function buildExportDocument(payload) {
       }
 
       .metric-label {
-        color: #65706d;
-        font-size: 12px;
-        font-weight: 800;
+        display: inline-block;
+        color: var(--ochre-brown);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
         text-transform: uppercase;
       }
 
       .metric-value {
         display: block;
         margin-top: 4px;
+        color: var(--espresso);
         font-size: 22px;
-        font-weight: 850;
+        font-weight: 700;
       }
 
       .transcript {
@@ -751,11 +809,11 @@ function buildExportDocument(payload) {
 
       @media print {
         body {
-          background: #ffffff;
+          background: var(--parchment);
         }
 
         main {
-          padding: 0;
+          padding-bottom: 0;
         }
       }
 
@@ -763,6 +821,16 @@ function buildExportDocument(payload) {
         .meta,
         .grid {
           grid-template-columns: 1fr;
+        }
+
+        header,
+        .report-body {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        h1 {
+          font-size: 28px;
         }
       }
     </style>
@@ -780,8 +848,10 @@ function buildExportDocument(payload) {
           ${websiteUrl ? `<div><strong>Website:</strong> ${escapeHtml(websiteUrl)}</div>` : ''}
         </div>
       </header>
-      ${renderExportReport(report || {})}
-      ${transcript ? `<section><h2>Transcript</h2><div class="box transcript">${escapeHtml(transcript)}</div></section>` : ''}
+      <div class="report-body">
+        ${renderExportReport(report || {})}
+        ${transcript ? `<section><h2>Transcript</h2><div class="box transcript">${escapeHtml(transcript)}</div></section>` : ''}
+      </div>
     </main>
   </body>
 </html>`;

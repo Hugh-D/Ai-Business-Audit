@@ -1,9 +1,15 @@
 const ExcelJS = require('exceljs');
 
-const HEADER_FILL = '0D6B57';
-const HEADER_FONT = 'FFFFFF';
-const SUBTLE_FILL = 'E5F3EE';
-const BORDER = { style: 'thin', color: { argb: 'D9DFDC' } };
+// Volve design system v2.0 palette. ExcelJS expects 8-digit ARGB, so each hex carries an FF alpha prefix.
+const HEADER_FILL = 'FF1C1410'; // espresso
+const HEADER_FONT = 'FFF9F6F1'; // parchment
+const SUBTLE_FILL = 'FFFDF4E7'; // accent-bg (pale ochre)
+const SECTION_FONT = 'FF7A4F1E'; // ochre-brown
+const BORDER = { style: 'thin', color: { argb: 'FFDDD5C8' } }; // border (dust)
+const BODY_FONT_COLOR = 'FF1C1410'; // espresso
+// Inter everywhere, matching the HTML and PDF reports. family 2 (swiss) tells Excel to
+// substitute a sans such as Arial when Inter is not installed.
+const BASE_FONT = { name: 'Inter', family: 2, size: 10, color: { argb: BODY_FONT_COLOR } };
 
 async function buildAuditWorkbookBuffer(audit) {
   const workbook = new ExcelJS.Workbook();
@@ -278,7 +284,7 @@ function addTranscriptSheet(workbook, audit) {
 
 function styleTitle(sheet, headerRange) {
   void headerRange;
-  sheet.getRow(1).font = { bold: true, color: { argb: HEADER_FONT } };
+  sheet.getRow(1).font = { ...BASE_FONT, size: 11, bold: true, color: { argb: HEADER_FONT } };
   sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEADER_FILL } };
   sheet.getRow(1).alignment = { vertical: 'middle' };
   sheet.getRow(1).height = 24;
@@ -286,13 +292,17 @@ function styleTitle(sheet, headerRange) {
 
 function styleSectionHeader(row) {
   row.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: '084C3E' } };
+    cell.font = { ...BASE_FONT, bold: true, color: { argb: SECTION_FONT } };
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: SUBTLE_FILL } };
   });
 }
 
 function applyBorders(sheet) {
+  // Print or save to PDF one page wide, so the sheet reads like the other report outputs.
+  sheet.pageSetup = { ...sheet.pageSetup, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+
   sheet.eachRow((row) => {
+    const vertical = row.number === 1 ? 'middle' : 'top';
     row.eachCell((cell) => {
       cell.border = {
         top: BORDER,
@@ -302,12 +312,17 @@ function applyBorders(sheet) {
       };
       cell.alignment = {
         wrapText: true,
-        vertical: 'top',
+        vertical,
       };
+      cell.font = { ...BASE_FONT, ...(cell.font || {}) };
     });
   });
 
-  sheet.getColumn(1).font = { bold: true };
+  // Bold column A without wiping the header/section font colour set earlier
+  // (a column-level font replaces each cell's font, which hid the A1 header text on the dark fill).
+  sheet.getColumn(1).eachCell((cell) => {
+    cell.font = { ...(cell.font || {}), bold: true };
+  });
 }
 
 function normalizeList(value) {
