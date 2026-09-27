@@ -1,12 +1,13 @@
 # Volve Solutions — Design System
-# CLAUDE.md v2.0 | June 2026
+# CLAUDE.md v2.1 | September 2026
+# Changelog v2.1: added status / alert red (#A43B35 on #F9E8E6); typography now splits the public website (DM Serif Display headings, Inter body) from reports, documents, emails and apps (Inter only).
 # For use in Claude Design project only.
 
 ---
 
 ## PALETTE
 
-Five working colours. Do not introduce new colours.
+Five working colours. Do not introduce new colours. The status / alert red below is the only exception and is functional, not decorative.
 
 ```
 ink:          #1C1410   Espresso. Primary text. Dark card surfaces. Footer bands.
@@ -25,13 +26,24 @@ text-on-dark: #DDD5C8   Body text on slate or espresso surfaces.
 
 border:       #DDD5C8   Card borders. Input borders. Dividers.
 dark-label:   #A89880   De-emphasised labels on espresso surfaces (WCAG AA on #1C1410). Do not use #6B5E52 for text on espresso — it fails contrast.
+
+status-alert: #A43B35   Red. Status / alert text, icons and borders.
+status-bg:    #F9E8E6   Pale red. Status / alert backgrounds (red on pale red).
 ```
+
+Status / alert red is used ONLY for error states and urgent findings (for example red RAG findings) in reports and apps. Never use it for decoration, accents, headings or CTAs.
 
 ---
 
 ## TYPOGRAPHY
 
-Inter only. No serif mixing. No display font experiments.
+Two contexts, two rules. No other families and no display font experiments.
+
+Public website (volvesolutions.com.au): DM Serif Display 400 for headings (h1, h2 and display numbers), including the italic gold / ochre accent phrases inside headings (DM Serif Display italic, gold on dark surfaces, ochre on light). Inter for everything else: body, eyebrows, labels, buttons and forms.
+
+Reports, documents (PDF, DOCX, XLSX), emails and app screens: Inter only, weights 400 / 600 / 700, fallback stack Inter, Arial, Helvetica, sans-serif. No serif. Bundle or embed Inter wherever the format allows.
+
+The scale below is the Inter scale. On the website, hero and section headings use DM Serif Display 400 in place of Inter 700.
 
 ```
 Hero headline:    Inter 700 / 28px mobile / 34-40px desktop / -0.5px tracking / 1.15 line-height
@@ -218,7 +230,7 @@ Do:
 - Single ochre CTA per page — the call button only.
 - Rotate card corner radii for rhythm across card groups.
 - Report card fades third leak — always. Never show all three.
-- Inter throughout.
+- Inter only in reports, documents, emails and apps. Website headings use DM Serif Display, website body text uses Inter (see Typography).
 - Eyebrow labels set context above every headline.
 - Touch targets minimum 44px on mobile.
 - White space over decoration.
