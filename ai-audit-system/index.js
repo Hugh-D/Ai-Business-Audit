@@ -110,6 +110,17 @@ app.get('/flyer', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'flyer.html'));
 });
 
+// GET /ai-receptionist
+// Volve Righto landing page. Trailing slash redirects to the canonical path.
+app.get('/ai-receptionist', (req, res) => {
+  const pathOnly = req.originalUrl.split('?')[0];
+  if (pathOnly.length > 1 && pathOnly.endsWith('/')) {
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    return res.redirect(301, '/ai-receptionist' + query);
+  }
+  return res.sendFile(path.join(__dirname, 'public', 'ai-receptionist.html'));
+});
+
 // POST /api/website-audit
 // Public website, AI visibility, authority, and optional Google Business Profile audit.
 app.post('/api/website-audit', limitWebsiteAudits, async (req, res) => {
@@ -610,6 +621,7 @@ app.get('/sitemap.xml', (_req, res) => {
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${baseUrl}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://volvesolutions.com.au/ai-receptionist</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>`);
 });
 

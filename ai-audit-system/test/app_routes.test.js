@@ -98,6 +98,23 @@ test('GET / serves the public branded website and /workbench serves the internal
   assert.match(workbenchResponse.buffer.toString('utf8'), /Audit Workbench/);
 });
 
+
+test('GET /ai-receptionist serves the Righto page without the faulty 1300 line', async () => {
+  const page = await requestRaw('GET', '/ai-receptionist');
+  const slash = await requestRaw('GET', '/ai-receptionist/', undefined, {}, 'manual');
+  const html = page.buffer.toString('utf8');
+
+  assert.equal(page.status, 200);
+  assert.match(html, /Volve Righto/);
+  assert.match(html, /An Aussie AI receptionist that answers/);
+  assert.match(html, /Start my free 2-week trial/);
+  assert.match(html, /canonical" href="https:\/\/volvesolutions.com.au\/ai-receptionist"/);
+  assert.doesNotMatch(html, /1300/);
+  assert.doesNotMatch(html, /tel:/);
+  assert.equal(slash.status, 301);
+  assert.equal(slash.headers.get('location'), '/ai-receptionist');
+});
+
 test('GET /automations serves the catalogue and supported detail pages', async () => {
   const catalogue = await requestRaw('GET', '/automations');
   const detail = await requestRaw('GET', '/automations/phone-agent');
@@ -700,7 +717,7 @@ async function requestJson(method, path, body) {
   );
 }
 
-async function requestRaw(method, path, body, headers = {}) {
+async function requestRaw(method, path, body, headers = {}, redirect = 'follow') {
   const server = app.listen(0);
   await onceListening(server);
 
@@ -709,6 +726,7 @@ async function requestRaw(method, path, body, headers = {}) {
     const response = await fetch(`http://127.0.0.1:${port}${path}`, {
       method,
       headers,
+      redirect,
       body: method === 'GET' ? undefined : body,
     });
     const contentType = response.headers.get('content-type') || '';

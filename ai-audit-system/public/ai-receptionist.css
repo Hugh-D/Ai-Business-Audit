@@ -1,0 +1,598 @@
+/* Volve Righto page. Reuses landing.css tokens, serif headings and buttons. */
+
+.righto-hero {
+  padding: 0;
+  min-height: 0;
+  overflow: visible;
+}
+
+.righto-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.38fr) minmax(280px, 1fr);
+  gap: 36px;
+  align-items: center;
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 122px 0 68px;
+}
+
+.righto-name {
+  margin: 0 0 14px;
+  color: var(--pale);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.righto-name span {
+  display: block;
+  margin-top: 4px;
+  color: var(--dust);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.righto-hero h1 {
+  max-width: 640px;
+  font-size: clamp(40px, 4.2vw, 58px);
+}
+
+.righto-hero .proof-list li::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--ochre);
+  vertical-align: middle;
+}
+
+.righto-sample .eyebrow {
+  color: var(--gold);
+}
+
+.righto-sample h2 {
+  margin: 0 0 18px;
+  color: var(--pale);
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.05;
+}
+
+.righto-card {
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 12px 16px 0 rgba(28, 20, 16, 0.12);
+}
+
+.righto-card-head,
+.righto-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #1c1410;
+  color: var(--pale);
+}
+
+.righto-card-head {
+  padding: 14px 16px;
+}
+
+.righto-card-head p,
+.righto-card-foot p {
+  margin: 0;
+}
+
+.righto-kicker {
+  color: #a89880;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.righto-card-head strong {
+  display: block;
+  margin-top: 3px;
+  color: #f9f6f1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.righto-card-head .righto-stat {
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.righto-card-body {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+}
+
+.righto-item {
+  padding: 10px 11px;
+  border: 0.5px solid var(--dust);
+  border-radius: 8px;
+  background: #f9f6f1;
+}
+
+.righto-item-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.righto-badge {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ochre);
+  color: #f9f6f1;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.righto-item h3 {
+  margin: 0;
+  color: #1c1410;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.righto-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 7px;
+  border: 0.5px solid var(--gold);
+  border-radius: 999px;
+  background: var(--pale);
+  color: var(--ochre);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.righto-item p {
+  margin: 8px 0 0;
+  color: var(--slate);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.righto-text {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--canvas);
+}
+
+.righto-text span {
+  display: block;
+  margin-bottom: 3px;
+  color: #7a4f1e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.righto-text p {
+  margin: 0;
+  color: #1c1410;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.righto-item.is-faded {
+  opacity: 0.4;
+}
+
+.righto-item.is-faded .righto-badge {
+  background: var(--dust);
+}
+
+.righto-ghost {
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: var(--dust);
+}
+
+.righto-ghost.short {
+  width: 62%;
+}
+
+.righto-card-foot {
+  padding: 12px 16px;
+}
+
+.righto-card-foot p {
+  color: #a89880;
+  font-size: 10px;
+}
+
+.righto-card-foot strong {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.righto-try {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f9f6f1;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.righto-try i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ochre);
+  color: #fdf4e7;
+  font-style: normal;
+}
+
+.righto-caption {
+  margin: 12px 0 0;
+  color: #a89880;
+  font-size: 12px;
+}
+
+.righto-band {
+  background: var(--paper);
+}
+
+.righto-band.soft {
+  background: var(--canvas);
+}
+
+.righto-prose {
+  max-width: 720px;
+}
+
+.righto-prose h2,
+.section-heading h2 {
+  font-size: clamp(32px, 4vw, 48px);
+}
+
+.righto-prose p {
+  color: #5b4f47;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.righto-video {
+  max-width: 820px;
+  margin-top: 28px;
+}
+
+.righto-poster {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border: 0.5px solid var(--dust);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(28, 20, 16, 0.15), rgba(28, 20, 16, 0.45)),
+    var(--slate);
+  color: var(--pale);
+  text-align: center;
+}
+
+.righto-poster strong {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.righto-poster span {
+  color: var(--dust);
+  font-size: 13px;
+}
+
+.righto-math {
+  max-width: 720px;
+  margin-top: 28px;
+  padding: 24px;
+  border: 0.5px solid var(--dust);
+  border-radius: 14px;
+  background: var(--white);
+}
+
+.righto-math h3 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.righto-math p,
+.righto-result {
+  color: #5b4f47;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.righto-calc {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.righto-calc label {
+  display: grid;
+  gap: 6px;
+  color: #4f433c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.righto-calc input {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-bottom: 1px solid #b9ad9f;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.righto-result strong {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.righto-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.righto-service {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  border: 0.5px solid var(--dust);
+  background: var(--white);
+}
+
+.righto-service:nth-child(1) { border-radius: 28px 8px 8px 8px; }
+.righto-service:nth-child(2) { border-radius: 8px; }
+.righto-service:nth-child(3) { border-radius: 8px 28px 8px 8px; }
+
+.righto-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.righto-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.righto-icon.audit { background: var(--pale); color: var(--ochre); }
+.righto-icon.auto { background: var(--canvas); color: var(--slate); }
+.righto-icon.support { background: #1c1410; color: var(--gold); }
+
+.righto-service .tag {
+  display: inline-block;
+  width: max-content;
+  margin-bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.righto-service:nth-child(1) .tag { background: var(--pale); color: #7a4f1e; }
+.righto-service:nth-child(2) .tag { background: var(--canvas); color: #1c1410; }
+.righto-service:nth-child(3) .tag { background: #1c1410; color: var(--dust); }
+
+.righto-service h3 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.righto-service p {
+  margin: 0;
+  color: #675b53;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.righto-service footer {
+  margin-top: auto;
+  padding: 14px 0 0;
+  background: transparent;
+  color: #1c1410;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.righto-steps {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.righto-offer {
+  max-width: 760px;
+  margin-top: 28px;
+  padding: 28px 24px;
+  border: 0.5px solid var(--dust);
+  border-radius: 14px;
+  background: var(--white);
+}
+
+.righto-offer h3 {
+  margin: 22px 0 8px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.righto-offer ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #5b4f47;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.righto-offer p {
+  color: #5b4f47;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.righto-form-wrap {
+  max-width: 760px;
+}
+
+.righto-form-wrap .audit-form select {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-bottom: 1px solid #b9ad9f;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.righto-form-wrap .audit-form select:focus {
+  border-color: var(--ochre);
+  outline: none;
+  box-shadow: 0 2px 0 var(--ochre);
+}
+
+.righto-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  color: #4f433c;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.righto-check input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.righto-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.righto-success {
+  margin-top: 16px;
+  padding: 16px;
+  border: 0.5px solid var(--dust);
+  border-radius: 8px;
+  background: var(--white);
+}
+
+.righto-where {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.righto-faq {
+  background: var(--paper);
+}
+
+@media (max-width: 900px) {
+  .righto-hero {
+    background: var(--paper);
+  }
+
+  .righto-hero-grid {
+    display: block;
+    width: 100%;
+    padding: 0;
+  }
+
+  .righto-hero .hero-copy {
+    padding: 110px 20px 48px;
+    background: var(--slate);
+  }
+
+  .righto-sample {
+    padding: 48px 20px 16px;
+    background: var(--paper);
+  }
+
+  .righto-sample .eyebrow {
+    color: #7a4f1e;
+  }
+
+  .righto-sample h2,
+  .righto-caption {
+    color: var(--ink);
+  }
+
+  .righto-caption {
+    color: var(--muted);
+  }
+
+  .righto-cards,
+  .righto-calc,
+  .righto-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .righto-hero .hero-copy {
+    padding: 98px 16px 40px;
+  }
+
+  .righto-sample {
+    padding-inline: 16px;
+  }
+}
+
+.righto-truths .metrics-grid{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.righto-truths .metrics-grid{grid-template-columns:1fr}}
