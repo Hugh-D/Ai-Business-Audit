@@ -23,6 +23,19 @@ document.getElementById('detailScope').replaceChildren(...item.scope.map(text =>
   const li = document.createElement('li'); li.textContent = text; return li;
 }));
 
+if (slug === 'phone-agent' || slug === 'missed-call-recovery') {
+  const note = document.createElement('p');
+  note.className = 'related-righto';
+  const link = document.createElement('a');
+  link.href = '/ai-receptionist';
+  link.textContent = slug === 'phone-agent'
+    ? 'Want the ready-made receptionist instead? Volve Righto is a free 2-week trial.'
+    : 'Volve Righto is the ready-made AI receptionist for tradies, with a free 2-week trial.';
+  note.append(link);
+  document.getElementById('detailScope').after(note);
+}
+
+
 document.getElementById('enquiryForm').addEventListener('submit', event => {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));

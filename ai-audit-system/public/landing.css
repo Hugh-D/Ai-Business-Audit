@@ -41,3 +41,5 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .process .process-grid li{gap:18px}
 .process .process-grid i{font-size:10px}
 .process .process-grid h3{line-height:normal}
+
+.righto-home-link{max-width:640px;margin:22px 0 0;color:#675b53;font-size:14px;line-height:1.55}.righto-home-link a{color:var(--ochre);font-weight:700}
