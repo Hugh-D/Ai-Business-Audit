@@ -45,3 +45,24 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .process .process-grid h3{line-height:normal}
 
 .righto-home-link{max-width:640px;margin:22px 0 0;color:#675b53;font-size:14px;line-height:1.55}.righto-home-link a{color:var(--ochre);font-weight:700}
+
+/* Who reviews. Fixed band colours so dark mode does not invert this section.
+   Headings stay on --serif (DM Serif Display). */
+.trust{background:#1c1410;color:#fdf4e7}
+.trust-grid{display:grid;grid-template-columns:300px 1fr;gap:48px;align-items:center}
+.trust-portrait{position:relative;margin:0;padding:12px;background:var(--pale);border-radius:26px}
+.trust-portrait img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:16px;background:var(--pale)}
+.trust-portrait figcaption{margin-top:10px;color:#1c1410;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.trust .eyebrow{color:#e8a84a}
+.trust h2{margin:0 0 24px;font-family:var(--serif);font-size:clamp(34px,4vw,52px);font-weight:400;line-height:1.02;letter-spacing:-.025em}
+.trust h2 em{color:#e8a84a;font-style:italic}
+.trust-kicker{margin:-8px 0 22px;max-width:640px;color:#e8a84a;font-family:var(--serif);font-style:italic;font-weight:400;font-size:22px;line-height:1.35}
+.trust blockquote{margin:0;max-width:640px;color:#e2dbd0;font-size:17px;line-height:1.7}
+.trust blockquote p{margin:0 0 16px}
+.trust blockquote p:last-child{margin-bottom:0}
+.trust-commitments{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin:40px 0 0;padding:32px 0 0;list-style:none;border-top:1px solid rgba(253,244,231,.18)}
+.trust-commitments li{display:grid;gap:6px}
+.trust-commitments strong{font-family:var(--serif);font-size:22px;font-weight:400}
+.trust-commitments span{color:#a89880;font-size:13px;line-height:1.5}
+@media (max-width:900px){.trust-grid{grid-template-columns:1fr;gap:34px}.trust-portrait{width:240px}}
+@media (max-width:560px){.trust-commitments{grid-template-columns:1fr;gap:20px}}
