@@ -524,19 +524,22 @@ h1 {
 /* --- Trust band ----------------------------------------------------------- */
 
 .trust { background: var(--band-ink); color: var(--band-text) }
-.trust-grid { display: grid; grid-template-columns: 220px 1fr; gap: 64px; align-items: start }
+.trust-grid { display: grid; grid-template-columns: 300px 1fr; gap: 48px; align-items: center }
 
 /* figure carries a default 1em 40px margin, which was shrinking the portrait
    to 140px inside its 220px column. height:auto is needed too, or the img's
    height attribute overrides aspect-ratio and stretches it. */
-.trust-portrait { position: relative; margin: 0 }
+.trust-portrait {
+  position: relative; margin: 0;
+  padding: 12px; background: var(--pale); border-radius: 26px;
+}
 .trust-portrait img {
   display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover;
-  border-radius: 18px; background: var(--band-slate);
+  border-radius: 16px; background: var(--pale);
 }
 .trust-portrait figcaption {
-  margin-top: 14px;
-  color: var(--band-muted); font-size: var(--fs-micro);
+  margin-top: 10px;
+  color: var(--band-ink); font-size: var(--fs-micro);
   letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
 }
 
@@ -781,7 +784,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 
   .automation-grid { grid-template-columns: 1fr }
   .trust-grid { grid-template-columns: 1fr; gap: 34px }
-  .trust-portrait { width: 180px }
+  .trust-portrait { width: 240px }
   .process-grid { grid-template-columns: 1fr 1fr }
   .footer-grid { grid-template-columns: 1fr 1fr }
 }
