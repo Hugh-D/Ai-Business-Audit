@@ -598,7 +598,7 @@ function buildMailtoUrl(payload) {
     payload.websiteReview ? `Website review completed: ${payload.websiteReview.strengths?.length || 0} strengths and ${payload.websiteReview.opportunities?.length || 0} opportunities found.` : '',
     '',
     payload.deliveryNotes ? `Notes:\n${payload.deliveryNotes}\n` : '',
-    'I have also prepared an editable audit workbook for the detailed scores, findings, and action plan.',
+    'The report that follows is your two-page Revenue and Operations Readiness Report. The score is a decision aid, not a financial forecast.',
     '',
     'Best,',
   ].filter(Boolean).join('\n');

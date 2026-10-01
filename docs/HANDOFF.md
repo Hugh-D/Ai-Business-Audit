@@ -35,7 +35,7 @@ It is a Node/Express app with:
 - persisted follow-up booking capture within the report workflow: status, preferred timing, scheduled time, and notes
 - website capture from the assessment transcript or report review form, stored with the report and editable export
 - first-pass website customer-journey review at `POST /voice/calls/:callId/website-review`, shown in the report preview and exported to a dedicated workbook sheet
-- SMTP workbook delivery at `POST /voice/calls/:callId/deliver`
+- SMTP delivery of the two-page readiness PDF at `POST /voice/calls/:callId/deliver`
 - voice prompt session config at `POST /voice/session`
 - optional outbound Retell test-call creation at `POST /voice/call`
 - persisted call list at `GET /voice/calls`
@@ -56,10 +56,11 @@ Important files:
 - `ai-audit-system/index.js` - Express routes and webhook flow
 - `ai-audit-system/agents/voice_agent.js` - Retell call creation and webhook verification
 - `ai-audit-system/agents/report_engine.js` - Anthropic report generation and JSON parsing
-- `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation
+- `ai-audit-system/agents/workbook_exporter.js` - editable XLSX report generation for internal use
+- `ai-audit-system/agents/report_pdf.js` - two-page customer PDF, built on the server with PDFKit
 - `packages/website-audit-core/index.js` - shared website customer-journey, SEO, copy, trust, and technical signal checks
 - `ai-audit-system/agents/website_auditor.js` - compatibility wrapper around the shared website audit core
-- `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with workbook attachment
+- `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with the two-page PDF attachment
 - `ai-audit-system/agents/call_store.js` - local SQLite-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
@@ -210,8 +211,8 @@ Webhook behavior:
 - Editable report export is available as `.xlsx`, suitable for Excel or Google Sheets import.
 - Completed phone-call reports can be marked `draft`, `reviewed`, or `sent`, with website URL, internal review notes, recipient email, delivery notes, and follow-up booking status/timing.
 - Website addresses can be reviewed for customer-journey, SEO, copy, trust, and basic technical signals. This is still a single-page heuristic review, not a full crawler or brand-system extractor yet.
-- The UI can prepare a mailto email draft, or send the editable workbook by SMTP when SMTP env vars are configured.
-- PDF export uses the browser print flow from the report preview; there is no server-side PDF renderer yet.
+- The UI can prepare a mailto email draft, or send the two-page customer PDF by SMTP when SMTP env vars are configured.
+- Customer delivery uses a server-side two-page PDF. Browser Print / PDF remains the longer on-screen report. The spreadsheet stays on Download Sheet and `POST /export/xlsx`.
 - No deployed public URL yet.
 - Automated tests cover core pure modules, Retell signature verification, and key Express endpoints. Full live Retell/Anthropic integration is still manually verified.
 - The inbound Retell call flow can only work after `.env` contains the public audit number and webhook config, and SIPcity routing is connected to Retell.
@@ -230,7 +231,6 @@ Webhook behavior:
 8. Decide whether the standalone website audit becomes a lead magnet, paid mini-audit, or internal sales tool before adding more features.
 9. Add a scheduling/calendar link or integration once the preferred booking workflow is chosen.
 10. Add a CRM handoff once the target CRM is chosen, or a richer email provider integration if SMTP is not enough.
-11. Add a server-side PDF renderer if browser-based PDF export is not enough for delivery.
 
 ## Conversation Notes
 

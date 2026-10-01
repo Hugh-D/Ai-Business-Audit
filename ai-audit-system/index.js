@@ -9,6 +9,7 @@ const voiceAgent = require('./agents/voice_agent');
 const transcriptCleaner = require('./agents/transcript_cleaner');
 const callStore = require('./agents/call_store');
 const workbookExporter = require('./agents/workbook_exporter');
+const reportPdf = require('./agents/report_pdf');
 const deliveryAgent = require('./agents/delivery_agent');
 const websiteAuditor = require('./agents/website_auditor');
 
@@ -371,7 +372,8 @@ app.post('/voice/calls/:callId/website-review', async (req, res) => {
 });
 
 // POST /voice/calls/:callId/deliver
-// Sends the completed report workbook to the saved recipient email via SMTP.
+// Sends the two-page readiness PDF to the saved recipient email via SMTP.
+// The workbook stays available at POST /export/xlsx for internal use.
 app.post('/voice/calls/:callId/deliver', async (req, res) => {
   try {
     const call = callStore.get(req.params.callId);
@@ -380,9 +382,9 @@ app.post('/voice/calls/:callId/deliver', async (req, res) => {
     if (!call.recipientEmail) return res.status(400).json({ error: 'recipientEmail is required before sending' });
 
     const audit = callToAudit(call);
-    const workbookBuffer = await workbookExporter.buildAuditWorkbookBuffer(audit);
-    const filename = workbookExporter.buildWorkbookFilename(audit);
-    const delivery = await deliveryAgent.sendReportEmail({ call, workbookBuffer, filename });
+    const pdfBuffer = await reportPdf.buildReportPdfBuffer(audit);
+    const filename = reportPdf.buildReportFilename(audit);
+    const delivery = await deliveryAgent.sendReportEmail({ call, pdfBuffer, filename });
 
     const now = new Date().toISOString();
     const saved = callStore.save(call.callId, {

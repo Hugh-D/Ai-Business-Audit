@@ -8,7 +8,7 @@ function hasEmailConfig(env = process.env) {
   );
 }
 
-async function sendReportEmail({ call, workbookBuffer, filename }) {
+async function sendReportEmail({ call, pdfBuffer, filename }) {
   if (!call?.recipientEmail) {
     const err = new Error('recipientEmail is required before sending');
     err.status = 400;
@@ -32,6 +32,12 @@ async function sendReportEmail({ call, workbookBuffer, filename }) {
       : undefined,
   });
 
+  if (!pdfBuffer) {
+    const err = new Error('report PDF is required before sending');
+    err.status = 500;
+    throw err;
+  }
+
   const message = buildDeliveryMessage(call);
   return transporter.sendMail({
     from: process.env.SMTP_FROM,
@@ -40,9 +46,9 @@ async function sendReportEmail({ call, workbookBuffer, filename }) {
     text: message.text,
     attachments: [
       {
-        filename,
-        content: Buffer.from(workbookBuffer),
-        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        filename: filename || 'revenue-operations-readiness-report.pdf',
+        content: Buffer.from(pdfBuffer),
+        contentType: 'application/pdf',
       },
     ],
   });
@@ -68,7 +74,8 @@ function buildDeliveryMessage(call) {
     actions ? `Recommended next actions:\n${actions}` : '',
     call.websiteUrl ? `Website noted for assessment context: ${call.websiteUrl}` : '',
     call.deliveryNotes ? `Notes:\n${call.deliveryNotes}` : '',
-    'I have attached the editable audit workbook with the detailed scores, findings, and action plan.',
+    'I have attached your two-page Revenue and Operations Readiness Report.',
+    'The score is a decision aid, not a financial forecast.',
     '',
     'Best,',
   ].filter(Boolean).join('\n');
