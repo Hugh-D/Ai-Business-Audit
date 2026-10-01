@@ -524,7 +524,7 @@ test('PATCH /voice/calls/:callId/review requires a report', async () => {
   assert.equal(response.body.error, 'Call does not have a report to review');
 });
 
-test('POST /voice/calls/:callId/deliver sends the workbook and marks report sent', async () => {
+test('POST /voice/calls/:callId/deliver sends the two-page PDF and marks report sent', async () => {
   let captured = null;
   deliveryAgent.sendReportEmail = async (input) => {
     captured = input;
@@ -552,8 +552,11 @@ test('POST /voice/calls/:callId/deliver sends the workbook and marks report sent
   assert.equal(response.body.call.reviewStatus, 'sent');
   assert.equal(response.body.call.lastDelivery.messageId, 'message_test');
   assert.equal(captured.call.callId, 'call_deliver');
-  assert.match(captured.filename, /trades-call-deliver\.xlsx/);
-  assert.ok(Buffer.isBuffer(Buffer.from(captured.workbookBuffer)));
+  assert.match(captured.filename, /trades-call-deliver\.pdf/);
+  assert.equal(captured.workbookBuffer, undefined);
+  const pdf = Buffer.from(captured.pdfBuffer);
+  assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+  assert.equal((pdf.toString('latin1').match(/\/Type \/Page(?!s)/g) || []).length, 2);
 });
 
 test('POST /voice/calls/:callId/deliver requires a recipient email', async () => {

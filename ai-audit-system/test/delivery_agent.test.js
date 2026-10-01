@@ -35,4 +35,7 @@ test('buildDeliveryMessage creates a client-ready email body', () => {
   assert.match(message.text, /Missed after-hours calls/);
   assert.match(message.text, /https:\/\/demoplumbing\.com\.au/);
   assert.match(message.text, /Book a follow-up consult next week/);
+  assert.match(message.text, /two-page Revenue and Operations Readiness Report/);
+  assert.match(message.text, /decision aid, not a financial forecast/);
+  assert.doesNotMatch(message.text, /workbook|spreadsheet/i);
 });

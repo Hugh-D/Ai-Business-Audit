@@ -38,7 +38,7 @@ Open `http://localhost:3000` in a browser to use the MVP phone audit workbench.
 - `GET /voice/calls/:callId` returns one persisted call record.
 - `PATCH /voice/calls/:callId/review` updates review, delivery, website, and follow-up fields.
 - `POST /voice/calls/:callId/website-review` runs a first-pass website review.
-- `POST /voice/calls/:callId/deliver` sends the completed workbook by SMTP when configured.
+- `POST /voice/calls/:callId/deliver` sends the two-page readiness PDF by SMTP when configured. The workbook remains available from `POST /export/xlsx`.
 - `POST /audit` turns an industry and transcript into a JSON audit report.
 - `POST /webhook/retell` receives Retell call-ended webhooks and generates an audit report.
 
