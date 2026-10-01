@@ -549,6 +549,13 @@ h1 {
   font-size: var(--fs-h2); line-height: 1.02; letter-spacing: -.025em;
 }
 .trust h2 em { color: var(--band-gold) }
+.trust-kicker {
+  margin: -8px 0 22px;
+  max-width: 640px;
+  color: var(--band-gold);
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: var(--fs-title); line-height: 1.35;
+}
 .trust blockquote {
   margin: 0; max-width: 640px;
   color: var(--band-body); font-size: var(--fs-lead); line-height: 1.7;
