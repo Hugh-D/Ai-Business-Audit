@@ -145,3 +145,66 @@ test('sendReviewEmail refuses to send when SMTP is missing', async () => {
     (err) => err.code === 'SMTP_MISSING'
   );
 });
+
+test('SMTP transport uses an IPv4 socket and keeps port 587 on STARTTLS', async () => {
+  const { EventEmitter } = require('events');
+  const net = require('net');
+  const nodemailer = require('nodemailer');
+  const previousTransport = nodemailer.createTransport;
+  const previousConnect = net.connect;
+  let options = null;
+  nodemailer.createTransport = (opts) => {
+    options = opts;
+    return {
+      sendMail: async (message) => ({ messageId: 'ipv4_1', accepted: [message.to], rejected: [] }),
+    };
+  };
+
+  try {
+    await deliveryAgent.sendReviewEmail({
+      call: { callId: 'call_ipv4', businessName: 'Green Stripe' },
+      workbookBuffer: Buffer.from('sheet'),
+      filename: 'review.xlsx',
+      env: {
+        SMTP_HOST: 'smtp-mail.outlook.com',
+        SMTP_PORT: '587',
+        SMTP_USER: 'volvesolutions@outlook.com',
+        SMTP_PASS: 'test-pass',
+        SMTP_FROM: 'volvesolutions@outlook.com',
+      },
+    });
+
+    assert.equal(options.family, 4);
+    assert.equal(options.host, 'smtp-mail.outlook.com');
+    assert.equal(options.port, 587);
+    assert.equal(options.secure, false);
+    assert.deepEqual(options.auth, {
+      user: 'volvesolutions@outlook.com',
+      pass: 'test-pass',
+    });
+
+    let connectOpts = null;
+    net.connect = (opts) => {
+      connectOpts = opts;
+      const socket = new EventEmitter();
+      socket.destroy = () => {};
+      process.nextTick(() => socket.emit('connect'));
+      return socket;
+    };
+
+    const socketOptions = await new Promise((resolve, reject) => {
+      options.getSocket({}, (err, result) => (err ? reject(err) : resolve(result)));
+    });
+
+    assert.deepEqual(connectOpts, {
+      host: 'smtp-mail.outlook.com',
+      port: 587,
+      family: 4,
+    });
+    assert.ok(socketOptions.connection);
+    assert.equal(socketOptions.secured, undefined);
+  } finally {
+    nodemailer.createTransport = previousTransport;
+    net.connect = previousConnect;
+  }
+});
