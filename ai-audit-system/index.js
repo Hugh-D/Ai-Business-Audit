@@ -32,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 const REVIEW_STATUSES = new Set(['draft', 'reviewed', 'sent']);
 const FOLLOW_UP_STATUSES = new Set(['not_offered', 'declined', 'requested', 'booked', 'completed']);
+const TRANSCRIPT_FOLLOW_UP_STATUSES = new Set(['not_offered', 'declined', 'requested', 'booked']);
 const websiteAuditRequests = new Map();
 
 function requireWorkbenchAuth(req, res, next) {
@@ -489,23 +490,54 @@ async function processEndedCall(call) {
 
   const report = await reportEngine.generate({ config, transcript: cleaned });
   const existing = callStore.get(call_id) || {};
-  const recipientEmail = existing.recipientEmail || deliveryAgent.extractCustomerEmail({
-    metadata,
-    report,
-    transcript: cleaned,
-  });
+  const callerPatch = fieldsFromEndedReport({ metadata, existing, report, transcript: cleaned });
   const saved = callStore.save(call_id, {
     status: 'report_ready',
     reviewStatus: 'draft',
-    followUpStatus: 'not_offered',
     industry: config.id,
     transcript: cleaned,
     websiteUrl: websiteAuditor.normalizeWebsiteUrl(report.websiteUrl),
     report,
     auditId: existing.auditId || uuidv4(),
-    ...(recipientEmail ? { recipientEmail } : {}),
+    ...callerPatch,
   });
   await sendCallReviewEmail(saved);
+}
+
+// Fills spreadsheet header fields from the report when metadata did not already supply them.
+// A blank model value never replaces a saved name, business, email, or booked time.
+function fieldsFromEndedReport({ metadata = {}, existing = {}, report = {}, transcript = '' } = {}) {
+  const caller = reportEngine.callerFieldsFromReport(report);
+  const contactName = firstNonBlank(metadata.contactName, existing.contactName, caller.contactName);
+  const businessName = firstNonBlank(metadata.businessName, existing.businessName, caller.businessName);
+  const recipientEmail = firstNonBlank(existing.recipientEmail) || deliveryAgent.extractCustomerEmail({
+    metadata,
+    report,
+    transcript,
+  });
+  const existingStatus = TRANSCRIPT_FOLLOW_UP_STATUSES.has(existing.followUpStatus)
+    ? existing.followUpStatus
+    : '';
+  const followUpStatus = caller.followUpStatus || existingStatus || 'not_offered';
+  const followUpPreferredTime = followUpStatus === 'booked'
+    ? (caller.followUpPreferredTime || reportEngine.textOrEmpty(existing.followUpPreferredTime))
+    : '';
+
+  return {
+    ...(contactName ? { contactName } : {}),
+    ...(businessName ? { businessName } : {}),
+    ...(recipientEmail ? { recipientEmail } : {}),
+    followUpStatus,
+    followUpPreferredTime,
+  };
+}
+
+function firstNonBlank(...values) {
+  for (const value of values) {
+    const text = reportEngine.textOrEmpty(value);
+    if (text) return text;
+  }
+  return '';
 }
 
 // Emails Hugh the spreadsheet after a report is saved. Never sends the customer PDF.
@@ -724,4 +756,4 @@ app.use((_req, res) => {
 </html>`);
 });
 
-module.exports = { app, processEndedCall, buildReadiness, normalizeWebsiteUrl: websiteAuditor.normalizeWebsiteUrl };
+module.exports = { app, processEndedCall, fieldsFromEndedReport, buildReadiness, normalizeWebsiteUrl: websiteAuditor.normalizeWebsiteUrl };

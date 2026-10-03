@@ -71,6 +71,11 @@ Only include diagnostic findings supported by the transcript. If evidence is mis
 Return a single valid JSON object with this shape:
 {
   "websiteUrl": "<customer website URL if clearly provided in the transcript, otherwise empty string>",
+  "contactName": "<caller name if they stated it, otherwise empty string>",
+  "businessName": "<business name if they stated it, otherwise empty string>",
+  "recipientEmail": "<email address the caller stated, otherwise empty string>",
+  "followUpStatus": "not_offered|declined|requested|booked",
+  "followUpPreferredTime": "<spoken day and time when followUpStatus is booked, otherwise empty string>",
   "overallScore": <number 1-10>,
   "scores": {
     "communication": <1-10>,
@@ -113,3 +118,19 @@ Return a single valid JSON object with this shape:
 }
 
 Be specific, cite evidence from the transcript, and keep each section concise but actionable. The action plan should prioritize what is costing the business the most, what is easiest to improve, what creates the fastest visible win, and what increases trust in implementation.
+
+## Spreadsheet header fields
+contactName, businessName, recipientEmail, followUpStatus, and followUpPreferredTime are for the call summary spreadsheet. They are not a substitute for the narrative sections.
+
+Use only words the caller or agent actually said. If a detail was not stated, return an empty string. Never guess a name, business, email, website, or time.
+
+websiteUrl rules:
+- Return a website only when the caller gave one.
+- If they said they have no website, or no website was discussed, return an empty string.
+- Do not invent a domain from the business name.
+
+followUpStatus rules:
+- booked: they agreed a day, a clock time, or both. "Thursday at 1" and "Monday" are booked. Copy that spoken timing into followUpPreferredTime. Do not turn it into an ISO timestamp, a calendar date, or any time they did not say.
+- declined: a follow-up was offered and they said no.
+- requested: they want a follow-up, but no day or time was agreed. Leave followUpPreferredTime empty.
+- not_offered: follow-up was never discussed. Leave followUpPreferredTime empty.

@@ -69,4 +69,36 @@ function buildUserMessage(config, transcript) {
   ].join('\n');
 }
 
-module.exports = { generate, parseJsonReport };
+
+const TRANSCRIPT_FOLLOW_UP_STATUSES = new Set(['not_offered', 'declined', 'requested', 'booked']);
+
+function textOrEmpty(value) {
+  if (value == null) return '';
+  return String(value).trim();
+}
+
+// Drops a model-invented calendar timestamp. A spoken "Thursday at 1" or "Monday" is kept.
+function spokenFollowUpTime(value) {
+  const text = textOrEmpty(value);
+  if (!text) return '';
+  if (/^\d{4}-\d{2}-\d{2}(?:[T\s]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/.test(text)) {
+    return '';
+  }
+  return text;
+}
+
+// Structured header fields from the same report JSON. Blank strings mean "not stated".
+function callerFieldsFromReport(report = {}) {
+  const status = textOrEmpty(report.followUpStatus).toLowerCase().replace(/\s+/g, '_');
+  const followUpStatus = TRANSCRIPT_FOLLOW_UP_STATUSES.has(status) ? status : '';
+  return {
+    contactName: textOrEmpty(report.contactName),
+    businessName: textOrEmpty(report.businessName),
+    recipientEmail: textOrEmpty(report.recipientEmail || report.email || report.contactEmail),
+    followUpStatus,
+    followUpPreferredTime: followUpStatus === 'booked' ? spokenFollowUpTime(report.followUpPreferredTime) : '',
+  };
+}
+
+module.exports = { generate, parseJsonReport, callerFieldsFromReport, textOrEmpty };
+

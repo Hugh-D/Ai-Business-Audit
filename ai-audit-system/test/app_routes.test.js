@@ -14,7 +14,8 @@ const voiceAgent = require('../agents/voice_agent');
 const callStore = require('../agents/call_store');
 const deliveryAgent = require('../agents/delivery_agent');
 const websiteAuditor = require('../agents/website_auditor');
-const { app } = require('../index');
+const workbookExporter = require('../agents/workbook_exporter');
+const { app, fieldsFromEndedReport } = require('../index');
 
 const originalGenerate = reportEngine.generate;
 const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
@@ -883,6 +884,118 @@ test('POST /webhook/retell records a review email failure without dropping the r
   assert.equal(call.recipientEmail, undefined);
 });
 
+test('fieldsFromEndedReport keeps metadata and saved values over blank model fields', () => {
+  const kept = fieldsFromEndedReport({
+    metadata: { contactName: 'Mia', businessName: 'Green Stripe', email: 'mia@greenstripe.com.au' },
+    existing: { recipientEmail: 'saved@example.com', followUpStatus: 'booked', followUpPreferredTime: 'Tuesday morning' },
+    report: {
+      contactName: '',
+      businessName: 'Other Co',
+      recipientEmail: '',
+      followUpStatus: 'booked',
+      followUpPreferredTime: '',
+    },
+    transcript: 'Client: my email is someone-else@example.com',
+  });
+  assert.equal(kept.contactName, 'Mia');
+  assert.equal(kept.businessName, 'Green Stripe');
+  assert.equal(kept.recipientEmail, 'saved@example.com');
+  assert.equal(kept.followUpStatus, 'booked');
+  assert.equal(kept.followUpPreferredTime, 'Tuesday morning');
+
+  const fromReport = fieldsFromEndedReport({
+    metadata: {},
+    existing: {},
+    report: {
+      contactName: 'John',
+      businessName: "John's Kitchen Cupboards and Carpentry",
+      recipientEmail: 'john@kitchen.example',
+      followUpStatus: 'declined',
+      followUpPreferredTime: 'Monday',
+      websiteUrl: '',
+    },
+    transcript: '',
+  });
+  assert.equal(fromReport.contactName, 'John');
+  assert.equal(fromReport.businessName, "John's Kitchen Cupboards and Carpentry");
+  assert.equal(fromReport.recipientEmail, 'john@kitchen.example');
+  assert.equal(fromReport.followUpStatus, 'declined');
+  assert.equal(fromReport.followUpPreferredTime, '');
+  assert.equal(fromReport.followUpScheduledFor, undefined);
+
+  const undiscussed = fieldsFromEndedReport({ report: { websiteUrl: '' }, transcript: 'Caller: we have no website.' });
+  assert.equal(undiscussed.contactName, undefined);
+  assert.equal(undiscussed.businessName, undefined);
+  assert.equal(undiscussed.recipientEmail, undefined);
+  assert.equal(undiscussed.followUpStatus, 'not_offered');
+  assert.equal(undiscussed.followUpPreferredTime, '');
+});
+
+test('POST /webhook/retell fills the spreadsheet header from an inbound transcript', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_FROM;
+  delete process.env.RESEND_API_KEY;
+
+  reportEngine.generate = async () => ({
+    contactName: 'John',
+    businessName: "John's Kitchen Cupboards and Carpentry",
+    recipientEmail: '',
+    websiteUrl: '',
+    followUpStatus: 'booked',
+    followUpPreferredTime: 'Monday',
+    overallScore: 6,
+    scores: {},
+    keyStrengths: ['John runs the workshop'],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_inbound_header',
+      direction: 'inbound',
+      from_number: '+61400000021',
+      transcript: 'Caller: I am John from John\'s Kitchen Cupboards and Carpentry. Email me at john@kitchen.example. Monday works for a follow-up. I do not have a website.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_inbound_header')?.status === 'report_ready');
+
+  const call = callStore.get('call_inbound_header');
+  assert.equal(call.contactName, 'John');
+  assert.equal(call.businessName, "John's Kitchen Cupboards and Carpentry");
+  assert.equal(call.recipientEmail, 'john@kitchen.example');
+  assert.equal(call.followUpStatus, 'booked');
+  assert.equal(call.followUpPreferredTime, 'Monday');
+  assert.equal(call.followUpScheduledFor, undefined);
+  assert.equal(call.websiteUrl, '');
+
+  const buffer = await workbookExporter.buildAuditWorkbookBuffer({
+    ...call,
+    auditId: call.auditId,
+  });
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const summary = workbook.getWorksheet('Summary');
+  assert.equal(summaryValue(summary, 'Contact Name'), 'John');
+  assert.equal(summaryValue(summary, 'Business Name'), "John's Kitchen Cupboards and Carpentry");
+  assert.equal(summaryValue(summary, 'Recipient Email'), 'john@kitchen.example');
+  assert.equal(summaryValue(summary, 'Follow-up Status'), 'Booked');
+  assert.equal(summaryValue(summary, 'Preferred Follow-up Time'), 'Monday');
+  assert.equal(summaryValue(summary, 'Scheduled Follow-up'), '');
+  assert.equal(summaryValue(summary, 'Website'), '');
+});
+
 test('POST /webhook/retell rejects unsigned webhooks', async () => {
   process.env.RETELL_API_KEY = 'test_retell_key';
 
@@ -997,4 +1110,11 @@ function findReadinessCheck(payload, id) {
   const check = payload.checks.find(item => item.id === id);
   assert.ok(check, `Missing readiness check ${id}`);
   return check;
+}
+
+function summaryValue(sheet, label) {
+  for (let row = 2; row <= sheet.rowCount; row += 1) {
+    if (sheet.getCell(`A${row}`).value === label) return sheet.getCell(`B${row}`).value;
+  }
+  return undefined;
 }
