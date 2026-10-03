@@ -1,3 +1,4 @@
+const net = require('net');
 const nodemailer = require('nodemailer');
 
 const DEFAULT_REVIEW_EMAIL = 'volvesolutions@outlook.com';
@@ -161,17 +162,42 @@ function buildReviewMessage(call) {
 }
 
 function createTransport(env = process.env) {
-  return nodemailer.createTransport({
+  const transport = {
     host: env.SMTP_HOST,
     port: Number(env.SMTP_PORT),
     secure: String(env.SMTP_SECURE || '').toLowerCase() === 'true',
+    // Railway has no IPv6 route. Nodemailer 8 ignores this flag in its own
+    // resolver, so getSocket below opens the connection with family 4.
+    family: 4,
     auth: hasUsableEnvValue(env.SMTP_USER)
       ? {
           user: env.SMTP_USER,
           pass: env.SMTP_PASS || '',
         }
       : undefined,
-  });
+  };
+
+  transport.getSocket = (_options, callback) => {
+    const socket = net.connect({
+      host: transport.host,
+      port: transport.port,
+      family: transport.family,
+    });
+    const fail = (err) => {
+      socket.removeListener('connect', ready);
+      socket.destroy();
+      callback(err);
+    };
+    const ready = () => {
+      socket.removeListener('error', fail);
+      // Plain socket. secure:false stays STARTTLS; secure:true is upgraded by nodemailer.
+      callback(null, { connection: socket });
+    };
+    socket.once('error', fail);
+    socket.once('connect', ready);
+  };
+
+  return nodemailer.createTransport(transport);
 }
 
 function hasUsableEnvValue(value) {
