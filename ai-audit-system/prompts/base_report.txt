@@ -67,12 +67,24 @@ For each diagnostic finding, identify:
 
 Only include diagnostic findings supported by the transcript. If evidence is missing, say so in the relevant section rather than inventing details.
 
+## Closed topics, gaps, and figures
+List a topic as a gap, a yellow or red finding, or an action only when the caller described it as a problem, or it is clearly not handled. Clearly not handled means they said it does not happen, it gets missed, or it only works when one person remembers and that is costing them.
+
+If they said a topic is handled, it is a strength. Set callerStance to handled, set status to green, leave fastestWin empty, and do not add a criticalGaps entry or an actionPlan item. Doing the work themselves still counts as handled. Chasing every missed enquiry is handled lead response and lead ownership, not a missing safety net. Following every quote is handled quote follow-up. Recording extras daily, invoicing immediately, or saying double entry is not an issue means that admin topic is handled.
+
+If the topic never came up, set callerStance to not_discussed and leave it out of diagnosticFindings, criticalGaps, and actionPlan. Do not invent a missing CRM, conversion tracking, lead safety net, or collections process because they did not name a system.
+
+A dollar figure they state, such as an unpaid balance, a job value, or turnover, may be repeated. The figure alone is not a gap and not a collections action. Add a collections action only when they said getting paid is a problem.
+
+Do not invent percentages or dollar ranges. A mild or vague answer is not "2-3% of turnover" and not a made-up dollar band. Use a percentage or a dollar range only when they stated those numbers or clearly implied them. Spoken dollar figures may be used as stated.
+
 ## Output Format
 Return a single valid JSON object with this shape:
 {
   "websiteUrl": "<customer website URL if clearly provided in the transcript, otherwise empty string>",
   "contactName": "<caller name if they stated it, otherwise empty string>",
   "businessName": "<business name if they stated it, otherwise empty string>",
+  "phoneNumber": "<mobile the caller confirmed, otherwise empty string>",
   "recipientEmail": "<email address the caller stated, otherwise empty string>",
   "followUpStatus": "not_offered|declined|requested|booked",
   "followUpPreferredTime": "<spoken day and time when followUpStatus is booked, otherwise empty string>",
@@ -91,6 +103,7 @@ Return a single valid JSON object with this shape:
   "diagnosticFindings": [
     {
       "problemArea": "<e.g. Lead Response>",
+      "callerStance": "problem|handled|not_discussed",
       "status": "green|yellow|red",
       "maturity": "<one concise sentence about operational maturity>",
       "evidence": "<specific evidence from the transcript>",
@@ -117,12 +130,17 @@ Return a single valid JSON object with this shape:
   ]
 }
 
-Be specific, cite evidence from the transcript, and keep each section concise but actionable. The action plan should prioritize what is costing the business the most, what is easiest to improve, what creates the fastest visible win, and what increases trust in implementation.
+Be specific, cite evidence from the transcript, and keep each section concise but actionable. The action plan should prioritize what is costing the business the most, what is easiest to improve, what creates the fastest visible win, and what increases trust in implementation. Every actionPlan item must use the problemArea of a finding whose callerStance is problem. Do not give a handled or undiscussed topic a corrective action.
 
 ## Spreadsheet header fields
-contactName, businessName, recipientEmail, followUpStatus, and followUpPreferredTime are for the call summary spreadsheet. They are not a substitute for the narrative sections.
+contactName, businessName, phoneNumber, recipientEmail, followUpStatus, and followUpPreferredTime are for the call summary spreadsheet. They are not a substitute for the narrative sections.
 
-Use only words the caller or agent actually said. If a detail was not stated, return an empty string. Never guess a name, business, email, website, or time.
+Use only words the caller or agent actually said. If a detail was not stated, return an empty string. Never guess a name, business, email, website, phone number, or time.
+
+phoneNumber rules:
+- Return the mobile the caller confirmed as theirs, in the spoken form, such as 0474 779 497.
+- Confirmed means they gave the number, or they agreed when it was read back.
+- If they never confirmed a mobile, return an empty string. Do not copy an inbound caller ID, and do not guess a number.
 
 websiteUrl rules:
 - Return a website only when the caller gave one.

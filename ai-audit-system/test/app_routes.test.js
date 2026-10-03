@@ -996,6 +996,88 @@ test('POST /webhook/retell fills the spreadsheet header from an inbound transcri
   assert.equal(summaryValue(summary, 'Website'), '');
 });
 
+test('fieldsFromEndedReport replaces the caller ID with a confirmed mobile and keeps it when none was confirmed', () => {
+  const transcript = [
+    'Agent: What mobile should I use?',
+    'Agent: I have that as 0474 779 497. Is that right?',
+    'Caller: Yes.',
+  ].join('\n');
+
+  const replaced = fieldsFromEndedReport({
+    existing: { phoneNumber: '+61474779711' },
+    report: { phoneNumber: '' },
+    transcript,
+  });
+  assert.equal(replaced.phoneNumber, '0474 779 497');
+
+  const blank = fieldsFromEndedReport({
+    existing: { phoneNumber: '+61474779711' },
+    report: { phoneNumber: '' },
+    transcript: 'Caller: I will text you later.',
+  });
+  assert.equal(blank.phoneNumber, undefined);
+});
+
+test('POST /webhook/retell puts the confirmed mobile on the review spreadsheet', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_FROM;
+  delete process.env.RESEND_API_KEY;
+
+  reportEngine.generate = async () => ({
+    contactName: 'Albert',
+    businessName: 'Pristine Kitchen Countertops',
+    phoneNumber: '0474 779 497',
+    recipientEmail: '',
+    websiteUrl: '',
+    followUpStatus: 'not_offered',
+    followUpPreferredTime: '',
+    overallScore: 6,
+    scores: {},
+    keyStrengths: ['He chases every missed enquiry.'],
+    criticalGaps: ['Google reviews are not requested'],
+    sections: {},
+    actionPlan: [],
+    diagnosticFindings: [
+      {
+        problemArea: 'Reviews and Reputation',
+        callerStance: 'problem',
+        status: 'yellow',
+        evidence: 'They do not ask for Google reviews.',
+        fastestWin: 'Ask after the job.',
+      },
+    ],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_confirmed_mobile',
+      direction: 'inbound',
+      from_number: '+61474779711',
+      metadata: { industry: 'trades' },
+      transcript: 'Agent: I have that as 0474 779 497. Is that right?\nCaller: Yes. We do not ask for Google reviews.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_confirmed_mobile')?.status === 'report_ready');
+
+  const call = callStore.get('call_confirmed_mobile');
+  assert.equal(call.phoneNumber, '0474 779 497');
+
+  const buffer = await workbookExporter.buildAuditWorkbookBuffer(call);
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  assert.equal(summaryValue(workbook.getWorksheet('Summary'), 'Phone Number'), '0474 779 497');
+});
+
 test('POST /webhook/retell rejects unsigned webhooks', async () => {
   process.env.RETELL_API_KEY = 'test_retell_key';
 

@@ -125,3 +125,61 @@ test('buildAuditWorkbookBuffer uses Inter and the Volve palette on every sheet',
     }));
   });
 });
+
+test('buildAuditWorkbookBuffer drops closed topics and invented percentages', async () => {
+  const buffer = await workbookExporter.buildAuditWorkbookBuffer({
+    auditId: 'audit_closed',
+    industry: 'trades',
+    businessName: 'Pristine Kitchen Countertops',
+    contactName: 'Albert',
+    phoneNumber: '0474 779 497',
+    transcript: [
+      'Caller: I chase every missed enquiry.',
+      'Caller: We do not ask for Google reviews.',
+      'Caller: Leaks are not much. There is twenty-two thousand unpaid.',
+    ].join('\n'),
+    report: {
+      overallScore: 6,
+      scores: {},
+      keyStrengths: [],
+      criticalGaps: ['Lead handling has no safety net', 'Google reviews are not requested'],
+      diagnosticFindings: [
+        {
+          problemArea: 'Lead Response',
+          callerStance: 'handled',
+          status: 'yellow',
+          evidence: 'He chases every missed enquiry.',
+          fastestWin: 'Add a safety net.',
+        },
+        {
+          problemArea: 'Reviews and Reputation',
+          callerStance: 'problem',
+          status: 'yellow',
+          evidence: 'They do not ask for Google reviews.',
+          fastestWin: 'Ask after the job.',
+        },
+      ],
+      actionPlan: [
+        { priority: 'high', problemArea: 'Lead Response', action: 'Add a safety net for missed calls.', timeframe: '7 days' },
+        { priority: 'medium', problemArea: 'Reviews and Reputation', action: 'Ask for a Google review after each job.', timeframe: '30 days', expectedImpact: 'About 2-3% of turnover.' },
+      ],
+    },
+  });
+
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const summary = workbook.getWorksheet('Summary');
+  assert.equal(summary.getCell('B5').value, '0474 779 497');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('A2').value, 'Lead Response');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('B2').value, 'Green');
+  assert.equal(workbook.getWorksheet('Diagnostics').getCell('H2').value, '');
+  assert.equal(workbook.getWorksheet('Findings').getCell('A2').value, 'Strength');
+  assert.equal(workbook.getWorksheet('Findings').getCell('B2').value, 'He chases every missed enquiry.');
+  const findings = [];
+  workbook.getWorksheet('Findings').eachRow(row => findings.push(row.getCell(2).value));
+  assert.equal(findings.includes('Lead handling has no safety net'), false);
+  assert.equal(findings.includes('Google reviews are not requested'), true);
+  assert.equal(workbook.getWorksheet('Action Plan').getCell('B2').value, 'Ask for a Google review after each job.');
+  assert.equal(workbook.getWorksheet('Action Plan').getCell('E2').value, '');
+  assert.equal(workbook.getWorksheet('Action Plan').getCell('B3').value, null);
+});
