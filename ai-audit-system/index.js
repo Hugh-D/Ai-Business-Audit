@@ -27,7 +27,7 @@ app.use(helmet({
     },
   },
 }));
-app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
+app.use(express.json({ limit: '8mb', verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 const REVIEW_STATUSES = new Set(['draft', 'reviewed', 'sent']);
