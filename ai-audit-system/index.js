@@ -488,7 +488,13 @@ async function processEndedCall(call) {
   }
 
   const report = await reportEngine.generate({ config, transcript: cleaned });
-  callStore.save(call_id, {
+  const existing = callStore.get(call_id) || {};
+  const recipientEmail = existing.recipientEmail || deliveryAgent.extractCustomerEmail({
+    metadata,
+    report,
+    transcript: cleaned,
+  });
+  const saved = callStore.save(call_id, {
     status: 'report_ready',
     reviewStatus: 'draft',
     followUpStatus: 'not_offered',
@@ -496,8 +502,64 @@ async function processEndedCall(call) {
     transcript: cleaned,
     websiteUrl: websiteAuditor.normalizeWebsiteUrl(report.websiteUrl),
     report,
-    auditId: uuidv4(),
+    auditId: existing.auditId || uuidv4(),
+    ...(recipientEmail ? { recipientEmail } : {}),
   });
+  await sendCallReviewEmail(saved);
+}
+
+// Emails Hugh the spreadsheet after a report is saved. Never sends the customer PDF.
+// A missing SMTP setup is recorded on the call and does not discard the report.
+async function sendCallReviewEmail(call) {
+  const to = deliveryAgent.getReviewEmail();
+  if (!deliveryAgent.hasEmailConfig()) {
+    callStore.save(call.callId, {
+      reviewEmail: {
+        status: 'skipped',
+        reason: 'Review email skipped because SMTP is missing',
+        to,
+        at: new Date().toISOString(),
+      },
+    });
+    return;
+  }
+
+  try {
+    const current = callStore.get(call.callId) || call;
+    const audit = callToAudit(current);
+    const workbookBuffer = await workbookExporter.buildAuditWorkbookBuffer(audit);
+    const filename = workbookExporter.buildWorkbookFilename(audit);
+    const delivery = await deliveryAgent.sendReviewEmail({
+      call: current,
+      workbookBuffer,
+      filename,
+    });
+    callStore.save(call.callId, {
+      reviewEmail: {
+        status: 'sent',
+        to,
+        messageId: delivery.messageId || null,
+        accepted: delivery.accepted || [],
+        rejected: delivery.rejected || [],
+        filename,
+        sentAt: new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    const smtpMissing = err.code === 'SMTP_MISSING';
+    if (!smtpMissing) console.error(err);
+    callStore.save(call.callId, {
+      status: 'report_ready',
+      reviewEmail: {
+        status: smtpMissing ? 'skipped' : 'failed',
+        reason: smtpMissing
+          ? 'Review email skipped because SMTP is missing'
+          : err.message,
+        to,
+        at: new Date().toISOString(),
+      },
+    });
+  }
 }
 
 function callToAudit(call) {

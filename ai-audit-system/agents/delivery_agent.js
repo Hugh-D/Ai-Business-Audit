@@ -1,11 +1,49 @@
 const nodemailer = require('nodemailer');
 
+const DEFAULT_REVIEW_EMAIL = 'volvesolutions@outlook.com';
+const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+const XLSX_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
 function hasEmailConfig(env = process.env) {
   return Boolean(
     hasUsableEnvValue(env.SMTP_HOST) &&
     hasUsableEnvValue(env.SMTP_PORT) &&
     hasUsableEnvValue(env.SMTP_FROM)
   );
+}
+
+function getReviewEmail(env = process.env) {
+  const configured = String(env.REVIEW_EMAIL || '').trim();
+  if (hasUsableEnvValue(configured) && isEmailAddress(configured)) {
+    return configured;
+  }
+  return DEFAULT_REVIEW_EMAIL;
+}
+
+function extractCustomerEmail({ metadata = {}, report = {}, transcript = '', env = process.env } = {}) {
+  const blocked = new Set([getReviewEmail(env).toLowerCase()]);
+  const fromAddress = firstEmailAddress(env.SMTP_FROM);
+  if (fromAddress) blocked.add(fromAddress);
+
+  const structured = [
+    metadata.email,
+    metadata.recipientEmail,
+    metadata.contactEmail,
+    report.email,
+    report.recipientEmail,
+    report.contactEmail,
+  ];
+  for (const value of structured) {
+    const email = customerEmail(value, blocked);
+    if (email) return email;
+  }
+
+  const matches = String(transcript || '').match(EMAIL_PATTERN) || [];
+  for (let index = matches.length - 1; index >= 0; index -= 1) {
+    const email = customerEmail(matches[index], blocked);
+    if (email) return email;
+  }
+  return '';
 }
 
 async function sendReportEmail({ call, pdfBuffer, filename }) {
@@ -20,18 +58,6 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
     throw err;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true',
-    auth: hasUsableEnvValue(process.env.SMTP_USER)
-      ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS || '',
-        }
-      : undefined,
-  });
-
   if (!pdfBuffer) {
     const err = new Error('report PDF is required before sending');
     err.status = 500;
@@ -39,7 +65,7 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
   }
 
   const message = buildDeliveryMessage(call);
-  return transporter.sendMail({
+  return createTransport().sendMail({
     from: process.env.SMTP_FROM,
     to: call.recipientEmail,
     subject: message.subject,
@@ -49,6 +75,35 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
         filename: filename || 'revenue-operations-readiness-report.pdf',
         content: Buffer.from(pdfBuffer),
         contentType: 'application/pdf',
+      },
+    ],
+  });
+}
+
+async function sendReviewEmail({ call, workbookBuffer, filename, env = process.env }) {
+  if (!hasEmailConfig(env)) {
+    const err = new Error('Review email skipped because SMTP is missing');
+    err.code = 'SMTP_MISSING';
+    err.status = 500;
+    throw err;
+  }
+  if (!workbookBuffer) {
+    const err = new Error('review spreadsheet is required before sending');
+    err.status = 500;
+    throw err;
+  }
+
+  const message = buildReviewMessage(call);
+  return createTransport(env).sendMail({
+    from: env.SMTP_FROM,
+    to: getReviewEmail(env),
+    subject: message.subject,
+    text: message.text,
+    attachments: [
+      {
+        filename: filename || 'audit-review.xlsx',
+        content: Buffer.from(workbookBuffer),
+        contentType: XLSX_CONTENT_TYPE,
       },
     ],
   });
@@ -83,8 +138,59 @@ function buildDeliveryMessage(call) {
   return { subject, text };
 }
 
+function buildReviewMessage(call) {
+  const business = String(call?.businessName || '').trim();
+  const callId = call?.callId || 'unknown';
+  const subject = business ? `Call finished for ${business}` : 'Call finished, review needed';
+  const lines = [
+    'Hi Hugh,',
+    '',
+    business
+      ? `A call has just finished for ${business}.`
+      : 'A call has just finished.',
+    `Call id: ${callId}.`,
+    '',
+    'The spreadsheet is attached for your review.',
+    'The customer PDF is held until you send it. It has not been sent to the customer.',
+  ];
+  if (call?.recipientEmail) {
+    lines.push('', `Customer email on file: ${call.recipientEmail}.`);
+  }
+  lines.push('', 'Best,');
+  return { subject, text: lines.join('\n') };
+}
+
+function createTransport(env = process.env) {
+  return nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: Number(env.SMTP_PORT),
+    secure: String(env.SMTP_SECURE || '').toLowerCase() === 'true',
+    auth: hasUsableEnvValue(env.SMTP_USER)
+      ? {
+          user: env.SMTP_USER,
+          pass: env.SMTP_PASS || '',
+        }
+      : undefined,
+  });
+}
+
 function hasUsableEnvValue(value) {
   return Boolean(value && !String(value).startsWith('your_') && !String(value).endsWith('_here'));
+}
+
+function isEmailAddress(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
+
+function firstEmailAddress(value) {
+  const match = String(value || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return match ? match[0].toLowerCase() : '';
+}
+
+function customerEmail(value, blocked) {
+  const email = firstEmailAddress(value);
+  if (!email || !isEmailAddress(email) || blocked.has(email)) return '';
+  return email;
 }
 
 function firstItems(value, count) {
@@ -100,6 +206,10 @@ function formatLabel(value) {
 
 module.exports = {
   buildDeliveryMessage,
+  buildReviewMessage,
+  extractCustomerEmail,
+  getReviewEmail,
   hasEmailConfig,
   sendReportEmail,
+  sendReviewEmail,
 };
