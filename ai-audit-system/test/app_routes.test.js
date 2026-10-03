@@ -19,6 +19,7 @@ const { app } = require('../index');
 const originalGenerate = reportEngine.generate;
 const originalCreatePhoneAuditCall = voiceAgent.createPhoneAuditCall;
 const originalSendReportEmail = deliveryAgent.sendReportEmail;
+const originalSendReviewEmail = deliveryAgent.sendReviewEmail;
 const originalReviewWebsite = websiteAuditor.reviewWebsite;
 const originalEnv = {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
@@ -31,6 +32,7 @@ const originalEnv = {
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_FROM: process.env.SMTP_FROM,
+  REVIEW_EMAIL: process.env.REVIEW_EMAIL,
   NODE_ENV: process.env.NODE_ENV,
   WORKBENCH_USERNAME: process.env.WORKBENCH_USERNAME,
   WORKBENCH_PASSWORD: process.env.WORKBENCH_PASSWORD,
@@ -41,6 +43,7 @@ test.beforeEach(() => {
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
   deliveryAgent.sendReportEmail = originalSendReportEmail;
+  deliveryAgent.sendReviewEmail = originalSendReviewEmail;
   websiteAuditor.reviewWebsite = originalReviewWebsite;
   restoreEnv();
 });
@@ -50,6 +53,7 @@ test.afterEach(() => {
   reportEngine.generate = originalGenerate;
   voiceAgent.createPhoneAuditCall = originalCreatePhoneAuditCall;
   deliveryAgent.sendReportEmail = originalSendReportEmail;
+  deliveryAgent.sendReviewEmail = originalSendReviewEmail;
   websiteAuditor.reviewWebsite = originalReviewWebsite;
   restoreEnv();
 });
@@ -688,6 +692,174 @@ test('POST /webhook/retell preserves valid industry metadata on inbound calls', 
   const call = callStore.get('call_inbound_metadata_industry');
   assert.equal(call.industry, 'lawn_care');
   assert.deepEqual(call.report.keyStrengths, ['lawn_care']);
+});
+
+test('POST /webhook/retell emails only the review inbox with the spreadsheet', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  process.env.SMTP_HOST = 'smtp.example.com';
+  process.env.SMTP_PORT = '587';
+  process.env.SMTP_FROM = 'audit@example.com';
+  delete process.env.REVIEW_EMAIL;
+
+  let customerSends = 0;
+  let captured = null;
+  deliveryAgent.sendReportEmail = async () => {
+    customerSends += 1;
+    throw new Error('customer email must not be sent when the call ends');
+  };
+  deliveryAgent.sendReviewEmail = async (input) => {
+    captured = input;
+    return {
+      messageId: 'review_message',
+      accepted: ['volvesolutions@outlook.com'],
+      rejected: [],
+    };
+  };
+  reportEngine.generate = async () => ({
+    email: 'mia@greenstripe.com.au',
+    websiteUrl: 'greenstripe.com.au',
+    overallScore: 7,
+    scores: {},
+    keyStrengths: [],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_review_email',
+      direction: 'inbound',
+      from_number: '+61400000002',
+      metadata: {
+        industry: 'lawn_care',
+        businessName: 'Green Stripe',
+        contactName: 'Mia',
+      },
+      transcript: 'Client: My email is someone-else@example.com.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_review_email')?.reviewEmail?.status === 'sent', 4000);
+
+  const call = callStore.get('call_review_email');
+  assert.equal(call.status, 'report_ready');
+  assert.equal(call.reviewStatus, 'draft');
+  assert.equal(call.recipientEmail, 'mia@greenstripe.com.au');
+  assert.equal(call.sentAt, undefined);
+  assert.equal(customerSends, 0);
+  assert.equal(captured.call.callId, 'call_review_email');
+  assert.equal(captured.call.businessName, 'Green Stripe');
+  assert.equal(captured.call.recipientEmail, 'mia@greenstripe.com.au');
+  assert.equal(captured.pdfBuffer, undefined);
+  assert.match(captured.filename, /\.xlsx$/);
+  assert.equal(Buffer.from(captured.workbookBuffer).subarray(0, 2).toString(), 'PK');
+  assert.equal(call.reviewEmail.to, 'volvesolutions@outlook.com');
+  assert.equal(call.reviewEmail.messageId, 'review_message');
+  assert.deepEqual(call.reviewEmail.accepted, ['volvesolutions@outlook.com']);
+});
+
+test('POST /webhook/retell keeps the report when the review email cannot be sent', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_FROM;
+
+  let customerSends = 0;
+  let reviewSends = 0;
+  deliveryAgent.sendReportEmail = async () => {
+    customerSends += 1;
+  };
+  deliveryAgent.sendReviewEmail = async () => {
+    reviewSends += 1;
+  };
+  reportEngine.generate = async () => ({
+    overallScore: 6,
+    scores: {},
+    keyStrengths: [],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_review_skipped',
+      direction: 'inbound',
+      from_number: '+61400000003',
+      metadata: { industry: 'trades', businessName: 'Demo Plumbing' },
+      transcript: 'Client: Please use owner@example.com.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+  const response = await requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  });
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_review_skipped')?.reviewEmail?.status === 'skipped', 4000);
+
+  const call = callStore.get('call_review_skipped');
+  assert.equal(call.status, 'report_ready');
+  assert.equal(call.reviewStatus, 'draft');
+  assert.equal(call.recipientEmail, 'owner@example.com');
+  assert.equal(call.report.overallScore, 6);
+  assert.equal(call.reviewEmail.reason, 'Review email skipped because SMTP is missing');
+  assert.equal(customerSends, 0);
+  assert.equal(reviewSends, 0);
+});
+
+test('POST /webhook/retell records a review email failure without dropping the report', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  process.env.SMTP_HOST = 'smtp.example.com';
+  process.env.SMTP_PORT = '587';
+  process.env.SMTP_FROM = 'audit@example.com';
+
+  deliveryAgent.sendReviewEmail = async () => {
+    throw new Error('mailbox rejected the spreadsheet');
+  };
+  reportEngine.generate = async () => ({
+    overallScore: 5,
+    scores: {},
+    keyStrengths: [],
+    criticalGaps: [],
+    sections: {},
+    actionPlan: [],
+  });
+
+  const payload = {
+    event: 'call_ended',
+    call: {
+      call_id: 'call_review_failed',
+      direction: 'inbound',
+      from_number: '+61400000004',
+      metadata: { industry: 'trades' },
+      transcript: 'Client: We need a hand with follow-up.',
+    },
+  };
+  const { rawBody, signature } = signedWebhook(payload, process.env.RETELL_API_KEY);
+  const response = await withoutConsoleError(() => requestRaw('POST', '/webhook/retell', rawBody, {
+    'content-type': 'application/json',
+    'x-retell-signature': signature,
+  }));
+
+  assert.equal(response.status, 204);
+  await waitFor(() => callStore.get('call_review_failed')?.reviewEmail?.status === 'failed', 4000);
+
+  const call = callStore.get('call_review_failed');
+  assert.equal(call.status, 'report_ready');
+  assert.equal(call.report.overallScore, 5);
+  assert.equal(call.reviewEmail.reason, 'mailbox rejected the spreadsheet');
+  assert.equal(call.recipientEmail, undefined);
 });
 
 test('POST /webhook/retell rejects unsigned webhooks', async () => {

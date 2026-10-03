@@ -128,7 +128,10 @@ SMTP_SECURE=false
 SMTP_USER=...
 SMTP_PASS=...
 SMTP_FROM="AI Business Audit <audit@example.com>"
+REVIEW_EMAIL=volvesolutions@outlook.com
 ```
+
+`REVIEW_EMAIL` receives the spreadsheet when a call ends. The customer PDF stays unsent until the workbench deliver action.
 
 Current known environment status:
 
