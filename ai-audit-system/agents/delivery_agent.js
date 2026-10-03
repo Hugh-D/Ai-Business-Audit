@@ -6,6 +6,14 @@ const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const XLSX_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 function hasEmailConfig(env = process.env) {
+  return hasResendConfig(env) || hasSmtpConfig(env);
+}
+
+function hasResendConfig(env = process.env) {
+  return hasUsableEnvValue(env.RESEND_API_KEY);
+}
+
+function hasSmtpConfig(env = process.env) {
   return Boolean(
     hasUsableEnvValue(env.SMTP_HOST) &&
     hasUsableEnvValue(env.SMTP_PORT) &&
@@ -53,7 +61,7 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
     err.status = 400;
     throw err;
   }
-  if (!hasEmailConfig()) {
+  if (!hasSmtpConfig()) {
     const err = new Error('SMTP email delivery is not configured');
     err.status = 500;
     throw err;
@@ -81,7 +89,7 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
   });
 }
 
-async function sendReviewEmail({ call, workbookBuffer, filename, env = process.env }) {
+async function sendReviewEmail({ call, workbookBuffer, filename, env = process.env, fetchImpl } = {}) {
   if (!hasEmailConfig(env)) {
     const err = new Error('Review email skipped because SMTP is missing');
     err.code = 'SMTP_MISSING';
@@ -95,6 +103,17 @@ async function sendReviewEmail({ call, workbookBuffer, filename, env = process.e
   }
 
   const message = buildReviewMessage(call);
+  // Railway blocks SMTP. Prefer Resend over HTTPS (port 443) whenever the key is set.
+  if (hasResendConfig(env)) {
+    return sendReviewEmailViaResend({
+      message,
+      workbookBuffer,
+      filename,
+      env,
+      fetchImpl,
+    });
+  }
+
   return createTransport(env).sendMail({
     from: env.SMTP_FROM,
     to: getReviewEmail(env),
@@ -108,6 +127,65 @@ async function sendReviewEmail({ call, workbookBuffer, filename, env = process.e
       },
     ],
   });
+}
+
+const RESEND_EMAILS_URL = 'https://api.resend.com/emails';
+
+function reviewFromAddress(env = process.env) {
+  if (hasUsableEnvValue(env.RESEND_FROM)) return String(env.RESEND_FROM).trim();
+  if (hasUsableEnvValue(env.SMTP_FROM)) return String(env.SMTP_FROM).trim();
+  return DEFAULT_REVIEW_EMAIL;
+}
+
+async function sendReviewEmailViaResend({ message, workbookBuffer, filename, env, fetchImpl }) {
+  const to = getReviewEmail(env);
+  const attachmentName = filename || 'audit-review.xlsx';
+  const doFetch = fetchImpl || globalThis.fetch;
+  if (typeof doFetch !== 'function') {
+    const err = new Error('HTTPS email delivery needs global fetch');
+    err.status = 500;
+    throw err;
+  }
+
+  const response = await doFetch(RESEND_EMAILS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: reviewFromAddress(env),
+      to: [to],
+      subject: message.subject,
+      text: message.text,
+      attachments: [
+        {
+          filename: attachmentName,
+          content: Buffer.from(workbookBuffer).toString('base64'),
+          content_type: XLSX_CONTENT_TYPE,
+        },
+      ],
+    }),
+  });
+
+  let body = {};
+  try {
+    body = await response.json();
+  } catch (_err) {
+    body = {};
+  }
+  if (!body || typeof body !== 'object') body = {};
+  if (!response.ok) {
+    const err = new Error(body.message || `Resend email failed (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+
+  return {
+    messageId: body.id || null,
+    accepted: [to],
+    rejected: [],
+  };
 }
 
 function buildDeliveryMessage(call) {
