@@ -509,7 +509,8 @@ async function processEndedCall(call) {
 }
 
 // Emails Hugh the spreadsheet after a report is saved. Never sends the customer PDF.
-// A missing SMTP setup is recorded on the call and does not discard the report.
+// Uses Resend over HTTPS when RESEND_API_KEY is set, otherwise SMTP.
+// A missing email setup is recorded on the call and does not discard the report.
 async function sendCallReviewEmail(call) {
   const to = deliveryAgent.getReviewEmail();
   if (!deliveryAgent.hasEmailConfig()) {
@@ -632,9 +633,9 @@ function buildReadiness(env = process.env) {
     }),
     readinessCheck({
       id: 'smtp_delivery',
-      label: 'SMTP email delivery',
+      label: 'Email delivery',
       ready: deliveryAgent.hasEmailConfig(env),
-      detail: 'SMTP_HOST, SMTP_PORT, and SMTP_FROM are required for one-click email delivery.',
+      detail: 'Set RESEND_API_KEY for HTTPS review email, or SMTP_HOST, SMTP_PORT, and SMTP_FROM. Either one is enough.',
       optional: true,
     }),
   ];

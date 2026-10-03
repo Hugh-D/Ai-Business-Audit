@@ -60,7 +60,7 @@ Important files:
 - `ai-audit-system/agents/report_pdf.js` - two-page customer PDF, built on the server with PDFKit
 - `packages/website-audit-core/index.js` - shared website customer-journey, SEO, copy, trust, and technical signal checks
 - `ai-audit-system/agents/website_auditor.js` - compatibility wrapper around the shared website audit core
-- `ai-audit-system/agents/delivery_agent.js` - SMTP email delivery with the two-page PDF attachment
+- `ai-audit-system/agents/delivery_agent.js` - review spreadsheet via Resend HTTPS (or SMTP if unset) and the customer PDF via SMTP
 - `ai-audit-system/agents/call_store.js` - local SQLite-backed call/report storage
 - `ai-audit-system/public/` - MVP phone audit UI
 - `ai-audit-system/industries/` - industry audit configs
@@ -119,9 +119,11 @@ RETELL_FROM_NUMBER=...
 RETELL_AGENT_ID=...
 ```
 
-Optional for sending completed reports by email:
+Optional for email. Railway blocks outbound SMTP, so the post-call review spreadsheet uses Resend over HTTPS when `RESEND_API_KEY` is set. SMTP is still the customer-PDF path, and the review-email fallback when that key is absent. Either path is enough.
 
 ```bash
+RESEND_API_KEY=...
+RESEND_FROM="Volve Solutions <volvesolutions@outlook.com>"
 SMTP_HOST=...
 SMTP_PORT=587
 SMTP_SECURE=false
@@ -131,7 +133,7 @@ SMTP_FROM="AI Business Audit <audit@example.com>"
 REVIEW_EMAIL=volvesolutions@outlook.com
 ```
 
-`REVIEW_EMAIL` receives the spreadsheet when a call ends. The customer PDF stays unsent until the workbench deliver action.
+`REVIEW_EMAIL` receives the spreadsheet when a call ends. The customer PDF stays unsent until the workbench deliver action. On Railway set `RESEND_API_KEY` (and `RESEND_FROM` only if From should differ from `SMTP_FROM`).
 
 Current known environment status:
 

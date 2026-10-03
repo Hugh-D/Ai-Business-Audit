@@ -32,6 +32,8 @@ const originalEnv = {
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_FROM: process.env.SMTP_FROM,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_FROM: process.env.RESEND_FROM,
   REVIEW_EMAIL: process.env.REVIEW_EMAIL,
   NODE_ENV: process.env.NODE_ENV,
   WORKBENCH_USERNAME: process.env.WORKBENCH_USERNAME,
@@ -254,6 +256,8 @@ test('GET /readiness summarizes missing inbound launch configuration', async () 
   delete process.env.SMTP_HOST;
   delete process.env.SMTP_PORT;
   delete process.env.SMTP_FROM;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.RESEND_FROM;
 
   const response = await requestJson('GET', '/readiness');
 
@@ -265,6 +269,21 @@ test('GET /readiness summarizes missing inbound launch configuration', async () 
   assert.equal(findReadinessCheck(response.body, 'retell_from_number').status, 'optional');
   assert.equal(findReadinessCheck(response.body, 'smtp_delivery').status, 'optional');
   assert.ok(response.body.nextSteps.some(step => step.includes('AUDIT_PHONE_NUMBER')));
+});
+
+test('GET /readiness treats RESEND_API_KEY alone as email delivery', async () => {
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_FROM;
+  process.env.RESEND_API_KEY = 're_test_key';
+  delete process.env.RESEND_FROM;
+
+  const response = await requestJson('GET', '/readiness');
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.readyForEmailDelivery, true);
+  assert.equal(findReadinessCheck(response.body, 'smtp_delivery').status, 'ready');
+  assert.match(findReadinessCheck(response.body, 'smtp_delivery').detail, /RESEND_API_KEY/);
 });
 
 test('GET /readiness marks inbound audit testing ready without outbound number', async () => {
@@ -771,6 +790,8 @@ test('POST /webhook/retell keeps the report when the review email cannot be sent
   delete process.env.SMTP_HOST;
   delete process.env.SMTP_PORT;
   delete process.env.SMTP_FROM;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.RESEND_FROM;
 
   let customerSends = 0;
   let reviewSends = 0;
