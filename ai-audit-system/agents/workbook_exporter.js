@@ -1,4 +1,5 @@
 const ExcelJS = require('exceljs');
+const reportEngine = require('./report_engine');
 
 // Volve design system v2.0 palette. ExcelJS expects 8-digit ARGB, so each hex carries an FF alpha prefix.
 const HEADER_FILL = 'FF1C1410'; // espresso
@@ -17,7 +18,7 @@ async function buildAuditWorkbookBuffer(audit) {
   workbook.created = new Date();
   workbook.modified = new Date();
 
-  const report = audit.report || {};
+  const report = reportEngine.groundReport(audit.report || {}, audit.transcript || '');
   addSummarySheet(workbook, audit, report);
   addScoresSheet(workbook, report);
   if (audit.websiteReview) addWebsiteReviewSheet(workbook, audit.websiteReview);

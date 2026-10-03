@@ -1,6 +1,7 @@
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const industryRouter = require('./industry_router');
+const reportEngine = require('./report_engine');
 
 const FONTS = {
   regular: path.join(__dirname, '..', 'assets', 'fonts', 'Inter-Regular.ttf'),
@@ -63,7 +64,7 @@ function buildReportFilename(audit = {}) {
 }
 
 function buildTwoPageModel(audit = {}) {
-  const report = audit.report || {};
+  const report = reportEngine.groundReport(audit.report || {}, audit.transcript || '');
   const priority = report.priorityAnalysis || {};
   const findings = selectFindings(report);
   const actions = selectActions(report);

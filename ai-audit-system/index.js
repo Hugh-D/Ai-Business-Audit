@@ -505,9 +505,11 @@ async function processEndedCall(call) {
 }
 
 // Fills spreadsheet header fields from the report when metadata did not already supply them.
-// A blank model value never replaces a saved name, business, email, or booked time.
+// A blank model value never replaces a saved name, business, email, phone, or booked time.
+// A confirmed spoken mobile replaces the inbound caller ID. No confirmation leaves the caller ID.
 function fieldsFromEndedReport({ metadata = {}, existing = {}, report = {}, transcript = '' } = {}) {
   const caller = reportEngine.callerFieldsFromReport(report);
+  const phoneNumber = reportEngine.confirmedPhoneNumber({ report, transcript });
   const contactName = firstNonBlank(metadata.contactName, existing.contactName, caller.contactName);
   const businessName = firstNonBlank(metadata.businessName, existing.businessName, caller.businessName);
   const recipientEmail = firstNonBlank(existing.recipientEmail) || deliveryAgent.extractCustomerEmail({
@@ -527,6 +529,7 @@ function fieldsFromEndedReport({ metadata = {}, existing = {}, report = {}, tran
     ...(contactName ? { contactName } : {}),
     ...(businessName ? { businessName } : {}),
     ...(recipientEmail ? { recipientEmail } : {}),
+    ...(phoneNumber ? { phoneNumber } : {}),
     followUpStatus,
     followUpPreferredTime,
   };
