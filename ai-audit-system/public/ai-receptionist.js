@@ -74,6 +74,6 @@
     var subject = encodeURIComponent('Volve Righto trial enquiry from ' + data.get('business'));
     var body = encodeURIComponent(lines.join('\n'));
     success.hidden = false;
-    window.location.href = 'mailto:volvesolutions@outlook.com?subject=' + subject + '&body=' + body;
+    window.location.href = 'mailto:hello@volvesolutions.com.au?subject=' + subject + '&body=' + body;
   });
 })();
