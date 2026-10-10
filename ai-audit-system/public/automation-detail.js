@@ -41,5 +41,5 @@ document.getElementById('enquiryForm').addEventListener('submit', event => {
   const values = Object.fromEntries(new FormData(event.currentTarget));
   const subject = encodeURIComponent(`${item.title} enquiry from ${values.business || values.name}`);
   const body = encodeURIComponent(`Name: ${values.name}\nBusiness: ${values.business}\nPhone: ${values.phone}\nEmail: ${values.email}\n\nWhat they would like to improve:\n${values.message}`);
-  location.href = `mailto:volvesolutions@outlook.com?subject=${subject}&body=${body}`;
+  location.href = `mailto:hello@volvesolutions.com.au?subject=${subject}&body=${body}`;
 });
