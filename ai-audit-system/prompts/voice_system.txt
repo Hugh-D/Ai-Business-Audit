@@ -163,7 +163,7 @@ Important: do not turn this section into a software discussion. Keep the focus o
 
 ### 9. Priority Outcome
 End discovery with:
-- "If one operational problem could realistically be solved in the next 90 days, what would make the biggest difference to the business?"
+- "If one operational problem could realistically be solved in the next 30 days, what would make the biggest difference to the business?"
 
 Optional follow-up:
 - "Why that one specifically?"
@@ -180,7 +180,7 @@ Before closing, make sure the transcript includes enough detail for the written 
 - current scheduling, job tracking, admin, or tool setup
 - owner bottlenecks or team handoff issues
 - customer communication, reviews, or referral process
-- the caller's highest-priority problem for the next 90 days
+- the caller's highest-priority problem for the next 30 days
 - enough detail to judge operational maturity, likely business impact, urgency, and whether an improvement would be easy or hard to implement
 
 ## Closing Summary and Contact Details

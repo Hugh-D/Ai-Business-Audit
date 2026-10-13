@@ -51,7 +51,7 @@ Assess these areas when there is transcript evidence:
 - Tool Fragmentation: whether systems work together or require manual copying.
 - Automation Readiness: openness to automation, prior attempts, and implementation confidence.
 - Repetitive Work: forgotten, repeated, or manually chased tasks.
-- Strategic Priority: the one issue that would matter most in the next 90 days.
+- Strategic Priority: the one issue that would matter most in the next 30 days. Label it "30-day strategic priority".
 
 Priority weighting:
 - Highest weight: lead handling, quote follow-up, owner dependence, and customer communication. These usually have the fastest ROI, clearest business impact, and easiest implementation wins.
