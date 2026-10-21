@@ -112,6 +112,12 @@ app.get('/flyer', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'flyer.html'));
 });
 
+// GET /privacy
+// Privacy policy.
+app.get('/privacy', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+
 // GET /ai-receptionist
 // Volve Righto landing page. Trailing slash redirects to the canonical path.
 app.get('/ai-receptionist', (req, res) => {
@@ -721,6 +727,7 @@ app.get('/sitemap.xml', (_req, res) => {
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${baseUrl}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://volvesolutions.com.au/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://volvesolutions.com.au/ai-receptionist</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>`);
 });
