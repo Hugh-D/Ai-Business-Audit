@@ -33,6 +33,9 @@ This is a solo build. The developer is Buzzy — learning by doing. Decisions fa
 ## Lessons Learned
 _Capture errors and corrections here as they occur._
 
+- Calendly scheduling: inspect the expanded Retell field instructions as well as the main prompt. Copy the selected availability slot's complete `start_time`, including its timezone suffix; a field instruction requesting a local datetime can override the main scheduling rules. Verify the actual Calendly event duration, not its title or URL. An active invitee response and a report's stated booking time do not independently verify the appointment's start and end times.
+- Calendly HTTP 429: check the account plan and endpoint-specific quotas before further booking tests. The trial Scheduling API permits five create-invitee requests per user per day (verified 2026-10-21); quota applies across pathways. Stop same-call booking retries on 429 rather than trying different times. Keep main-prompt failure handling consistent with the function description, and verify phone input uses international format. A successful test earlier in the day does not establish that quota remains available for the next voice test.
+
 ---
 
 ## Key Decisions Log
