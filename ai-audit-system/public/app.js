@@ -452,7 +452,8 @@ function renderCalls(calls = []) {
         </div>
       </div>
       <p>${escapeHtml(formatLabel(call.industry || 'unknown'))} - ${escapeHtml(call.phoneNumber || call.callId)}</p>
-      ${call.report ? `<button class="secondary-button" type="button" data-call-id="${escapeHtml(call.callId)}">View Report</button>` : ''}
+      ${call.report ? `<button class="secondary-button" type="button" data-call-id="${escapeHtml(call.callId)}">View Report</button>
+      <a class="secondary-button" href="/voice/calls/${encodeURIComponent(call.callId)}/report.pdf" target="_blank" rel="noopener">Preview customer PDF</a>` : ''}
     </div>
   `).join('');
 

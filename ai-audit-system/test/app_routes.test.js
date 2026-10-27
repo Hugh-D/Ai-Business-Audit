@@ -778,7 +778,9 @@ test('POST /webhook/retell emails only the review inbox with the spreadsheet', a
   assert.equal(captured.call.callId, 'call_review_email');
   assert.equal(captured.call.businessName, 'Green Stripe');
   assert.equal(captured.call.recipientEmail, 'mia@greenstripe.com.au');
-  assert.equal(captured.pdfBuffer, undefined);
+  // Hugh gets a preview of the customer PDF alongside the spreadsheet; the customer gets nothing.
+  assert.equal(Buffer.from(captured.pdfBuffer).subarray(0, 5).toString(), '%PDF-');
+  assert.match(captured.pdfFilename, /^preview-.*\.pdf$/);
   assert.match(captured.filename, /\.xlsx$/);
   assert.equal(Buffer.from(captured.workbookBuffer).subarray(0, 2).toString(), 'PK');
   assert.equal(call.reviewEmail.to, 'volvesolutions@outlook.com');

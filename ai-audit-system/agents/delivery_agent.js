@@ -81,7 +81,7 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
     text: message.text,
     attachments: [
       {
-        filename: filename || 'revenue-operations-readiness-report.pdf',
+        filename: filename || 'volve-business-check.pdf',
         content: Buffer.from(pdfBuffer),
         contentType: 'application/pdf',
       },
@@ -89,7 +89,7 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
   });
 }
 
-async function sendReviewEmail({ call, workbookBuffer, filename, env = process.env, fetchImpl } = {}) {
+async function sendReviewEmail({ call, workbookBuffer, filename, pdfBuffer, pdfFilename, env = process.env, fetchImpl } = {}) {
   if (!hasEmailConfig(env)) {
     const err = new Error('Review email skipped because SMTP is missing');
     err.code = 'SMTP_MISSING';
@@ -102,13 +102,16 @@ async function sendReviewEmail({ call, workbookBuffer, filename, env = process.e
     throw err;
   }
 
-  const message = buildReviewMessage(call);
+  const message = buildReviewMessage(call, { hasPdf: Boolean(pdfBuffer) });
+  const previewName = pdfFilename || 'customer-report-preview.pdf';
   // Railway blocks SMTP. Prefer Resend over HTTPS (port 443) whenever the key is set.
   if (hasResendConfig(env)) {
     return sendReviewEmailViaResend({
       message,
       workbookBuffer,
       filename,
+      pdfBuffer,
+      pdfFilename: previewName,
       env,
       fetchImpl,
     });
@@ -125,6 +128,11 @@ async function sendReviewEmail({ call, workbookBuffer, filename, env = process.e
         content: Buffer.from(workbookBuffer),
         contentType: XLSX_CONTENT_TYPE,
       },
+      ...(pdfBuffer ? [{
+        filename: previewName,
+        content: Buffer.from(pdfBuffer),
+        contentType: 'application/pdf',
+      }] : []),
     ],
   });
 }
@@ -137,7 +145,7 @@ function reviewFromAddress(env = process.env) {
   return DEFAULT_REVIEW_EMAIL;
 }
 
-async function sendReviewEmailViaResend({ message, workbookBuffer, filename, env, fetchImpl }) {
+async function sendReviewEmailViaResend({ message, workbookBuffer, filename, pdfBuffer, pdfFilename, env, fetchImpl }) {
   const to = getReviewEmail(env);
   const attachmentName = filename || 'audit-review.xlsx';
   const doFetch = fetchImpl || globalThis.fetch;
@@ -164,6 +172,11 @@ async function sendReviewEmailViaResend({ message, workbookBuffer, filename, env
           content: Buffer.from(workbookBuffer).toString('base64'),
           content_type: XLSX_CONTENT_TYPE,
         },
+        ...(pdfBuffer ? [{
+          filename: pdfFilename || 'customer-report-preview.pdf',
+          content: Buffer.from(pdfBuffer).toString('base64'),
+          content_type: 'application/pdf',
+        }] : []),
       ],
     }),
   });
@@ -200,7 +213,7 @@ function buildDeliveryMessage(call) {
   const text = [
     `Hi ${call.contactName || 'there'},`,
     '',
-    'Thanks again for taking the time to complete the AI Business Audit.',
+    'Thanks again for taking the time to do the free AI Business Audit with Volve Solutions.',
     '',
     `Your overall readiness score is ${report.overallScore ?? '-'}/10.`,
     '',
@@ -208,8 +221,11 @@ function buildDeliveryMessage(call) {
     actions ? `Recommended next actions:\n${actions}` : '',
     call.websiteUrl ? `Website noted for assessment context: ${call.websiteUrl}` : '',
     call.deliveryNotes ? `Notes:\n${call.deliveryNotes}` : '',
-    'I have attached your two-page Revenue and Operations Readiness Report.',
-    'The score is a decision aid, not a financial forecast.',
+    'I have attached your two-page Business Check.',
+    'It is based on what you told us on the call, and it is a guide to what to fix first, not a promise of results.',
+    '',
+    'Book your free review call: (02) 5700 0037',
+    'volvesolutions.com.au',
     '',
     'Best,',
   ].filter(Boolean).join('\n');
@@ -217,7 +233,7 @@ function buildDeliveryMessage(call) {
   return { subject, text };
 }
 
-function buildReviewMessage(call) {
+function buildReviewMessage(call, { hasPdf = false } = {}) {
   const business = String(call?.businessName || '').trim();
   const callId = call?.callId || 'unknown';
   const subject = business ? `Call finished for ${business}` : 'Call finished, review needed';
@@ -229,7 +245,9 @@ function buildReviewMessage(call) {
       : 'A call has just finished.',
     `Call id: ${callId}.`,
     '',
-    'The spreadsheet is attached for your review.',
+    hasPdf
+      ? 'The spreadsheet is attached for your review, with a preview of the customer PDF.'
+      : 'The spreadsheet is attached for your review.',
     'The customer PDF is held until you send it. It has not been sent to the customer.',
   ];
   if (call?.recipientEmail) {
