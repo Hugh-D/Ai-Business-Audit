@@ -843,3 +843,14 @@ h3 {
 @media (max-width: 640px) {
   h1 { font-size: 1.75rem; }
 }
+
+.call-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.call-tab { border: 1px solid #ccd; background: #fff; border-radius: 999px; padding: 4px 10px; cursor: pointer; font-size: 0.85rem; }
+.call-tab.active { background: #1f2a44; color: #fff; border-color: #1f2a44; }
+.call-status-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+.call-status-row select { padding: 3px 6px; }
+.danger-button { color: #b42318; border-color: #b42318; margin-bottom: 8px; }
+.status-tag.call-status-booked { background: #dcfae6; }
+.status-tag.call-status-won { background: #d1e9ff; }
+.status-tag.call-status-no_go { background: #f2f4f7; }
+.status-tag.call-status-test { background: #fef0c7; }

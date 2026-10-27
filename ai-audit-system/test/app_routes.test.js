@@ -1202,3 +1202,62 @@ function summaryValue(sheet, label) {
   }
   return undefined;
 }
+
+test('call status endpoints: views, set status, delete restricted to Test', async () => {
+  callStore.save('s_new', { status: 'report_ready' });
+  callStore.save('s_won', { status: 'report_ready' });
+  callStore.save('s_test', { status: 'report_ready' });
+
+  assert.equal((await requestJson('PATCH', '/voice/calls/s_won/status', { callStatus: 'won' })).status, 200);
+  assert.equal((await requestJson('PATCH', '/voice/calls/s_test/status', { callStatus: 'Test' })).status, 200);
+  assert.equal((await requestJson('PATCH', '/voice/calls/s_new/status', { callStatus: 'bogus' })).status, 400);
+  assert.equal((await requestJson('PATCH', '/voice/calls/missing/status', { callStatus: 'won' })).status, 404);
+  assert.equal(callStore.get('s_test').callStatusSource, 'manual');
+
+  const active = await requestJson('GET', '/voice/calls');
+  assert.deepEqual(active.body.calls.map(c => c.callId), ['s_new']);
+  assert.equal(active.body.counts.test, 1);
+  assert.deepEqual((await requestJson('GET', '/voice/calls?view=won')).body.calls.map(c => c.callId), ['s_won']);
+  assert.equal((await requestJson('GET', '/voice/calls?view=nope')).status, 400);
+
+  assert.equal((await requestJson('DELETE', '/voice/calls/s_new')).status, 409);
+  assert.ok(callStore.get('s_new'));
+  assert.equal((await requestJson('POST', '/voice/calls/test/delete-all', {})).status, 400);
+  const del = await requestJson('POST', '/voice/calls/test/delete-all', { confirm: true });
+  assert.deepEqual(del.body.deleted, ['s_test']);
+  assert.ok(callStore.get('s_won'));
+
+  callStore.save('s_test2', { callStatus: 'test', callStatusSource: 'manual' });
+  assert.equal((await requestJson('DELETE', '/voice/calls/s_test2')).status, 200);
+  assert.equal(callStore.get('s_test2'), null);
+});
+
+test('status and delete endpoints require workbench auth in production', async () => {
+  process.env.NODE_ENV = 'production';
+  process.env.WORKBENCH_USERNAME = 'operator';
+  process.env.WORKBENCH_PASSWORD = 'a-long-test-password';
+  callStore.save('p_test', { callStatus: 'test', callStatusSource: 'manual' });
+  assert.equal((await requestJson('PATCH', '/voice/calls/p_test/status', { callStatus: 'won' })).status, 401);
+  assert.equal((await requestJson('DELETE', '/voice/calls/p_test')).status, 401);
+  assert.equal((await requestJson('POST', '/voice/calls/test/delete-all', { confirm: true })).status, 401);
+  assert.ok(callStore.get('p_test'));
+});
+
+test('webhook auto-sets Booked on a successful intro booking but keeps manual status', async () => {
+  process.env.RETELL_API_KEY = 'test_retell_key';
+  const send = async (callId) => {
+    const { rawBody, signature } = signedWebhook({
+      event: 'call_analyzed',
+      call: { call_id: callId, direction: 'inbound', from_number: '+61400000000',
+        tool_calls: [{ name: 'book_intro_appointment', success: true }] },
+    }, process.env.RETELL_API_KEY);
+    return requestRaw('POST', '/webhook/retell', rawBody, { 'content-type': 'application/json', 'x-retell-signature': signature });
+  };
+  assert.equal((await send('auto_1')).status, 204);
+  assert.equal(callStore.get('auto_1').callStatus, 'booked');
+  assert.equal(callStore.get('auto_1').callStatusSource, 'auto');
+
+  callStore.save('auto_2', { callStatus: 'test', callStatusSource: 'manual' });
+  assert.equal((await send('auto_2')).status, 204);
+  assert.equal(callStore.get('auto_2').callStatus, 'test');
+});
