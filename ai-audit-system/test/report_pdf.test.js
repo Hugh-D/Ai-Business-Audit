@@ -83,10 +83,10 @@ test('buildTwoPageModel maps engine JSON into the two-page report and skips mone
   assert.equal(model.findings[2].status, 'yellow');
   assert.equal(model.findings[1].fastestWin, 'Write the extra down before leaving site.');
   assert.equal(model.doingWell[0].title, 'Google reviews');
-  assert.equal(model.doingWell[0].text, 'Customers already refer the business.');
+  assert.equal(model.doingWell[0].text, 'Customers already refer your business.');
   assert.equal(model.brand.phone, '(02) 5700 0037');
   assert.equal(model.headline, 'About 5 or 6 enquiries slip through a typical week.');
-  assert.match(model.lede, /Harry runs the quotes/);
+  assert.match(model.lede, /You run the quotes/);
   assert.doesNotMatch(model.lede, /Second paragraph|\$10,000/);
   assert.equal(model.reasoning, 'The process is already visible.');
   assert.deepEqual(model.actions.map((item) => item.action), [
@@ -189,4 +189,19 @@ test('long Logan-style text fits on two pages without ellipses', async () => {
   const raw = buffer.toString('latin1');
   assert.equal((raw.match(/\/Type \/Page(?!s)/g) || []).length, 2);
   assert.doesNotMatch(raw, /\u2026/);
+});
+
+test('customer text speaks to the customer, not about them', () => {
+  const audit = { contactName: 'Logan Parker', businessName: 'PKR Climate Services' };
+  const say = (text) => reportPdf.speakToCustomer(text, ['Logan Parker', 'Logan'], audit.businessName);
+  assert.equal(say("Logan said 'I do when I am available' for chasing enquiries."), "You said 'I do when I am available' for chasing enquiries.");
+  assert.equal(say('Logan personally follows up every quote.'), 'You personally follow up every quote.');
+  assert.equal(say("Lead chasing depends on Logan's availability, and he calls back when he can."), 'Lead chasing depends on your availability, and you call back when you can.');
+  assert.equal(say('PKR Climate Services is a small business.'), 'Your business is a small business.');
+  assert.match(say('Deploy an automated missed-call text-back that immediately sends an SMS to any caller Logan cannot answer.'), /^Set up an auto text-back for missed calls that straight away texts anyone you miss\.$/);
+  const model = reportPdf.buildTwoPageModel({
+    ...audit,
+    report: { diagnosticFindings: [{ problemArea: 'Reviews and Reputation', status: 'red', evidence: "Logan said 'most of them disappear'.", fastestWin: 'Deploy a review request.' }] },
+  });
+  assert.doesNotMatch(JSON.stringify(model.findings), /Logan|\bhe\b|\bhis\b|Deploy/);
 });

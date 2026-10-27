@@ -89,7 +89,8 @@ function buildReportFilename(audit = {}) {
 }
 
 function buildTwoPageModel(audit = {}) {
-  const report = reportEngine.groundReport(audit.report || {}, audit.transcript || '');
+  const grounded = reportEngine.groundReport(audit.report || {}, audit.transcript || '');
+  const report = toCustomerVoice(grounded, audit);
   const priority = report.priorityAnalysis || {};
   const actions = selectActions(report);
   const allFindings = rankFindings(report);
@@ -109,7 +110,7 @@ function buildTwoPageModel(audit = {}) {
     headline: withoutMoneySentences(priority.highestImpactIssue)
       || findings[0]?.title
       || 'The biggest issue was not named on this call.',
-    lede: executiveLede(report) || firstSentences(withoutMoneySentences(priority.reasoning), 2),
+    lede: firstSentences(executiveLede(report), 3) || firstSentences(withoutMoneySentences(priority.reasoning), 2),
     fastestWin: withoutMoneySentences(priority.fastestVisibleWin),
     reasoning: executiveLede(report) ? withoutMoneySentences(priority.reasoning) : '',
     actions,
@@ -670,6 +671,151 @@ function fillPage(doc) {
   doc.restore();
 }
 
+// ---------- customer voice ----------
+// Older reports were written about the caller ("Logan said..."). The customer reads this,
+// so customer-facing text is turned into second person and plain words before layout.
+
+const PLAIN_SWAPS = [
+  [/\bDeploy an automated missed-call text-back\b/g, 'Set up an auto text-back for missed calls'],
+  [/\ban automated missed-call text-back\b/gi, 'an auto text-back for missed calls'],
+  [/\bautomated missed-call text-back\b/gi, 'auto text-back for missed calls'],
+  [/\bAutomated text-back\b/g, 'An auto text-back'],
+  [/\bautomated post-job SMS\b/gi, 'automatic text after each job'],
+  [/\b[Aa]n automated text-back\b/g, 'An auto text-back'],
+  [/\bstraight away captures\b/gi, 'catches'],
+  [/\bimmediately captures\b/gi, 'catches'],
+  [/\bremoves the dependency on your availability for first contact\b/gi, 'means people hear back even when you are flat out'],
+  [/\bhas no dependency on your time\b/gi, 'does not need your time'],
+  [/\brequires minimal setup\b/gi, 'is quick to set up'],
+  [/\brequires no hiring\b/gi, 'needs no extra staff'],
+  [/\bwithin the first week of operation\b/gi, 'in the first week'],
+  [/\bwould produce a visible result\b/gi, 'would show results'],
+  [/\bThe operating picture is owner-dependent\b/g, 'Right now nearly everything runs through you'],
+  [/\bowner-dependent\b/gi, 'reliant on you'],
+  [/\bpreventing revenue leakage on\b/gi, 'so you are not losing money on'],
+  [/\brevenue leakage\b/gi, 'losing money'],
+  [/, which is a consistent and owner-managed process\b/gi, ', and that is working'],
+  [/, indicating this is a rough guess rather than a measured figure\b/gi, ', which is a rough guess, not a count'],
+  [/\bcommits? quoting time\b/gi, 'spend time quoting'],
+  [/\binvest quoting time in\b/gi, 'spend time quoting for'],
+  [/\bbudget readiness\b/gi, 'budget'],
+  [/\bgenuinely ready to proceed\b/gi, 'ready to go ahead'],
+  [/\bthe real volume of lost leads\b/gi, 'how many leads you really lose'],
+  [/\bconfirm their enquiry details\b/gi, 'tell you what the job is'],
+  [/\bconfirm their availability\b/gi, 'say when suits them'],
+  [/\bany caller you cannot answer\b/gi, 'anyone you miss'],
+  [/\bsends an SMS to\b/gi, 'texts'],
+  [/\b(Deploy|Implement)\b/g, 'Set up'],
+  [/\b(deploy|implement)\b/g, 'set up'],
+  [/\bIntroduce\b/g, 'Start using'],
+  [/\butili[sz]e\b/gi, 'use'],
+  [/\bleverage\b/gi, 'use'],
+  [/\bprospects\b/gi, 'customers'],
+  [/\ba simple CRM or even a shared inbox log\b/gi, 'a simple list, even a notes app,'],
+  [/\bA simple CRM or even a shared inbox log\b/g, 'A simple list, even a notes app,'],
+  [/\beven a shared notes app or basic CRM\b/gi, 'even a notes app on your phone'],
+  [/\bbasic CRM\b/gi, 'simple enquiry list'],
+  [/\bqualifying intake\b/gi, 'set of screening questions'],
+  [/\bqualifying questions\b/gi, 'a few screening questions'],
+  [/\btyre-kickers\b/gi, 'people just shopping around'],
+  [/\binbound enquiry\b/gi, 'enquiry'],
+  [/\binbound enquiries\b/gi, 'enquiries'],
+  [/\backnowledging\b/g, 'letting them know about'],
+  [/\backnowledges\b/g, 'tells them about'],
+  [/\bimmediately\b/gi, 'straight away'],
+  [/\bapproximately\b/gi, 'about'],
+  [/\bcommits quoting time\b/gi, 'spend time quoting'],
+];
+
+function toCustomerVoice(report, audit = {}) {
+  if (!report || typeof report !== 'object') return report;
+  const names = [firstName(audit.contactName), cleanText(audit.contactName)]
+    .filter((name) => name && name.length > 1)
+    .sort((a, b) => b.length - a.length);
+  const business = cleanText(audit.businessName);
+  const voice = (value) => (typeof value === 'string' ? speakToCustomer(value, names, business) : value);
+  const next = JSON.parse(JSON.stringify(report));
+  const mapList = (list) => (Array.isArray(list) ? list.map(voice) : list);
+  next.strengths = mapList(next.strengths);
+  next.keyStrengths = mapList(next.keyStrengths);
+  next.criticalGaps = mapList(next.criticalGaps);
+  if (next.sections && typeof next.sections === 'object') {
+    for (const key of Object.keys(next.sections)) next.sections[key] = voice(next.sections[key]);
+  }
+  if (next.priorityAnalysis && typeof next.priorityAnalysis === 'object') {
+    for (const key of Object.keys(next.priorityAnalysis)) next.priorityAnalysis[key] = voice(next.priorityAnalysis[key]);
+  }
+  if (Array.isArray(next.diagnosticFindings)) {
+    next.diagnosticFindings = next.diagnosticFindings.map((item) => (item && typeof item === 'object' ? {
+      ...item,
+      evidence: voice(item.evidence),
+      maturity: voice(item.maturity),
+      likelyImpact: voice(item.likelyImpact),
+      fastestWin: voice(item.fastestWin),
+    } : item));
+  }
+  if (Array.isArray(next.actionPlan)) {
+    next.actionPlan = next.actionPlan.map((item) => (item && typeof item === 'object' ? {
+      ...item,
+      action: voice(item.action),
+      expectedImpact: voice(item.expectedImpact),
+    } : voice(item)));
+  }
+  return next;
+}
+
+function escapeRe(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Rewrites prose outside quotes; quoted words are the caller's own and stay as said.
+function speakToCustomer(value, names = [], business = '') {
+  const parts = String(value).split(/('[^']{3,}?'(?=[\s,.;:!?)]|$)|"[^"]+")/);
+  return parts.map((part, index) => (index % 2 ? part : rewriteProse(part, names, business))).join('');
+}
+
+function rewriteProse(input, names, business) {
+  let text = input;
+  if (business) text = text.replace(new RegExp(`\\b${escapeRe(business)}\\b`, 'g'), 'your business');
+  const subjects = [...names.map(escapeRe), 'the business owner', 'the owner'];
+  for (const subject of subjects) {
+    const re = (body, flags = 'g') => new RegExp(body.replace(/SUBJ/g, subject), flags);
+    text = text
+      .replace(re("\\bSUBJ's\\b"), 'your')
+      .replace(re('\\bSUBJ is\\b'), 'you are')
+      .replace(re('\\bSUBJ has\\b'), 'you have')
+      .replace(re('\\bSUBJ does\\b'), 'you do')
+      .replace(re('\\bSUBJ (\\w+?)(ies)\\b'), (m, stem) => `you ${stem}y`)
+      .replace(re('\\bSUBJ (personally |also |usually |only |still |already )?(\\w+?)(ches|shes|sses|xes)\\b'), (m, adv = '', stem, end) => `you ${adv}${stem}${end.slice(0, -2)}`)
+      .replace(re('\\bSUBJ (personally |also |usually |only |still |already )?(\\w+[^s\\s])s\\b'), (m, adv = '', verb) => `you ${adv}${verb}`)
+      .replace(re('\\bSUBJ\\b'), 'you');
+  }
+  text = text
+    .replace(/\bhe is\b/gi, 'you are')
+    .replace(/\bhe has\b/gi, 'you have')
+    .replace(/\bhe does\b/gi, 'you do')
+    .replace(/\bhe was\b/gi, 'you were')
+    .replace(/\bhe (\w+[^s\s])s\b(?= (the|a|an|up|every|all|it|them|quotes?|jobs?|calls?)\b)/gi, 'you $1')
+    .replace(/\bhe\b/gi, 'you')
+    .replace(/\bhis\b/gi, 'your')
+    .replace(/\bhimself\b/gi, 'yourself')
+    .replace(/\bhim\b/gi, 'you')
+    .replace(/\bthe business\b/g, 'your business')
+    .replace(/\bThe business\b/g, 'Your business');
+  for (const [pattern, swap] of PLAIN_SWAPS) text = text.replace(pattern, swap);
+  text = text
+    .replace(/\byou (am|is)\b/g, 'you are')
+    .replace(/\byou was\b/g, 'you were')
+    .replace(/\byou yourself\b/g, 'you')
+    .replace(/\b(you (?:personally |also |usually |only |still |already |often |do )?)(\w+?)ies\b/gi, '$1$2y')
+    .replace(/\b(you (?:personally |also |usually |only |still |already |often )?)(\w+?)(ches|shes|sses|xes)\b/gi, (m, lead, stem, end) => `${lead}${stem}${end.slice(0, -2)}`)
+    .replace(/\b(you (?:personally |also |usually |only |still |already |often )?)(call|send|follow|chase|quote|invoice|handle|keep|leave|make|run|take|ask|get|want|need|use|work|try|do|say|record|track|check|answer|return|book|enter|write|miss|lose|know|feel|think)s\b/gi, '$1$2')
+    .replace(/(^|[.!?]\s+)you\b/g, (m, lead) => `${lead}You`)
+    .replace(/(^|[.!?]\s+)your\b/g, (m, lead) => `${lead}Your`)
+    .replace(/(^|[.!?]\s+)([a-z])/g, (m, lead, ch) => `${lead}${ch.toUpperCase()}`);
+  return text;
+}
+
 // ---------- text helpers ----------
 
 function executiveLede(report) {
@@ -810,6 +956,8 @@ function slugify(value) {
 }
 
 module.exports = {
+  speakToCustomer,
+  toCustomerVoice,
   BRAND,
   COLOR,
   buildReportFilename,

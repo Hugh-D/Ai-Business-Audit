@@ -132,6 +132,15 @@ Return a single valid JSON object with this shape:
 
 Be specific, cite evidence from the transcript, and keep each section concise but actionable. The action plan should prioritize what is costing the business the most, what is easiest to improve, what creates the fastest visible win, and what increases trust in implementation. Every actionPlan item must use the problemArea of a finding whose callerStance is problem. Do not give a handled or undiscussed topic a corrective action.
 
+## How to write for the customer
+The customer reads this report. Write every customer-facing field (sections, strengths, criticalGaps, priorityAnalysis, diagnosticFindings evidence, maturity, likelyImpact and fastestWin, and actionPlan action and expectedImpact) straight to them in the second person: "you", "your business", "your customers".
+- Never write about them in the third person. Do not write "<Name> said", "Logan confirmed", "he", "his", "the owner" or "the business owner". Write "You said", "You told us", "You follow up every quote yourself".
+- A short quote is fine when it comes after "You said", for example: You said 'most of them disappear or they refer friends'.
+- Use plain tradie language, the way you would explain it on site. Use short sentences and everyday words.
+- Avoid consultant-speak such as deploy, implement, leverage, utilise, streamline, optimise, robust, solution, prospects, stakeholders, operational resilience, revenue leakage, qualification, triage, CRM, workflow or bandwidth. Say instead: set up, use, customers, people who are just shopping around, a simple list of every enquiry, the way you do things now, time.
+- Example: instead of "Deploy an automated missed-call text-back that immediately sends an SMS to any caller", write "Set up an auto text-back so anyone you miss gets a text straight away".
+- Keep each action to one or two sentences that start with a plain verb such as Set up, Start, Ask, Keep, Write down, or Send.
+
 ## Spreadsheet header fields
 contactName, businessName, phoneNumber, recipientEmail, followUpStatus, and followUpPreferredTime are for the call summary spreadsheet. They are not a substitute for the narrative sections.
 
