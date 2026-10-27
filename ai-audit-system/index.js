@@ -280,6 +280,27 @@ app.get('/voice/calls/:callId', (req, res) => {
   res.json({ call });
 });
 
+// GET /voice/calls/:callId/report.pdf
+// Workbench preview of the exact customer PDF. Behind workbench auth; sends nothing.
+app.get('/voice/calls/:callId/report.pdf', async (req, res) => {
+  try {
+    const call = callStore.get(req.params.callId);
+    if (!call) return res.status(404).json({ error: 'Call not found' });
+    if (!call.report) return res.status(400).json({ error: 'Call does not have a report yet' });
+    const audit = callToAudit(call);
+    const pdfBuffer = await reportPdf.buildReportPdfBuffer(audit);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${reportPdf.buildReportFilename(audit)}"`,
+      'Cache-Control': 'no-store',
+    });
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // PATCH /voice/calls/:callId/review
 // Body: review/delivery fields plus optional follow-up booking fields.
 // Updates internal review, send, and follow-up workflow state for a completed report.
@@ -549,7 +570,8 @@ function firstNonBlank(...values) {
   return '';
 }
 
-// Emails Hugh the spreadsheet after a report is saved. Never sends the customer PDF.
+// Emails Hugh the spreadsheet plus a customer PDF preview after a report is saved.
+// Only Hugh gets it; the customer PDF is never sent to the customer from here.
 // Uses Resend over HTTPS when RESEND_API_KEY is set, otherwise SMTP.
 // A missing email setup is recorded on the call and does not discard the report.
 async function sendCallReviewEmail(call) {
@@ -571,10 +593,21 @@ async function sendCallReviewEmail(call) {
     const audit = callToAudit(current);
     const workbookBuffer = await workbookExporter.buildAuditWorkbookBuffer(audit);
     const filename = workbookExporter.buildWorkbookFilename(audit);
+    let pdfBuffer;
+    let pdfFilename;
+    try {
+      pdfBuffer = await reportPdf.buildReportPdfBuffer(audit);
+      pdfFilename = `preview-${reportPdf.buildReportFilename(audit)}`;
+    } catch (pdfErr) {
+      // A broken preview must not stop Hugh getting the spreadsheet.
+      console.error(pdfErr);
+    }
     const delivery = await deliveryAgent.sendReviewEmail({
       call: current,
       workbookBuffer,
       filename,
+      pdfBuffer,
+      pdfFilename,
     });
     callStore.save(call.callId, {
       reviewEmail: {

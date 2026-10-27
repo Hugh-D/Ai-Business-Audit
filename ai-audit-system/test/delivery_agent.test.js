@@ -44,8 +44,11 @@ test('buildDeliveryMessage creates a client-ready email body', () => {
   assert.match(message.text, /Missed after-hours calls/);
   assert.match(message.text, /https:\/\/demoplumbing\.com\.au/);
   assert.match(message.text, /Book a follow-up consult next week/);
-  assert.match(message.text, /two-page Revenue and Operations Readiness Report/);
-  assert.match(message.text, /decision aid, not a financial forecast/);
+  assert.match(message.text, /two-page Business Check/);
+  assert.match(message.text, /not a promise of results/);
+  assert.match(message.text, /Book your free review call: \(02\) 5700 0037/);
+  assert.match(message.text, /volvesolutions\.com\.au/);
+  assert.doesNotMatch(message.text, /Readiness Report|financial forecast/);
   assert.doesNotMatch(message.text, /workbook|spreadsheet/i);
 });
 
@@ -98,6 +101,39 @@ test('buildReviewMessage is a short internal note and does not offer the custome
   assert.match(message.text, /has not been sent to the customer/);
   assert.match(message.text, /mia@example.com/);
   assert.doesNotMatch(message.text, /—|–|delve|crucial|leverage|utilise|streamline/i);
+});
+
+test('buildReviewMessage mentions the customer PDF preview when one is attached', () => {
+  const message = deliveryAgent.buildReviewMessage({ callId: 'call_1' }, { hasPdf: true });
+  assert.match(message.text, /preview of the customer PDF/);
+  assert.match(message.text, /has not been sent to the customer/);
+});
+
+test('sendReviewEmail attaches the customer PDF preview next to the spreadsheet', async () => {
+  const nodemailer = require('nodemailer');
+  const previous = nodemailer.createTransport;
+  let sent = null;
+  nodemailer.createTransport = () => ({
+    sendMail: async (message) => {
+      sent = message;
+      return { messageId: 'review_2', accepted: [message.to], rejected: [] };
+    },
+  });
+  try {
+    await deliveryAgent.sendReviewEmail({
+      call: { callId: 'call_2', businessName: 'Green Stripe', recipientEmail: 'mia@example.com' },
+      workbookBuffer: Buffer.from('xlsx'),
+      filename: 'review.xlsx',
+      pdfBuffer: Buffer.from('%PDF-preview'),
+      pdfFilename: 'preview-report.pdf',
+      env: { SMTP_HOST: 'smtp.example.com', SMTP_PORT: '587', SMTP_FROM: 'audit@example.com', REVIEW_EMAIL: 'volvesolutions@outlook.com' },
+    });
+    assert.equal(sent.to, 'volvesolutions@outlook.com');
+    assert.deepEqual(sent.attachments.map((a) => a.filename), ['review.xlsx', 'preview-report.pdf']);
+    assert.equal(sent.attachments[1].contentType, 'application/pdf');
+  } finally {
+    nodemailer.createTransport = previous;
+  }
 });
 
 test('sendReviewEmail sends the spreadsheet only to the review inbox', async () => {

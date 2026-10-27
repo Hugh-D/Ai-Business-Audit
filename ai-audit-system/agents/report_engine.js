@@ -262,6 +262,19 @@ function callerStance(finding = {}) {
   return '';
 }
 
+const CONDITIONAL_EFFORT = /\b(when|if|whenever)\s+(i\s*(am|'m)|i\s+get|i\s+have|i'?ve\s+got|he\s+is|he'?s|he\s+gets|he\s+has)\s+(the\s+)?(available|availability|time|a\s+chance|a\s+minute|free)\b|\bwhen\s+available\b/i;
+
+function isConditionalEffort(finding = {}) {
+  const text = typeof finding === 'string'
+    ? finding
+    : [finding.evidence, finding.maturity].map(textOrEmpty).join(' ');
+  return CONDITIONAL_EFFORT.test(text);
+}
+
+function normStatus(value) {
+  return textOrEmpty(value).toLowerCase();
+}
+
 function norm(value) {
   return textOrEmpty(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
@@ -307,6 +320,10 @@ function groundReport(report, transcript = '') {
         grounded.status = 'green';
         grounded.fastestWin = '';
       }
+      // "When I am available" is effort that depends on spare time, not a working system.
+      if (normStatus(grounded.status) === 'green' && isConditionalEffort(finding)) {
+        grounded.status = 'yellow';
+      }
       return grounded;
     });
 
@@ -314,6 +331,7 @@ function groundReport(report, transcript = '') {
   next.keyStrengths = next.keyStrengths.map(item => scrub(item)).filter(Boolean);
   for (const finding of next.diagnosticFindings) {
     if (callerStance(finding) !== 'handled') continue;
+    if (isConditionalEffort(finding)) continue;
     const line = textOrEmpty(finding.evidence) || textOrEmpty(finding.maturity);
     if (!line) continue;
     if (!next.keyStrengths.some(item => norm(item) === norm(line))) next.keyStrengths.push(line);
@@ -378,5 +396,6 @@ module.exports = {
   confirmedMobileFromTranscript,
   confirmedPhoneNumber,
   groundReport,
+  isConditionalEffort,
 };
 
