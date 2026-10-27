@@ -382,35 +382,54 @@ test('sendReviewEmail reports a Resend failure without calling SMTP', async () =
   }
 });
 
-test('sendReportEmail still requires SMTP when only Resend is configured', async () => {
-  const previousKey = process.env.RESEND_API_KEY;
-  const previousHost = process.env.SMTP_HOST;
-  const previousPort = process.env.SMTP_PORT;
-  const previousFrom = process.env.SMTP_FROM;
-  process.env.RESEND_API_KEY = 're_test_key';
-  delete process.env.SMTP_HOST;
-  delete process.env.SMTP_PORT;
-  delete process.env.SMTP_FROM;
-
-  try {
-    await assert.rejects(
-      () => deliveryAgent.sendReportEmail({
-        call: { recipientEmail: 'mia@example.com' },
-        pdfBuffer: Buffer.from('pdf'),
-        filename: 'report.pdf',
-      }),
-      (err) => err.message === 'SMTP email delivery is not configured'
-    );
-  } finally {
-    restoreEnvVar('RESEND_API_KEY', previousKey);
-    restoreEnvVar('SMTP_HOST', previousHost);
-    restoreEnvVar('SMTP_PORT', previousPort);
-    restoreEnvVar('SMTP_FROM', previousFrom);
-  }
+test('sendReportEmail errors when neither Resend nor SMTP is configured', async () => {
+  await assert.rejects(
+    () => deliveryAgent.sendReportEmail({
+      call: { recipientEmail: 'mia@example.com' },
+      pdfBuffer: Buffer.from('pdf'),
+      filename: 'report.pdf',
+      env: {},
+      fetchImpl: async () => { throw new Error('should not fetch'); },
+    }),
+    /Email delivery is not configured/
+  );
 });
 
-function restoreEnvVar(key, value) {
-  if (value === undefined) delete process.env[key];
-  else process.env[key] = value;
-}
+test('sendReportEmail sends the customer PDF via Resend when RESEND_API_KEY is set', async () => {
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url, options });
+    return { ok: true, status: 200, json: async () => ({ id: 'email_123' }) };
+  };
+  const pdf = Buffer.from('%PDF-1.4 test');
+  const result = await deliveryAgent.sendReportEmail({
+    call: { recipientEmail: 'client@example.com', businessName: 'Demo Co', contactName: 'Sam', report: { overallScore: 7 } },
+    pdfBuffer: pdf,
+    filename: 'demo.pdf',
+    env: { RESEND_API_KEY: 're_test_key', RESEND_FROM: 'Volve <audit@volve.test>', SMTP_HOST: 'smtp.example.com', SMTP_PORT: '587', SMTP_FROM: 'a@b.com' },
+    fetchImpl,
+  });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://api.resend.com/emails');
+  assert.equal(calls[0].options.headers.Authorization, 'Bearer re_test_key');
+  const body = JSON.parse(calls[0].options.body);
+  assert.deepEqual(body.to, ['client@example.com']);
+  assert.equal(body.from, 'Volve <audit@volve.test>');
+  assert.match(body.subject, /Demo Co/);
+  assert.equal(body.attachments.length, 1);
+  assert.equal(body.attachments[0].filename, 'demo.pdf');
+  assert.equal(body.attachments[0].content_type, 'application/pdf');
+  assert.equal(Buffer.from(body.attachments[0].content, 'base64').toString(), '%PDF-1.4 test');
+  assert.equal(result.messageId, 'email_123');
+  assert.deepEqual(result.accepted, ['client@example.com']);
+});
 
+test('sendReportEmail surfaces Resend errors', async () => {
+  const fetchImpl = async () => ({ ok: false, status: 422, json: async () => ({ message: 'bad from' }) });
+  await assert.rejects(() => deliveryAgent.sendReportEmail({
+    call: { recipientEmail: 'client@example.com' },
+    pdfBuffer: Buffer.from('x'),
+    env: { RESEND_API_KEY: 're_test_key' },
+    fetchImpl,
+  }), /bad from/);
+});

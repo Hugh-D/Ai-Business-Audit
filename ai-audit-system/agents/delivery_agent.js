@@ -55,14 +55,14 @@ function extractCustomerEmail({ metadata = {}, report = {}, transcript = '', env
   return '';
 }
 
-async function sendReportEmail({ call, pdfBuffer, filename }) {
+async function sendReportEmail({ call, pdfBuffer, filename, env = process.env, fetchImpl } = {}) {
   if (!call?.recipientEmail) {
     const err = new Error('recipientEmail is required before sending');
     err.status = 400;
     throw err;
   }
-  if (!hasSmtpConfig()) {
-    const err = new Error('SMTP email delivery is not configured');
+  if (!hasEmailConfig(env)) {
+    const err = new Error('Email delivery is not configured (set RESEND_API_KEY or SMTP)');
     err.status = 500;
     throw err;
   }
@@ -74,14 +74,25 @@ async function sendReportEmail({ call, pdfBuffer, filename }) {
   }
 
   const message = buildDeliveryMessage(call);
-  return createTransport().sendMail({
-    from: process.env.SMTP_FROM,
+  const pdfName = filename || 'volve-business-check.pdf';
+  // Railway blocks outbound SMTP. Prefer Resend over HTTPS whenever the key is set.
+  if (hasResendConfig(env)) {
+    return sendViaResend({
+      to: call.recipientEmail,
+      message,
+      attachments: [{ filename: pdfName, content: pdfBuffer, contentType: 'application/pdf' }],
+      env,
+      fetchImpl,
+    });
+  }
+  return createTransport(env).sendMail({
+    from: env.SMTP_FROM,
     to: call.recipientEmail,
     subject: message.subject,
     text: message.text,
     attachments: [
       {
-        filename: filename || 'volve-business-check.pdf',
+        filename: pdfName,
         content: Buffer.from(pdfBuffer),
         contentType: 'application/pdf',
       },
@@ -145,9 +156,24 @@ function reviewFromAddress(env = process.env) {
   return DEFAULT_REVIEW_EMAIL;
 }
 
-async function sendReviewEmailViaResend({ message, workbookBuffer, filename, pdfBuffer, pdfFilename, env, fetchImpl }) {
-  const to = getReviewEmail(env);
-  const attachmentName = filename || 'audit-review.xlsx';
+function sendReviewEmailViaResend({ message, workbookBuffer, filename, pdfBuffer, pdfFilename, env, fetchImpl }) {
+  return sendViaResend({
+    to: getReviewEmail(env),
+    message,
+    attachments: [
+      { filename: filename || 'audit-review.xlsx', content: workbookBuffer, contentType: XLSX_CONTENT_TYPE },
+      ...(pdfBuffer ? [{
+        filename: pdfFilename || 'customer-report-preview.pdf',
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      }] : []),
+    ],
+    env,
+    fetchImpl,
+  });
+}
+
+async function sendViaResend({ to, message, attachments = [], env = process.env, fetchImpl }) {
   const doFetch = fetchImpl || globalThis.fetch;
   if (typeof doFetch !== 'function') {
     const err = new Error('HTTPS email delivery needs global fetch');
@@ -166,18 +192,11 @@ async function sendReviewEmailViaResend({ message, workbookBuffer, filename, pdf
       to: [to],
       subject: message.subject,
       text: message.text,
-      attachments: [
-        {
-          filename: attachmentName,
-          content: Buffer.from(workbookBuffer).toString('base64'),
-          content_type: XLSX_CONTENT_TYPE,
-        },
-        ...(pdfBuffer ? [{
-          filename: pdfFilename || 'customer-report-preview.pdf',
-          content: Buffer.from(pdfBuffer).toString('base64'),
-          content_type: 'application/pdf',
-        }] : []),
-      ],
+      attachments: attachments.map(item => ({
+        filename: item.filename,
+        content: Buffer.from(item.content).toString('base64'),
+        content_type: item.contentType,
+      })),
     }),
   });
 
