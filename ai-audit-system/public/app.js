@@ -19,6 +19,7 @@ const sampleButton = document.querySelector('#sampleButton');
 const copyButton = document.querySelector('#copyButton');
 const sheetButton = document.querySelector('#sheetButton');
 const printButton = document.querySelector('#printButton');
+const customerPdfButton = document.querySelector('#customerPdfButton');
 const serviceStatus = document.querySelector('#serviceStatus');
 const reportMeta = document.querySelector('#reportMeta');
 const emptyState = document.querySelector('#emptyState');
@@ -215,6 +216,11 @@ sheetButton.addEventListener('click', async () => {
     sheetButton.disabled = false;
     sheetButton.textContent = 'Download Sheet';
   }
+});
+
+customerPdfButton.addEventListener('click', () => {
+  if (!lastAudit?.callId) return;
+  window.open(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/report.pdf`, '_blank', 'noopener');
 });
 
 printButton.addEventListener('click', () => {
@@ -484,6 +490,7 @@ function renderReport(payload) {
   copyButton.disabled = false;
   sheetButton.disabled = false;
   printButton.disabled = false;
+  customerPdfButton.disabled = !payload.callId;
   reportMeta.textContent = `${formatLabel(industry)} audit - ${auditId}`;
 
   reportOutput.innerHTML = [
