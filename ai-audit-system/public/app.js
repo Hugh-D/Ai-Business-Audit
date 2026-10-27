@@ -12,6 +12,12 @@ const readinessChecks = document.querySelector('#readinessChecks');
 const readinessNextSteps = document.querySelector('#readinessNextSteps');
 const callList = document.querySelector('#callList');
 const callCount = document.querySelector('#callCount');
+const callTabs = document.querySelector('#callTabs');
+const deleteTestCallsButton = document.querySelector('#deleteTestCallsButton');
+const CALL_STATUS_OPTIONS = [
+  ['new', 'New'], ['booked', 'Booked'], ['won', 'Won'], ['no_go', 'No go'], ['test', 'Test'],
+];
+let currentCallView = 'active';
 const transcriptInput = document.querySelector('#transcriptInput');
 const auditForm = document.querySelector('#auditForm');
 const generateButton = document.querySelector('#generateButton');
@@ -389,9 +395,10 @@ async function saveReviewWorkflow(options = {}) {
 
 async function loadCalls() {
   try {
-    const response = await fetch('/voice/calls');
+    const response = await fetch(`/voice/calls?view=${encodeURIComponent(currentCallView)}`);
     if (!response.ok) throw new Error('Could not load recent calls');
-    const { calls } = await response.json();
+    const { calls, counts = {} } = await response.json();
+    renderCallTabs(counts);
     renderCalls(calls);
   } catch (err) {
     showError(err.message);
@@ -440,10 +447,95 @@ function renderReadiness(readiness) {
   }
 }
 
+function renderCallTabs(counts = {}) {
+  const viewCounts = {
+    active: (counts.new || 0) + (counts.booked || 0),
+    won: counts.won || 0,
+    archived: counts.no_go || 0,
+    test: counts.test || 0,
+  };
+  callTabs.querySelectorAll('[data-view]').forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.view === currentCallView);
+    const badge = tab.querySelector('[data-count]');
+    if (badge) badge.textContent = `(${viewCounts[tab.dataset.view] || 0})`;
+  });
+  deleteTestCallsButton.hidden = !(currentCallView === 'test' && viewCounts.test > 0);
+}
+
+function callStatusSelect(call, extraClass = '') {
+  const current = call.callStatus || 'new';
+  return `<label class="call-status-row ${extraClass}">Status
+    <select data-status-call-id="${escapeHtml(call.callId)}" aria-label="Call status">
+      ${CALL_STATUS_OPTIONS.map(([value, label]) => `<option value="${value}" ${value === current ? 'selected' : ''}>${label}</option>`).join('')}
+    </select>
+  </label>`;
+}
+
+function bindCallStatusSelects(root) {
+  root.querySelectorAll('[data-status-call-id]').forEach((select) => {
+    select.addEventListener('change', () => setCallStatus(select.dataset.statusCallId, select.value));
+  });
+}
+
+async function setCallStatus(callId, value) {
+  clearError();
+  try {
+    const response = await fetch(`/voice/calls/${encodeURIComponent(callId)}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callStatus: value }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Could not update call status');
+    if (lastAudit && lastAudit.callId === callId) lastAudit.callStatus = body.call.callStatus;
+    await loadCalls();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+async function deleteTestCall(callId, label) {
+  if (!window.confirm(`Permanently delete test call "${label}"? This cannot be undone.`)) return;
+  clearError();
+  try {
+    const response = await fetch(`/voice/calls/${encodeURIComponent(callId)}`, { method: 'DELETE' });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Could not delete call');
+    await loadCalls();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+async function deleteAllTestCalls() {
+  if (!window.confirm('Permanently delete ALL calls marked Test? This cannot be undone.')) return;
+  clearError();
+  try {
+    const response = await fetch('/voice/calls/test/delete-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Could not delete test calls');
+    await loadCalls();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+callTabs.querySelectorAll('[data-view]').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    currentCallView = tab.dataset.view;
+    loadCalls();
+  });
+});
+deleteTestCallsButton.addEventListener('click', deleteAllTestCalls);
+
 function renderCalls(calls = []) {
   callCount.textContent = String(calls.length);
   if (!calls.length) {
-    callList.innerHTML = '<div class="empty-state compact">No persisted calls yet.</div>';
+    callList.innerHTML = '<div class="empty-state compact">No calls in this view.</div>';
     return;
   }
 
@@ -452,20 +544,27 @@ function renderCalls(calls = []) {
       <div class="call-title">
         <strong>${escapeHtml(call.businessName || call.contactName || call.phoneNumber || 'Phone audit')}</strong>
         <div class="status-stack">
+          <span class="status-tag call-status-${escapeHtml(call.callStatus || 'new')}">${escapeHtml((CALL_STATUS_OPTIONS.find(([v]) => v === (call.callStatus || 'new')) || [, 'New'])[1])}</span>
           <span class="status-tag ${call.report ? 'ready' : ''}">${escapeHtml(formatLabel(call.status || 'started'))}</span>
           ${call.report ? `<span class="status-tag review-${escapeHtml(call.reviewStatus || 'draft')}">${escapeHtml(formatLabel(call.reviewStatus || 'draft'))}</span>` : ''}
           ${call.report && call.followUpStatus && call.followUpStatus !== 'not_offered' ? `<span class="status-tag follow-up-${escapeHtml(call.followUpStatus)}">${escapeHtml(formatLabel(call.followUpStatus))}</span>` : ''}
         </div>
       </div>
       <p>${escapeHtml(formatLabel(call.industry || 'unknown'))} - ${escapeHtml(call.phoneNumber || call.callId)}</p>
+      ${callStatusSelect(call)}
       ${call.report ? `<button class="secondary-button" type="button" data-call-id="${escapeHtml(call.callId)}">View Report</button>
       <a class="secondary-button" href="/voice/calls/${encodeURIComponent(call.callId)}/report.pdf" target="_blank" rel="noopener">Preview customer PDF</a>` : ''}
+      ${call.callStatus === 'test' ? `<button class="ghost-button danger-button" type="button" data-delete-call-id="${escapeHtml(call.callId)}" data-delete-label="${escapeHtml(call.businessName || call.contactName || call.phoneNumber || call.callId)}">Delete test call</button>` : ''}
     </div>
   `).join('');
 
   callList.querySelectorAll('[data-call-id]').forEach((button) => {
     button.addEventListener('click', () => loadCallReport(button.dataset.callId));
   });
+  callList.querySelectorAll('[data-delete-call-id]').forEach((button) => {
+    button.addEventListener('click', () => deleteTestCall(button.dataset.deleteCallId, button.dataset.deleteLabel));
+  });
+  bindCallStatusSelects(callList);
 }
 
 async function loadCallReport(callId) {
@@ -494,6 +593,7 @@ function renderReport(payload) {
   reportMeta.textContent = `${formatLabel(industry)} audit - ${auditId}`;
 
   reportOutput.innerHTML = [
+    payload.callId ? callStatusSelect(payload, 'report-call-status') : '',
     renderScores(report),
     renderWebsiteReview(payload.websiteReview),
     renderListBlock('Key Strengths', report.keyStrengths),
@@ -503,6 +603,7 @@ function renderReport(payload) {
     renderSections(report.sections),
     renderActionPlan(report.actionPlan),
   ].join('');
+  bindCallStatusSelects(reportOutput);
 
   renderReviewWorkflow(payload);
 }
@@ -511,6 +612,7 @@ function applyCallToAudit(call) {
   lastAudit = {
     auditId: call.auditId || call.callId,
     callId: call.callId,
+    callStatus: call.callStatus || 'new',
     industry: call.industry,
     businessName: call.businessName,
     contactName: call.contactName,

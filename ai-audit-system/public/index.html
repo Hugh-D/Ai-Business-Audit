@@ -45,6 +45,13 @@
               <h2>Completed And Active Calls</h2>
               <span id="callCount">0</span>
             </div>
+            <div id="callTabs" class="call-tabs" role="tablist">
+              <button type="button" class="call-tab active" data-view="active">New &amp; Booked <span data-count="active"></span></button>
+              <button type="button" class="call-tab" data-view="won">Won <span data-count="won"></span></button>
+              <button type="button" class="call-tab" data-view="archived">Archived <span data-count="archived"></span></button>
+              <button type="button" class="call-tab" data-view="test">Test <span data-count="test"></span></button>
+            </div>
+            <button id="deleteTestCallsButton" class="ghost-button danger-button" type="button" hidden>Delete all test calls</button>
             <div id="callList" class="call-list">
               <div class="empty-state compact">No persisted calls yet.</div>
             </div>

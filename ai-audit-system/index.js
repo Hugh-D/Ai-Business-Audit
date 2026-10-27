@@ -8,6 +8,7 @@ const reportEngine = require('./agents/report_engine');
 const voiceAgent = require('./agents/voice_agent');
 const transcriptCleaner = require('./agents/transcript_cleaner');
 const callStore = require('./agents/call_store');
+const callStatus = require('./agents/call_status');
 const workbookExporter = require('./agents/workbook_exporter');
 const reportPdf = require('./agents/report_pdf');
 const deliveryAgent = require('./agents/delivery_agent');
@@ -268,8 +269,53 @@ app.post('/voice/call', async (req, res) => {
 
 // GET /voice/calls
 // Lists recent persisted call records.
-app.get('/voice/calls', (_req, res) => {
-  res.json({ calls: callStore.list() });
+const CALL_VIEWS = {
+  active: ['new', 'booked'],
+  won: ['won'],
+  archived: ['no_go'],
+  test: ['test'],
+  all: null,
+};
+
+app.get('/voice/calls', (req, res) => {
+  const view = String(req.query.view || 'active');
+  if (!Object.prototype.hasOwnProperty.call(CALL_VIEWS, view)) {
+    return res.status(400).json({ error: 'view must be active, won, archived, test, or all' });
+  }
+  res.json({ view, calls: callStore.list({ statuses: CALL_VIEWS[view], limit: 100 }), counts: callStore.countByStatus() });
+});
+
+// POST /voice/calls/test/delete-all
+// Body: { confirm: true }. Permanently deletes only calls whose workbench status is Test.
+app.post('/voice/calls/test/delete-all', (req, res) => {
+  if (req.body?.confirm !== true) return res.status(400).json({ error: 'confirm: true is required' });
+  const deleted = callStore.deleteTestCalls();
+  res.json({ deleted, deletedCount: deleted.length });
+});
+
+// PATCH /voice/calls/:callId/status
+// Body: { callStatus: new|booked|won|no_go|test }. A manual status is never auto-overridden.
+app.patch('/voice/calls/:callId/status', (req, res) => {
+  const call = callStore.get(req.params.callId);
+  if (!call) return res.status(404).json({ error: 'Call not found' });
+  const next = callStatus.normalizeCallStatus(req.body?.callStatus);
+  if (!next) return res.status(400).json({ error: `callStatus must be one of ${callStatus.CALL_STATUSES.join(', ')}` });
+  const saved = callStore.save(call.callId, {
+    callStatus: next,
+    callStatusSource: 'manual',
+    callStatusUpdatedAt: new Date().toISOString(),
+  });
+  res.json({ call: saved });
+});
+
+// DELETE /voice/calls/:callId
+// Permanently deletes one call, only if its workbench status is Test.
+app.delete('/voice/calls/:callId', (req, res) => {
+  const call = callStore.get(req.params.callId);
+  if (!call) return res.status(404).json({ error: 'Call not found' });
+  if (call.callStatus !== 'test') return res.status(409).json({ error: 'Only calls marked Test can be deleted' });
+  callStore.remove(call.callId);
+  res.json({ deleted: call.callId });
 });
 
 // GET /voice/calls/:callId
@@ -453,6 +499,7 @@ app.post('/webhook/retell', async (req, res) => {
       phoneNumber: call.direction === 'inbound' ? call.from_number : call.to_number,
       retell: call,
     });
+    applyAutoBooked(callId, call);
 
     if (payload.event === 'call_ended') {
       processEndedCall(call).catch(err => {
@@ -481,6 +528,12 @@ app.get('/industries', (_req, res) => {
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`ai-audit-system running on port ${PORT}`));
+}
+
+function applyAutoBooked(callId, retellCall) {
+  if (!callId) return null;
+  const patch = callStatus.autoBookedPatch(callStore.get(callId), retellCall);
+  return patch ? callStore.save(callId, patch) : null;
 }
 
 async function processEndedCall(call) {

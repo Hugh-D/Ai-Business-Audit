@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
+const { withCallStatus } = require('./call_status');
 
 let db = null;
 let activeStorePath = null;
@@ -68,14 +69,35 @@ function get(callId) {
   const row = ensureDb()
     .prepare('SELECT payload FROM calls WHERE call_id = ?')
     .get(callId);
-  return row ? JSON.parse(row.payload) : null;
+  return row ? withCallStatus(JSON.parse(row.payload)) : null;
 }
 
-function list() {
-  return ensureDb()
-    .prepare('SELECT payload FROM calls ORDER BY updated_at DESC LIMIT 25')
+function list({ limit = 25, statuses = null } = {}) {
+  const rows = ensureDb()
+    .prepare('SELECT payload FROM calls ORDER BY updated_at DESC')
     .all()
-    .map(row => JSON.parse(row.payload));
+    .map(row => withCallStatus(JSON.parse(row.payload)));
+  const filtered = statuses ? rows.filter(call => statuses.includes(call.callStatus)) : rows;
+  return limit ? filtered.slice(0, limit) : filtered;
+}
+
+function countByStatus() {
+  const counts = {};
+  for (const call of list({ limit: 0 })) counts[call.callStatus] = (counts[call.callStatus] || 0) + 1;
+  return counts;
+}
+
+function remove(callId) {
+  return ensureDb().prepare('DELETE FROM calls WHERE call_id = ?').run(callId).changes;
+}
+
+// Deletes only calls whose workbench status is Test. Returns the deleted ids.
+function deleteTestCalls() {
+  const database = ensureDb();
+  const ids = list({ limit: 0, statuses: ['test'] }).map(call => call.callId);
+  const stmt = database.prepare('DELETE FROM calls WHERE call_id = ?');
+  database.transaction(() => ids.forEach(id => stmt.run(id)))();
+  return ids;
 }
 
 function clear() {
@@ -87,4 +109,4 @@ function reload() {
   ensureDb();
 }
 
-module.exports = { save, get, list, clear, reload, close };
+module.exports = { save, get, list, countByStatus, remove, deleteTestCalls, clear, reload, close };
