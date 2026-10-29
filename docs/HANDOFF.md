@@ -276,3 +276,12 @@ git status --short
 git log -1 --oneline
 git diff
 ```
+
+## 10 Nov 2026 — 1300 number port plan
+
+1300 244 769 is porting from SIPcity to Twilio.
+
+- **10 Nov, 5:00am Sydney:** check the number is in Twilio and route it the same as (02) 5700 0037 (trunk to Retell/Elle). Hugh makes a test call.
+- **10 Nov, 4:00pm Sydney:** check Twilio and Retell logs. Prepare SIPcity closure, but close nothing without Hugh's go.
+- **Never** cancel or release the 1300 number.
+- Don't cancel SIPcity until the port completes.
