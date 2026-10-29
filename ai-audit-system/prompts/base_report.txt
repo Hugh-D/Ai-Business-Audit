@@ -127,7 +127,27 @@ Return a single valid JSON object with this shape:
       "problemArea": "<related diagnostic problem area>",
       "expectedImpact": "<why this matters commercially or operationally>"
     }
-  ]
+  ],
+  "customerReport": {
+    "bottomLine": "<one plain sentence, 25 words or fewer, in Hugh's first person>",
+    "findings": [
+      {
+        "priority": "high|medium|low",
+        "title": "<plain title, 6 words or fewer>",
+        "found": "<What I found, 15 words or fewer>",
+        "whyItMatters": "<Why it matters, 15 words or fewer>",
+        "doThisFirst": "<Do this first, 15 words or fewer, starts with a plain verb>",
+        "extraBullets": ["<optional, 0 to 2 more bullets, 15 words or fewer each>"],
+        "effort": "quick_fix|this_month|bigger_job",
+        "moneyAtStake": "<estimate range the caller gave or that follows directly from figures they said, e.g. '$5,000 to $10,000 a job'; otherwise empty string>",
+        "moneyRank": <1 for the most money at stake, 2 next, and so on>,
+        "customerQuote": "<the caller's exact words from the transcript that show this, otherwise empty string>",
+        "confidence": "high|medium|low",
+        "volveFix": "<internal only: the Volve service or setup that fixes this, one sentence>"
+      }
+    ],
+    "whatsWorking": ["<2 to 3 things that are working, 15 words or fewer each>"]
+  }
 }
 
 Be specific, cite evidence from the transcript, and keep each section concise but actionable. The action plan should prioritize what is costing the business the most, what is easiest to improve, what creates the fastest visible win, and what increases trust in implementation. Every actionPlan item must use the problemArea of a finding whose callerStance is problem. Do not give a handled or undiscussed topic a corrective action.
@@ -161,3 +181,17 @@ followUpStatus rules:
 - declined: a follow-up was offered and they said no.
 - requested: they want a follow-up, but no day or time was agreed. Leave followUpPreferredTime empty.
 - not_offered: follow-up was never discussed. Leave followUpPreferredTime empty.
+
+## customerReport rules (the customer's Business Check)
+customerReport is what the customer reads. Hugh Douglas reviews it and it is written as Hugh, in the first person ("I", "I noticed", "my suggestion"), talking to the customer as "you".
+- Use plain Aussie trade language. Never use: AI agent, CRM, conversion, leverage, optimise, deploy, implement, workflow, solution, bandwidth.
+- Every bullet is 15 words or fewer. Use the caller's own words where you can.
+- No scare tactics. Do not say they are losing everything or that the business will fail. State the issue calmly and what to do.
+- findings: only problems the caller raised (callerStance problem), at most 7, ranked high, then medium, then low.
+- high means it is costing them jobs or money now; medium means it is slowing them down; low is worth doing later.
+- effort: quick_fix is under a week, this_month is within a few weeks, bigger_job needs more setup or time.
+- moneyAtStake is an estimate range only, and only from figures the caller said (job values, enquiries per week, hours). Never invent a figure. If they gave no figures, leave it empty.
+- moneyRank orders the findings by money at stake, 1 being the most.
+- customerQuote must be words the caller actually said, copied exactly. Leave it empty rather than paraphrase.
+- whatsWorking: 2 to 3 short bullets about things they already do well.
+- Never include pricing.

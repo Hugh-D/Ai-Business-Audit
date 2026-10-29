@@ -20,12 +20,13 @@ test('notes PDF contains the internal note text', async (t) => {
   assert.match(text, /Fast replies/);
 });
 
-test('print export styles force black system-font text', () => {
+test('internal print page is print-safe: system fonts, white backgrounds, no web font', () => {
   const src = fs.readFileSync(path.join(__dirname, '../public/app.js'), 'utf8');
-  const print = src.slice(src.indexOf('@media print'));
-  assert.match(print, /color: #000 !important/);
-  assert.match(print, /font-family: Arial, Helvetica, sans-serif !important/);
-  assert.match(print, /background: #fff !important/);
-  assert.match(print, /\.score strong[^{]*\{[^}]*border: 1\.5px solid #000/);
-  assert.match(src, /renderExportNotes\(payload\)/);
+  const doc = src.slice(src.indexOf('function buildExportDocument'), src.indexOf('function renderExportNotes'));
+  assert.match(doc, /font-family: Arial, Helvetica, sans-serif/);
+  assert.match(doc, /background: #fff !important/);
+  assert.doesNotMatch(doc, /@font-face|woff2|background: var\(--espresso\)/);
+  assert.match(doc, /Confidence/);
+  assert.match(doc, /Volve fix/);
+  assert.match(doc, /Evidence/);
 });

@@ -12,6 +12,7 @@ const callStatus = require('./agents/call_status');
 const workbookExporter = require('./agents/workbook_exporter');
 const reportPdf = require('./agents/report_pdf');
 const notesPdf = require('./agents/notes_pdf');
+const reportV4 = require('./agents/report_v4');
 const deliveryAgent = require('./agents/delivery_agent');
 const websiteAuditor = require('./agents/website_auditor');
 
@@ -189,6 +190,24 @@ app.post('/audit', async (req, res) => {
   }
 });
 
+// POST /audit/preview/:kind.pdf  (kind = customer | internal)
+// Body: an audit object ({ businessName, contactName, transcript, report, ... }).
+// Renders a PDF from the posted data only. Behind workbench auth; stores and sends nothing.
+app.post('/audit/preview/:kind.pdf', async (req, res) => {
+  try {
+    const audit = req.body || {};
+    if (!audit.report || typeof audit.report !== 'object') return res.status(400).json({ error: 'report is required' });
+    const kind = req.params.kind;
+    if (kind !== 'customer' && kind !== 'internal') return res.status(404).json({ error: 'Unknown preview' });
+    const buffer = kind === 'customer' ? await reportV4.buildCustomerPdfBuffer(audit) : await reportV4.buildInternalPdfBuffer(audit);
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="preview-${kind}.pdf"`, 'Cache-Control': 'no-store' });
+    res.send(buffer);
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // POST /voice/session
 // Body: { industry: string }
 // Returns a system prompt and config scoped to the industry for a voice session.
@@ -354,7 +373,7 @@ app.get('/voice/calls/:callId/notes.pdf', async (req, res) => {
   try {
     const call = callStore.get(req.params.callId);
     if (!call) return res.status(404).json({ error: 'Call not found' });
-    const pdfBuffer = await notesPdf.buildNotesPdfBuffer(call);
+    const pdfBuffer = await reportV4.buildInternalPdfBuffer(callToAudit(call));
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="internal-notes-${String(call.callId).replace(/[^a-zA-Z0-9_-]/g, '')}.pdf"`,
