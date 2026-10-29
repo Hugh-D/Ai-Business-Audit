@@ -126,8 +126,8 @@ test('buildTwoPageModel uses critical gaps only when diagnostics are missing', (
   assert.equal(model.firstAction, '');
 });
 
-test('buildReportPdfBuffer renders two Inter pages and keeps internal notes out', async () => {
-  const buffer = await reportPdf.buildReportPdfBuffer({
+test('legacy renderer renders two Inter pages and keeps internal notes out', async () => {
+  const buffer = await reportPdf.buildLegacyReportPdfBuffer({
     auditId: 'call_deliver',
     industry: 'trades',
     businessName: 'Demo Plumbing Co',
@@ -174,9 +174,9 @@ test('a "when I am available" answer is not rated as doing well', () => {
   assert.equal(response.currentState, 'Logan also confirmed about 5 enquiries slip through per week.');
 });
 
-test('long Logan-style text fits on two pages without ellipses', async () => {
+test('legacy renderer fits long Logan-style text on two pages', async () => {
   const long = 'Introduce a short qualifying intake - either a form on the website or a scripted set of questions asked before any site visit is booked - to filter job type, location, budget readiness, and timeline before the owner commits quoting time.';
-  const buffer = await reportPdf.buildReportPdfBuffer({
+  const buffer = await reportPdf.buildLegacyReportPdfBuffer({
     businessName: 'Long Text Pty Ltd',
     report: {
       overallScore: 4.8,

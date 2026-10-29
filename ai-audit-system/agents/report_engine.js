@@ -16,7 +16,7 @@ async function generate({ config, transcript }) {
 
   const response = await client.messages.create({
     model: process.env.AUDIT_MODEL || 'claude-sonnet-4-6',
-    max_tokens: parseInt(process.env.AUDIT_MAX_TOKENS || '5000', 10),
+    max_tokens: parseInt(process.env.AUDIT_MAX_TOKENS || '9000', 10),
     system: systemPrompt,
     messages: [
       { role: 'user', content: userMessage },
@@ -376,6 +376,34 @@ function groundReport(report, transcript = '') {
       const cleaned = scrub(next.priorityAnalysis[key]);
       next.priorityAnalysis[key] = anyStance && mentionsClosedOnly(cleaned) ? '' : cleaned;
     }
+  }
+
+  if (next.customerReport && typeof next.customerReport === 'object') {
+    const cr = next.customerReport;
+    const rank = { high: 0, medium: 1, low: 2 };
+    const said = norm(transcript);
+    cr.bottomLine = scrub(cr.bottomLine);
+    cr.whatsWorking = (Array.isArray(cr.whatsWorking) ? cr.whatsWorking : []).map(scrub).filter(Boolean).slice(0, 3);
+    cr.findings = (Array.isArray(cr.findings) ? cr.findings : [])
+      .filter(f => f && typeof f === 'object')
+      .map((f, i) => {
+        const money = textOrEmpty(f.moneyAtStake);
+        const quote = textOrEmpty(f.customerQuote);
+        return {
+          ...f,
+          found: scrub(f.found),
+          whyItMatters: scrub(f.whyItMatters),
+          doThisFirst: scrub(f.doThisFirst),
+          // An estimate survives only if every figure in it was said on the call.
+          moneyAtStake: money && scrub(money) === money ? money : '',
+          // A quote must be the caller's words, not a paraphrase.
+          customerQuote: quote && (!said || said.includes(norm(quote))) ? quote : '',
+          _i: i,
+        };
+      })
+      .sort((a, b) => ((rank[a.priority] ?? 1) - (rank[b.priority] ?? 1)) || (a._i - b._i))
+      .slice(0, 7)
+      .map(({ _i, ...f }) => f);
   }
 
   if (next.sections && typeof next.sections === 'object') {

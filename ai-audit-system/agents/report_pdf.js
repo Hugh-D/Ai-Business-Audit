@@ -58,7 +58,12 @@ const DECK = 'A plain look at what came up on your call, and what to fix first.'
 const DISCLAIMER = 'This check is based on what you told us on the call. It is a guide to help you decide what to tackle first, not a promise of results.';
 const SCALES = [1.12, 1.08, 1.04, 1, 0.96, 0.92, 0.88];
 
+// v4 customer Business Check (2 pages max, print-safe). The legacy renderer stays below as buildLegacyReportPdfBuffer.
 function buildReportPdfBuffer(audit) {
+  return require('./report_v4').buildCustomerPdfBuffer(audit);
+}
+
+function buildLegacyReportPdfBuffer(audit) {
   const model = buildTwoPageModel(audit);
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -962,5 +967,6 @@ module.exports = {
   COLOR,
   buildReportFilename,
   buildReportPdfBuffer,
+  buildLegacyReportPdfBuffer,
   buildTwoPageModel,
 };

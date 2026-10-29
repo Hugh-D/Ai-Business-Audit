@@ -727,285 +727,97 @@ function firstItems(value, count) {
   return Array.isArray(value) ? value.filter(Boolean).slice(0, count) : [];
 }
 
+// Internal Trades Readiness Audit print page (v4). Same order and finding pattern as the
+// customer Business Check, denser, with confidence, a quote from the call and the Volve fix.
+// Print-safe: dark text on white only, no fills or panels, system fonts only.
 function buildExportDocument(payload) {
-  const { auditId, industry, businessName, contactName, phoneNumber, websiteUrl, transcript, report } = payload;
+  const { industry, contactName, phoneNumber, websiteUrl, transcript } = payload;
+  const notesFrom = (input, key) => (input && typeof input.value === 'string' && input.value.trim()) || payload[key] || '';
+  const model = window.ReportModel.buildModel({
+    ...payload,
+    reviewNotes: notesFrom(typeof reviewNotesInput !== 'undefined' ? reviewNotesInput : null, 'reviewNotes'),
+    deliveryNotes: notesFrom(typeof deliveryNotesInput !== 'undefined' ? deliveryNotesInput : null, 'deliveryNotes'),
+    followUpNotes: notesFrom(typeof followUpNotesInput !== 'undefined' ? followUpNotesInput : null, 'followUpNotes'),
+  });
   const title = `${formatLabel(industry || 'Business')} Readiness Audit`;
-  const preparedFor = businessName || contactName || phoneNumber || 'Business Owner';
-  const generatedAt = new Date().toLocaleString();
-  const fontUrl = typeof window !== 'undefined' && window.location
-    ? new URL('/assets/fonts/inter-latin-var.woff2', window.location.href).href
-    : '/assets/fonts/inter-latin-var.woff2';
+  const e = escapeHtml;
+  const tagHtml = (f) => `<span class="tag tag-${e(f.priority)}"><span class="mark" aria-hidden="true">${e(f.tag.glyph)}</span> ${e(f.tag.label)}</span>`;
+  const li = (label, text) => `<li>${label ? `<strong>${e(label)}:</strong> ` : ''}${e(text)}</li>`;
+  const scores = Object.entries(model.scores || {}).map(([k, v]) => `${e(formatLabel(k))}: ${e(String(v))}/10`).join(' &nbsp;|&nbsp; ');
+  const findings = model.findings.map(f => `
+    <article class="finding">
+      <div class="finding-head">${tagHtml(f)}<h3>${f.number}. ${e(f.title)}</h3><span class="effort">Effort: ${e(f.effortLabel)}</span></div>
+      <ul>
+        ${f.bullets.map(b => li(b.label, b.text)).join('')}
+        ${f.customerQuote ? li('Evidence', `"${f.customerQuote}"`) : (f.evidence ? li('Evidence', f.evidence) : '')}
+        ${li('Confidence', formatLabel(f.confidence))}
+        ${f.volveFix ? li('Volve fix', f.volveFix) : ''}
+        ${f.moneyAtStake ? li('Estimate from call', f.moneyAtStake) : ''}
+      </ul>
+    </article>`).join('');
+  const fixes = model.topFixes.map(f => `<li><strong>${e(f.title)}.</strong> ${e(f.action)} <span class="ref">(finding ${f.number})</span>${f.estimate ? `<div class="estimate">${e(f.estimate)} (estimate only)</div>` : ''}</li>`).join('');
+  const notes = [['Internal notes', model.notes.reviewNotes], ['Delivery notes', model.notes.deliveryNotes], ['Follow-up notes', model.notes.followUpNotes]];
 
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(title)}</title>
+    <title>${e(title)} - ${e(model.businessName)}</title>
     <style>
-      /* Inter (SIL OFL 1.1), bundled with the app so saved PDFs render the same everywhere. */
-      @font-face {
-        font-family: "Inter";
-        font-style: normal;
-        font-weight: 100 900;
-        font-display: block;
-        src: url("${fontUrl}") format("woff2");
-      }
-
-      :root {
-        --espresso: #1C1410;
-        --slate: #6B5E52;
-        --parchment: #F9F6F1;
-        --canvas-soft: #F2EDE5;
-        --ochre: #C47B2E;
-        --gold: #E8A84A;
-        --pale-ochre: #FDF4E7;
-        --ochre-brown: #7A4F1E;
-        --text-secondary: #8A7D72;
-        --text-muted: #A89880;
-        --border: #DDD5C8;
-        color: var(--espresso);
-        font-family: Inter, Arial, Helvetica, sans-serif;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      body {
-        margin: 0;
-        background: var(--canvas-soft);
-      }
-
-      main {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 0 0 42px;
-        background: var(--parchment);
-      }
-
-      .report-body {
-        padding: 0 28px;
-      }
-
-      header {
-        margin-bottom: 24px;
-        padding: 28px;
-        background: var(--espresso);
-        color: var(--parchment);
-      }
-
-      .eyebrow {
-        margin: 0 0 8px;
-        color: var(--gold);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      h1, h2, h3, p {
-        margin-top: 0;
-      }
-
-      h1 {
-        margin-bottom: 14px;
-        color: var(--parchment);
-        font-size: 32px;
-        font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -0.01em;
-      }
-
-      h2 {
-        margin-bottom: 12px;
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1.2;
-      }
-
-      h3 {
-        margin-bottom: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 1.35;
-      }
-
-      .meta {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px 18px;
-        color: var(--border);
-        font-size: 13px;
-      }
-
-      .meta strong {
-        color: var(--parchment);
-        font-weight: 600;
-      }
-
-      .score {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        margin-bottom: 24px;
-      }
-
-      .score strong {
-        display: grid;
-        place-items: center;
-        width: 86px;
-        aspect-ratio: 1;
-        border-radius: 8px;
-        background: var(--espresso);
-        color: var(--gold);
-        font-size: 32px;
-        font-weight: 700;
-      }
-
-      .score span {
-        color: var(--slate);
-        font-weight: 600;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 24px;
-      }
-
-      section {
-        break-inside: avoid;
-        margin-bottom: 22px;
-      }
-
-      .box {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 14px;
-        background: var(--parchment);
-      }
-
-      .box p,
-      li {
-        color: var(--slate);
-        font-size: 14px;
-        line-height: 1.55;
-      }
-
-      .box p strong,
-      li strong {
-        color: var(--espresso);
-        font-weight: 600;
-      }
-
-      ul {
-        margin-bottom: 0;
-        padding-left: 20px;
-      }
-
-      .metric-label {
-        display: inline-block;
-        color: var(--ochre-brown);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-      }
-
-      .metric-value {
-        display: block;
-        margin-top: 4px;
-        color: var(--espresso);
-        font-size: 22px;
-        font-weight: 700;
-      }
-
-      .transcript {
-        white-space: pre-wrap;
-      }
-
+      /* Print-safe by design: dark text on white, borders only, system fonts. */
+      * { box-sizing: border-box; background: #fff !important; color: #1C1410; text-shadow: none !important; box-shadow: none !important; filter: none !important; opacity: 1 !important; }
+      html, body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.4; }
+      main { max-width: 820px; margin: 0 auto; padding: 24px 28px; }
+      .kicker { color: #C47B2E; font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0; }
+      h1 { font-size: 26px; margin: 2px 0 2px; }
+      .meta { font-size: 11px; margin: 2px 0; }
+      h2 { color: #C47B2E; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #E8A84A; }
+      .bottom { display: flex; gap: 14px; align-items: center; }
+      .score { width: 78px; height: 78px; border: 2.5px solid #C47B2E; border-radius: 8px; text-align: center; padding-top: 12px; flex: none; }
+      .score strong { display: block; font-size: 28px; color: #1C1410; }
+      .score span { font-size: 10px; }
+      .bottom p { font-weight: 700; font-size: 14px; margin: 0; }
+      ol.fixes { margin: 0; padding-left: 20px; }
+      ol.fixes li { margin-bottom: 4px; }
+      .estimate { font-weight: 700; font-size: 11px; }
+      .ref { font-size: 11px; }
+      .finding { border: 1px solid #1C1410; border-radius: 6px; padding: 6px 10px; margin-bottom: 7px; break-inside: avoid; }
+      .finding-head { display: flex; align-items: center; gap: 8px; }
+      .finding h3 { font-size: 13px; margin: 0; flex: 1; }
+      .effort { font-size: 11px; font-weight: 700; }
+      .finding ul { margin: 4px 0 0; padding-left: 18px; }
+      .tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+      .tag-high { color: #C47B2E; border: 2px solid #C47B2E; }
+      .tag-medium { color: #C47B2E; border: 1px solid #C47B2E; }
+      .tag-low { color: #5E5148; border: 1px solid #6B6058; }
+      .tag-low .mark { color: #5E5148; }
+      .tag .mark { color: inherit; }
+      .notes div { white-space: pre-wrap; margin-bottom: 4px; }
+      .transcript { white-space: pre-wrap; font-size: 10.5px; }
+      footer { margin-top: 18px; padding-top: 6px; border-top: 1px solid #B8AEA4; font-size: 10px; }
       @media print {
-        /* Physical printers dropped the text: the variable Inter web font and light
-           brand colours do not survive many printer drivers or ink-saving modes.
-           Print with a system font and solid black text on white. */
-        html, body, main, .report-body, section, .box, .notes-print {
-          background: #fff !important;
-        }
-
-        *, *::before, *::after {
-          color: #000 !important;
-          -webkit-text-fill-color: #000 !important;
-          opacity: 1 !important;
-          text-shadow: none !important;
-          filter: none !important;
-          mix-blend-mode: normal !important;
-          font-family: Arial, Helvetica, sans-serif !important;
-          overflow: visible !important;
-          max-height: none !important;
-        }
-
-        /* Nothing prints dark on dark: every block is white with black text. */
-        *, *::before, *::after {
-          background: #fff !important;
-          background-image: none !important;
-          box-shadow: none !important;
-        }
-
-        header {
-          border: 2px solid #000 !important;
-          border-radius: 8px;
-        }
-
-        .score strong, .box {
-          border: 1.5px solid #000 !important;
-        }
-
-
-        main {
-          padding-bottom: 0;
-        }
-      }
-
-      .notes-print {
-        white-space: pre-wrap;
-      }
-
-      @media (max-width: 700px) {
-        .meta,
-        .grid {
-          grid-template-columns: 1fr;
-        }
-
-        header,
-        .report-body {
-          padding-left: 20px;
-          padding-right: 20px;
-        }
-
-        h1 {
-          font-size: 28px;
-        }
+        @page { size: A4; margin: 14mm 12mm; }
+        main { padding: 0; max-width: none; }
+        *, *::before, *::after { background: #fff !important; -webkit-text-fill-color: currentColor; }
       }
     </style>
   </head>
   <body>
     <main>
-      <header>
-        <p class="eyebrow">AI Business Audit</p>
-        <h1>${escapeHtml(title)}</h1>
-        <div class="meta">
-          <div><strong>Prepared for:</strong> ${escapeHtml(preparedFor)}</div>
-          <div><strong>Industry:</strong> ${escapeHtml(formatLabel(industry || 'unknown'))}</div>
-          <div><strong>Audit ID:</strong> ${escapeHtml(auditId || 'draft')}</div>
-          <div><strong>Generated:</strong> ${escapeHtml(generatedAt)}</div>
-          ${websiteUrl ? `<div><strong>Website:</strong> ${escapeHtml(websiteUrl)}</div>` : ''}
-        </div>
-      </header>
-      <div class="report-body">
-        ${renderExportNotes(payload)}
-        ${renderExportReport(report || {})}
-        ${transcript ? `<section><h2>Transcript</h2><div class="box transcript">${escapeHtml(transcript)}</div></section>` : ''}
-      </div>
+      <p class="kicker">Internal - not for the customer</p>
+      <h1>${e(model.businessName)}</h1>
+      <p class="meta">${e(title)} &nbsp;|&nbsp; ${e(model.date)} &nbsp;|&nbsp; Reviewed by ${e(model.reviewedBy)}</p>
+      <p class="meta">${[contactName && `Contact: ${e(contactName)}`, phoneNumber && `Phone: ${e(phoneNumber)}`, websiteUrl && `Website: ${e(websiteUrl)}`, model.callId && `Call: ${e(model.callId)}`].filter(Boolean).join(' &nbsp;|&nbsp; ')}</p>
+      <h2>The bottom line</h2>
+      <div class="bottom"><div class="score"><strong>${model.score != null ? e(model.score.toFixed(1)) : '-'}</strong><span>out of 10</span></div><p>${e(model.bottomLine)}</p></div>
+      ${scores ? `<p class="meta">${scores}</p>` : ''}
+      ${fixes ? `<h2>Top 3 fixes</h2><ol class="fixes">${fixes}</ol>` : ''}
+      ${findings ? `<h2>Findings</h2>${findings}` : ''}
+      ${model.whatsWorking.length ? `<h2>What's working</h2><ul>${model.whatsWorking.map(w => `<li>${e(w)}</li>`).join('')}</ul>` : ''}
+      <h2>Notes</h2>
+      <section class="notes">${notes.map(([k, v]) => `<div><strong>${e(k)}:</strong> ${e(v || '(none)')}</div>`).join('')}</section>
+      ${transcript ? `<h2>Transcript</h2><div class="transcript">${e(transcript)}</div>` : ''}
+      <footer>volvesolutions.com.au &nbsp;|&nbsp; 02 5700 0037 &nbsp;|&nbsp; Prepared by Hugh Douglas</footer>
     </main>
   </body>
 </html>`;
