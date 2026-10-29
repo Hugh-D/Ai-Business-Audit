@@ -26,6 +26,7 @@ const copyButton = document.querySelector('#copyButton');
 const sheetButton = document.querySelector('#sheetButton');
 const printButton = document.querySelector('#printButton');
 const customerPdfButton = document.querySelector('#customerPdfButton');
+const notesPdfButton = document.querySelector('#notesPdfButton');
 const serviceStatus = document.querySelector('#serviceStatus');
 const reportMeta = document.querySelector('#reportMeta');
 const emptyState = document.querySelector('#emptyState');
@@ -227,6 +228,11 @@ sheetButton.addEventListener('click', async () => {
 customerPdfButton.addEventListener('click', () => {
   if (!lastAudit?.callId) return;
   window.open(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/report.pdf`, '_blank', 'noopener');
+});
+
+notesPdfButton?.addEventListener('click', () => {
+  if (!lastAudit?.callId) return;
+  window.open(`/voice/calls/${encodeURIComponent(lastAudit.callId)}/notes.pdf`, '_blank', 'noopener');
 });
 
 printButton.addEventListener('click', () => {
@@ -590,6 +596,7 @@ function renderReport(payload) {
   sheetButton.disabled = false;
   printButton.disabled = false;
   customerPdfButton.disabled = !payload.callId;
+  if (notesPdfButton) notesPdfButton.disabled = !payload.callId;
   reportMeta.textContent = `${formatLabel(industry)} audit - ${auditId}`;
 
   reportOutput.innerHTML = [
@@ -918,13 +925,40 @@ function buildExportDocument(payload) {
       }
 
       @media print {
-        body {
-          background: var(--parchment);
+        /* Physical printers dropped the text: the variable Inter web font and light
+           brand colours do not survive many printer drivers or ink-saving modes.
+           Print with a system font and solid black text on white. */
+        html, body, main, .report-body, section, .box, .notes-print {
+          background: #fff !important;
+        }
+
+        *, *::before, *::after {
+          color: #000 !important;
+          -webkit-text-fill-color: #000 !important;
+          opacity: 1 !important;
+          text-shadow: none !important;
+          filter: none !important;
+          mix-blend-mode: normal !important;
+          font-family: Arial, Helvetica, sans-serif !important;
+          overflow: visible !important;
+          max-height: none !important;
+        }
+
+        header, header * {
+          background: #fff !important;
+        }
+
+        header {
+          border-bottom: 2px solid #000 !important;
         }
 
         main {
           padding-bottom: 0;
         }
+      }
+
+      .notes-print {
+        white-space: pre-wrap;
       }
 
       @media (max-width: 700px) {
@@ -959,12 +993,26 @@ function buildExportDocument(payload) {
         </div>
       </header>
       <div class="report-body">
+        ${renderExportNotes(payload)}
         ${renderExportReport(report || {})}
         ${transcript ? `<section><h2>Transcript</h2><div class="box transcript">${escapeHtml(transcript)}</div></section>` : ''}
       </div>
     </main>
   </body>
 </html>`;
+}
+
+function renderExportNotes(payload = {}) {
+  const read = (input, key) => (input && typeof input.value === 'string' && input.value.trim()) || payload[key] || '';
+  const entries = [
+    ['Internal Notes', read(typeof reviewNotesInput !== 'undefined' ? reviewNotesInput : null, 'reviewNotes')],
+    ['Delivery Notes', read(typeof deliveryNotesInput !== 'undefined' ? deliveryNotesInput : null, 'deliveryNotes')],
+    ['Follow-up Notes', read(typeof followUpNotesInput !== 'undefined' ? followUpNotesInput : null, 'followUpNotes')],
+  ].filter(([, value]) => value);
+  if (!entries.length) return '';
+  return `<section><h2>Internal Notes</h2>${entries.map(([label, value]) => `
+    <div class="box"><span class="metric-label">${escapeHtml(label)}</span><div class="notes-print">${escapeHtml(value)}</div></div>
+  `).join('')}</section>`;
 }
 
 function renderExportReport(report) {
