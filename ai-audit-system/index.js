@@ -11,6 +11,7 @@ const callStore = require('./agents/call_store');
 const callStatus = require('./agents/call_status');
 const workbookExporter = require('./agents/workbook_exporter');
 const reportPdf = require('./agents/report_pdf');
+const notesPdf = require('./agents/notes_pdf');
 const deliveryAgent = require('./agents/delivery_agent');
 const websiteAuditor = require('./agents/website_auditor');
 
@@ -338,6 +339,25 @@ app.get('/voice/calls/:callId/report.pdf', async (req, res) => {
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${reportPdf.buildReportFilename(audit)}"`,
+      'Cache-Control': 'no-store',
+    });
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// GET /voice/calls/:callId/notes.pdf
+// Internal notes as a printer-safe PDF (black Helvetica). Behind workbench auth; sends nothing.
+app.get('/voice/calls/:callId/notes.pdf', async (req, res) => {
+  try {
+    const call = callStore.get(req.params.callId);
+    if (!call) return res.status(404).json({ error: 'Call not found' });
+    const pdfBuffer = await notesPdf.buildNotesPdfBuffer(call);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="internal-notes-${String(call.callId).replace(/[^a-zA-Z0-9_-]/g, '')}.pdf"`,
       'Cache-Control': 'no-store',
     });
     res.send(pdfBuffer);
