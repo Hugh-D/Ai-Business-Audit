@@ -787,11 +787,11 @@ function buildExportDocument(payload) {
       .effort { font-size: 11px; font-weight: 700; }
       .finding ul { margin: 4px 0 0; padding-left: 18px; }
       .tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
-      .tag-high { color: #C47B2E; border: 2px solid #C47B2E; }
-      .tag-medium { color: #C47B2E; border: 1px solid #C47B2E; }
+      .tag-high { color: #1C1410; border: 2px solid #C47B2E; }
+      .tag-high .mark, .tag-medium .mark { color: #C47B2E; }
+      .tag-medium { color: #1C1410; border: 1px solid #C47B2E; }
       .tag-low { color: #5E5148; border: 1px solid #6B6058; }
       .tag-low .mark { color: #5E5148; }
-      .tag .mark { color: inherit; }
       .notes div { white-space: pre-wrap; margin-bottom: 4px; }
       .transcript { white-space: pre-wrap; font-size: 10.5px; }
       footer { margin-top: 18px; padding-top: 6px; border-top: 1px solid #B8AEA4; font-size: 10px; }

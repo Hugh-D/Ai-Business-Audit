@@ -91,7 +91,8 @@ function tag(doc, x, y, priority) {
   if (priority === 'high') doc.polygon([cx - 3.5, cy + 3], [cx + 3.5, cy + 3], [cx, cy - 3.5]).fill(color);
   else if (priority === 'medium') doc.circle(cx, cy, 3).fill(color);
   else doc.circle(cx, cy, 3).lineWidth(1).strokeColor(color).stroke();
-  doc.fillColor(color).text(t.label, x + 15, y + 3, { lineBreak: false });
+  // Label in ink so it stays crisp in greyscale; the ochre border and marker carry the colour.
+  doc.fillColor(C.ink).text(t.label, x + 15, y + 3, { lineBreak: false });
   return w;
 }
 
