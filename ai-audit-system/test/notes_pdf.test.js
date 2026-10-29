@@ -25,5 +25,7 @@ test('print export styles force black system-font text', () => {
   const print = src.slice(src.indexOf('@media print'));
   assert.match(print, /color: #000 !important/);
   assert.match(print, /font-family: Arial, Helvetica, sans-serif !important/);
+  assert.match(print, /background: #fff !important/);
+  assert.match(print, /\.score strong[^{]*\{[^}]*border: 1\.5px solid #000/);
   assert.match(src, /renderExportNotes\(payload\)/);
 });

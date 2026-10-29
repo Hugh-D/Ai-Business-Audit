@@ -944,13 +944,22 @@ function buildExportDocument(payload) {
           max-height: none !important;
         }
 
-        header, header * {
+        /* Nothing prints dark on dark: every block is white with black text. */
+        *, *::before, *::after {
           background: #fff !important;
+          background-image: none !important;
+          box-shadow: none !important;
         }
 
         header {
-          border-bottom: 2px solid #000 !important;
+          border: 2px solid #000 !important;
+          border-radius: 8px;
         }
+
+        .score strong, .box {
+          border: 1.5px solid #000 !important;
+        }
+
 
         main {
           padding-bottom: 0;
