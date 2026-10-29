@@ -48,15 +48,17 @@
     return out;
   }
 
+  function cap(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
+
   // Bullets are 15 words or fewer. Prefer ending at a natural break.
   function clip(value, max = MAX_WORDS) {
     const text = plain(value).replace(/\s+[\u2014\u2013-]\s+/g, ', ');
     const words = text.split(' ').filter(Boolean);
-    if (words.length <= max) return text;
+    if (words.length <= max) return cap(text);
     const head = words.slice(0, max).join(' ');
     const cut = head.search(/[,;:.](?=[^,;:.]*$)/);
     const base = cut > head.length * 0.5 ? head.slice(0, cut) : head;
-    return base.replace(/[,;:.\s]+$/, '') + '.';
+    return cap(base.replace(/[,;:.\s]+$/, '') + '.');
   }
 
   function normPriority(value) {
