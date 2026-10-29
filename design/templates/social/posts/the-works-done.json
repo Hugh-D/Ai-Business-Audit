@@ -1,0 +1,18 @@
+{
+  "id": "the-works-done",
+  "layout": "type",
+  "surface": "dark",
+  "formats": ["4x5", "9x16"],
+  "headline": ["The work’s done.", "*Is the money?*"],
+  "card": {
+    "kind": "paper",
+    "title": "This week’s paperwork",
+    "meta": "Mon to Fri",
+    "rows": [
+      { "title": "Quote: bathroom reno", "sub": "Sent 3 weeks ago", "stamp": "Unchased", "tilt": -4 },
+      { "title": "Extra: 2 hrs + parts", "sub": "Okayed on site, Tuesday", "stamp": "Not invoiced", "tilt": 2 },
+      { "title": "Invoice #0412", "sub": "Due last month", "stamp": "Still waiting", "tilt": -3 },
+      { "title": "Quotes, invoices, rosters", "sub": "Tonight, after tea", "stamp": "Only you", "tilt": 3, "ink": true }
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "$description": "Volve Solutions design tokens v3.0 (29 Oct 2026). Single source of truth for colour, type, spacing and contact facts. Edit here, then run `node design/scripts/build-tokens.js` to regenerate volve.css. Format follows the W3C Design Tokens (DTCG) draft: $value, $type, $description. Derived tints list the resolved hex for tools that cannot do transparency (PDF libraries, image tools).",
+
+  "color": {
+    "$type": "color",
+    "espresso": { "$value": "#1C1410", "$description": "Brand colour 1 of 6. Primary dark surface. Primary text on light. The Call Bar." },
+    "paper":    { "$value": "#F9F6F1", "$description": "Brand colour 2 of 6. Primary light surface. Primary text on dark." },
+    "white":    { "$value": "#FFFFFF", "$description": "Brand colour 3 of 6. Cards on paper. Print pages. Never text on paper (no contrast)." },
+    "slate":    { "$value": "#6B5E52", "$description": "Brand colour 4 of 6. Secondary text on light. Small surfaces only (card headers, chips). Never a full background. Never text on espresso (2.9:1 fails)." },
+    "ochre":    { "$value": "#C47B2E", "$description": "Brand colour 5 of 6. Accent on light surfaces at 24px+ only (3.1:1). Primary button fill. Never small text on light." },
+    "gold":     { "$value": "#E8A84A", "$description": "Brand colour 6 of 6. Accent on dark (8.8:1). Signal surface. Eyebrows on dark. Never text on light (1.9:1 fails)." },
+    "alert":    { "$value": "#A43B35", "$description": "Functional only. Urgent findings and errors in reports and apps. Never decoration, headings or marketing." }
+  },
+
+  "tint": {
+    "$type": "color",
+    "$description": "Derived from the six. Not new colours. Use the alpha form in CSS, the resolved hex everywhere else.",
+    "text-secondary-on-dark": { "$value": "#C2BEB9", "alpha": "paper @ 75% on espresso", "$description": "Supporting text on espresso (10:1)." },
+    "line-on-light":          { "$value": "#DEDBD6", "alpha": "espresso @ 12% on paper", "$description": "Dividers and card borders on paper." },
+    "line-on-white":          { "$value": "#E4E3E2", "alpha": "espresso @ 12% on white", "$description": "Dividers inside white cards." },
+    "line-on-dark":           { "$value": "#3F3834", "alpha": "paper @ 16% on espresso", "$description": "Dividers on espresso." },
+    "fill-subtle":            { "$value": "#ECE8E4", "alpha": "espresso @ 6% on paper", "$description": "Quiet fills: table stripes, input backgrounds." },
+    "gold-wash":              { "$value": "#FAECD7", "alpha": "gold @ 22% on white", "$description": "WATCH pill background. Highlight rows." },
+    "alert-wash":             { "$value": "#F4E7E7", "alpha": "alert @ 12% on white", "$description": "FIX FIRST pill background." }
+  },
+
+  "surface": {
+    "$description": "Three surface modes. Pick one per composition.",
+    "dark":   { "background": "{color.espresso}", "text": "{color.paper}", "text-secondary": "{tint.text-secondary-on-dark}", "accent": "{color.gold}", "line": "{tint.line-on-dark}", "$description": "Default for social and the website hero. Premium, calm, makes photos glow." },
+    "light":  { "background": "{color.paper}", "text": "{color.espresso}", "text-secondary": "{color.slate}", "accent": "{color.ochre}", "card": "{color.white}", "line": "{tint.line-on-light}", "$description": "Default for reports, proposals, documents, email and website body." },
+    "signal": { "background": "{color.gold}", "text": "{color.espresso}", "text-secondary": "{color.espresso}", "accent": "{color.espresso}", "$description": "Loud mode. Max 1 in 4 social posts. Never reports or documents." }
+  },
+
+  "status": {
+    "$description": "Report and app finding states. Always label + colour, never colour alone.",
+    "fix-first": { "text": "{color.alert}", "background": "{tint.alert-wash}", "dot": "{color.alert}", "label": "FIX FIRST" },
+    "watch":     { "text": "{color.espresso}", "background": "{tint.gold-wash}", "dot": "{color.gold}", "label": "WATCH" },
+    "on-track":  { "text": "{color.slate}", "background": "{tint.fill-subtle}", "dot": "{color.slate}", "label": "ON TRACK" }
+  },
+
+  "font": {
+    "$type": "fontFamily",
+    "display": { "$value": "'DM Serif Display', Georgia, 'Times New Roman', serif", "$description": "Headlines, display numbers, accent phrases (italic). Weight 400 only. Never body text, never under 22px." },
+    "sans":    { "$value": "Inter, 'Helvetica Neue', Arial, sans-serif", "$description": "Everything else. Weights 400, 500, 600, 700, 800." }
+  },
+
+  "type": {
+    "$description": "Type scales by medium. Sizes in px except print (pt). lh = line-height, ls = letter-spacing.",
+    "social-1080": {
+      "$description": "Facebook canvases (1080 wide). Floor: nothing under 30px. A 1080 post shows at about 0.36x on a phone.",
+      "display":   { "family": "display", "size": 168, "lh": 0.94, "ls": "-0.02em", "use": "Type-led and Signal headlines, 2 to 4 words per line" },
+      "headline":  { "family": "display", "size": 92,  "lh": 1.04, "ls": "-0.01em", "use": "Photo post headlines, max 2 lines" },
+      "body":      { "family": "sans", "weight": 500, "size": 40, "lh": 1.3, "use": "Supporting lines on type-led posts" },
+      "card-title":{ "family": "sans", "weight": 600, "size": 40, "lh": 1.2, "use": "Rows inside product and paper cards" },
+      "eyebrow":   { "family": "sans", "weight": 700, "size": 32, "ls": "0.16em", "case": "upper", "use": "Call Bar offer line, card headers" },
+      "phone":     { "family": "sans", "weight": 800, "size": 148, "lh": 1, "ls": "-0.03em", "use": "The Call Bar number. Fit to the margin, never wider" },
+      "small":     { "family": "sans", "weight": 500, "size": 30, "lh": 1.3, "use": "Call Bar footer line and URL" },
+      "wordmark":  { "height": 36, "use": "Lockup height (symbol) in the top-left slot" }
+    },
+    "screen-390": {
+      "$description": "Phone-first web report, website and app. Floor: 16px body, 12px labels.",
+      "display":   { "family": "display", "size": 40, "lh": 1.05, "ls": "-0.01em" },
+      "h1":        { "family": "display", "size": 32, "lh": 1.1 },
+      "h2":        { "family": "display", "size": 26, "lh": 1.15 },
+      "h3":        { "family": "sans", "weight": 600, "size": 19, "lh": 1.3 },
+      "body":      { "family": "sans", "weight": 400, "size": 17, "lh": 1.55 },
+      "body-small":{ "family": "sans", "weight": 400, "size": 15, "lh": 1.5 },
+      "label":     { "family": "sans", "weight": 600, "size": 13, "lh": 1.35 },
+      "eyebrow":   { "family": "sans", "weight": 700, "size": 12, "ls": "0.14em", "case": "upper" },
+      "stat":      { "family": "display", "size": 48, "lh": 1 },
+      "desktop-multiplier": { "value": 1.25, "use": "Display, h1 and h2 scale up by this at 1024px+. Body stays 17 to 18px." }
+    },
+    "print-a4": {
+      "$description": "A4 PDFs (reports, proposals, flyers). Sizes in pt. Floor: 9pt.",
+      "display":   { "family": "display", "size": 40, "lh": 1.05 },
+      "h1":        { "family": "display", "size": 26, "lh": 1.1 },
+      "h2":        { "family": "display", "size": 18, "lh": 1.2 },
+      "h3":        { "family": "sans", "weight": 700, "size": 11.5, "lh": 1.3 },
+      "body":      { "family": "sans", "weight": 400, "size": 10.5, "lh": 1.5 },
+      "small":     { "family": "sans", "weight": 400, "size": 9, "lh": 1.4 },
+      "eyebrow":   { "family": "sans", "weight": 700, "size": 8, "ls": "0.14em", "case": "upper" }
+    }
+  },
+
+  "space": {
+    "$type": "dimension",
+    "$description": "4px base. Use these steps only.",
+    "1": { "$value": "4px" }, "2": { "$value": "8px" }, "3": { "$value": "12px" }, "4": { "$value": "16px" },
+    "5": { "$value": "24px" }, "6": { "$value": "32px" }, "7": { "$value": "48px" }, "8": { "$value": "64px" },
+    "9": { "$value": "96px" }, "10": { "$value": "128px" }
+  },
+
+  "layout": {
+    "screen-gutter":  { "$value": "20px", "$description": "Side padding at 390px. 32px at 768px+." },
+    "screen-measure": { "$value": "640px", "$description": "Max reading width for body text." },
+    "screen-max":     { "$value": "1140px", "$description": "Max page width." },
+    "touch-target":   { "$value": "48px", "$description": "Minimum tap target." },
+    "social-margin":  { "$value": "72px", "$description": "Safe margin on 1080 canvases, all sides." },
+    "story-safe-top": { "$value": "220px", "$description": "9:16 top zone kept clear of text (profile and progress bar)." },
+    "story-safe-bottom": { "$value": "320px", "$description": "9:16 bottom zone kept clear of text except the Call Bar footer line (reply bar)." },
+    "print-margin":   { "$value": "18mm", "$description": "A4 page margin." }
+  },
+
+  "radius": {
+    "$type": "dimension",
+    "sm":   { "$value": "6px",  "$description": "Pills on print, small chips." },
+    "md":   { "$value": "10px", "$description": "Buttons, inputs." },
+    "lg":   { "$value": "16px", "$description": "Cards on screen." },
+    "xl":   { "$value": "24px", "$description": "Cards on 1080 social canvases." },
+    "pill": { "$value": "999px" }
+  },
+
+  "shadow": {
+    "card-on-light": { "$value": "0 1px 2px rgba(28,20,16,0.06), 0 12px 32px rgba(28,20,16,0.10)", "$description": "Floating cards on paper." },
+    "card-on-dark":  { "$value": "0 24px 64px rgba(0,0,0,0.45)", "$description": "Paper props and product cards on espresso." }
+  },
+
+  "image": {
+    "fade-depth": { "$value": "16%", "$description": "Photo band fades into espresso over this share of its height, top and bottom. The only gradient allowed anywhere." },
+    "grade": { "$value": "warm, low-key, single warm light source, blacks lifted to espresso not pure black", "$description": "See design/prompts/image-direction.md" }
+  },
+
+  "contact": {
+    "$description": "Brand facts. Templates read these, so a number change is a one-line edit.",
+    "company":   { "$value": "Volve Solutions" },
+    "abn":       { "$value": "60 928 990 855" },
+    "web":       { "$value": "volvesolutions.com.au" },
+    "email":     { "$value": "hello@volvesolutions.com.au" },
+    "phone-business-check": {
+      "display": "02 5700 0037", "tel": "+61257000037",
+      "$description": "Business Check line TODAY. From about 10 Nov 2026 change to display '1300 244 769', tel '1300244769' (Twilio port) and re-render posts."
+    },
+    "phone-volverighto": {
+      "display": "02 5700 0037", "tel": "+61257000037",
+      "$description": "VolveRighto AI receptionist demo line once the 1300 port completes."
+    },
+    "offer": { "$value": "Free 12-minute Business Check", "$description": "Customer-facing offer name. Internal name: AI Business Audit." },
+    "cta-footer": { "$value": "Call any time. No contract." }
+  }
+}

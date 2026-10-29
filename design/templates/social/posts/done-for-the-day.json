@@ -1,0 +1,7 @@
+{
+  "id": "done-for-the-day",
+  "layout": "photo",
+  "formats": ["4x5", "1x1"],
+  "headline": ["Done for the day.", "Not done with the *paperwork.*"],
+  "image": "design/reference/images/ute-tailgate-sunset.jpg"
+}

@@ -37,3 +37,4 @@ _Capture errors and corrections here as they occur._
 
 ## Key Decisions Log
 _Record significant architectural or scope decisions here with brief rationale._
+- **29 Oct 2026: Brand system v3.** All visual and customer-facing work follows `design/BRAND.md` and `design/tokens/volve.tokens.json` (Claude loads the `volve-brand` skill). Never hard-code colours; run `node design/scripts/check.js` on changed files. Decisions detail: `docs/DECISIONS.md`.

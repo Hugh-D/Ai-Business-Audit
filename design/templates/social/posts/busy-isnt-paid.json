@@ -1,0 +1,7 @@
+{
+  "id": "busy-isnt-paid",
+  "layout": "signal",
+  "formats": ["4x5", "1x1", "9x16"],
+  "headline": ["Busy isn’t", "the same", "as [paid.]"],
+  "body": "Quotes nobody chased. Extras that never made the invoice. And it all runs through you."
+}

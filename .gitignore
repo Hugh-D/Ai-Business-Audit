@@ -5,3 +5,4 @@ npm-debug.log*
 ai-audit-system/data/*.json
 ai-audit-system/data/*.sqlite
 ai-audit-system/data/*.sqlite-*
+design/templates/social/out/

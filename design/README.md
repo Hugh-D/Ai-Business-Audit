@@ -1,3 +1,5 @@
+> **Superseded.** This is the September 2026 hero handoff (design system v2.1). The current brand system is `design/BRAND.md`. Keep this for the website copy and structure only.
+
 # Handoff: Volve Solutions Landing Page
 
 ## Overview

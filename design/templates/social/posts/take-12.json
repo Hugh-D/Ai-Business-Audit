@@ -1,0 +1,9 @@
+{
+  "id": "take-12",
+  "layout": "site",
+  "formats": ["4x5"],
+  "header": "Pre-start check",
+  "headline": ["Take 12."],
+  "sub": "Not for the job. For the business.",
+  "checklist": ["Quotes followed up?", "Extras on the invoice?", "Money actually in?", "Could it run without you?"]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "hows-the-business",
+  "layout": "type",
+  "surface": "light",
+  "formats": ["4x5", "9x16"],
+  "headline": ["How’s the business", "*really* going?"],
+  "card": {
+    "kind": "check",
+    "title": "Your top 3",
+    "chip": "SAMPLE",
+    "rows": [
+      { "title": "Quotes going cold", "status": "fix-first" },
+      { "title": "Extras not invoiced", "status": "watch" },
+      { "title": "It all runs through you", "status": "watch" }
+    ],
+    "reviewer": { "name": "Hugh", "photo": "ai-audit-system/public/assets/hugh.jpg", "note": "Plain English. No contract." }
+  }
+}
