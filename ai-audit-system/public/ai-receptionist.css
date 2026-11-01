@@ -18,7 +18,7 @@
 
 .righto-name {
   margin: 0 0 14px;
-  color: var(--pale);
+  color:var(--ink);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -27,7 +27,7 @@
 .righto-name span {
   display: block;
   margin-top: 4px;
-  color: var(--dust);
+  color:var(--ink);
   font-weight: 400;
   letter-spacing: 0;
 }
@@ -44,17 +44,17 @@
   height: 5px;
   margin-right: 8px;
   border-radius: 50%;
-  background: var(--ochre);
+  background:var(--ochre-dark);
   vertical-align: middle;
 }
 
 .righto-sample .eyebrow {
-  color: var(--gold);
+  color:var(--ochre-dark);
 }
 
 .righto-sample h2 {
   margin: 0 0 18px;
-  color: var(--pale);
+  color:var(--ink);
   font-size: clamp(28px, 3vw, 40px);
   line-height: 1.05;
 }
@@ -62,8 +62,8 @@
 .righto-card {
   overflow: hidden;
   border-radius: 14px;
-  background: var(--white);
-  color: var(--ink);
+  background:var(--white);
+  color:var(--ink);
   box-shadow: 12px 16px 0 rgba(28, 20, 16, 0.12);
 }
 
@@ -73,8 +73,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: #1c1410;
-  color: var(--pale);
+  background:var(--canvas);
+  color:var(--ink);
 }
 
 .righto-card-head {
@@ -87,7 +87,7 @@
 }
 
 .righto-kicker {
-  color: #a89880;
+  color:var(--ink);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -97,13 +97,13 @@
 .righto-card-head strong {
   display: block;
   margin-top: 3px;
-  color: #f9f6f1;
+  color:var(--ink);
   font-size: 12px;
   font-weight: 700;
 }
 
 .righto-card-head .righto-stat {
-  color: var(--gold);
+  color:var(--ochre-dark);
   font-size: 14px;
   font-weight: 700;
   text-align: right;
@@ -113,14 +113,14 @@
   display: grid;
   gap: 10px;
   padding: 12px;
-  background: #fff;
+  background:var(--white);
 }
 
 .righto-item {
   padding: 10px 11px;
-  border: 0.5px solid var(--dust);
+  border: 0.5px solid var(--line);
   border-radius: 8px;
-  background: #f9f6f1;
+  background:var(--white);
 }
 
 .righto-item-top {
@@ -136,15 +136,15 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--ochre);
-  color: #f9f6f1;
+  background:var(--ochre-dark);
+  color:#fff;
   font-size: 9px;
   font-weight: 700;
 }
 
 .righto-item h3 {
   margin: 0;
-  color: #1c1410;
+  color:var(--ink);
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 700;
@@ -155,17 +155,17 @@
   display: inline-block;
   margin-top: 4px;
   padding: 2px 7px;
-  border: 0.5px solid var(--gold);
+  border: 0.5px solid var(--ochre);
   border-radius: 999px;
-  background: var(--pale);
-  color: var(--ochre);
+  background:var(--white);
+  color:var(--ochre-dark);
   font-size: 9px;
   font-weight: 700;
 }
 
 .righto-item p {
   margin: 8px 0 0;
-  color: var(--slate);
+  color:var(--ink);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -174,20 +174,20 @@
   margin-top: 8px;
   padding: 8px;
   border-radius: 6px;
-  background: var(--canvas);
+  background:var(--canvas);
 }
 
 .righto-text span {
   display: block;
   margin-bottom: 3px;
-  color: #7a4f1e;
+  color:var(--ochre-dark);
   font-size: 10px;
   font-weight: 700;
 }
 
 .righto-text p {
   margin: 0;
-  color: #1c1410;
+  color:var(--ink);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -197,14 +197,15 @@
 }
 
 .righto-item.is-faded .righto-badge {
-  background: var(--dust);
+  background:var(--canvas);
+  color:var(--ink);
 }
 
 .righto-ghost {
   height: 8px;
   margin-top: 8px;
   border-radius: 4px;
-  background: var(--dust);
+  background:var(--line);
 }
 
 .righto-ghost.short {
@@ -216,12 +217,12 @@
 }
 
 .righto-card-foot p {
-  color: #a89880;
+  color:var(--ink);
   font-size: 10px;
 }
 
 .righto-card-foot strong {
-  color: var(--gold);
+  color:var(--ochre-dark);
   font-weight: 700;
 }
 
@@ -229,7 +230,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #f9f6f1;
+  color:var(--ink);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -241,23 +242,23 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--ochre);
-  color: #fdf4e7;
+  background:var(--ochre-dark);
+  color:#fff;
   font-style: normal;
 }
 
 .righto-caption {
   margin: 12px 0 0;
-  color: #a89880;
+  color:var(--ink);
   font-size: 12px;
 }
 
 .righto-band {
-  background: var(--paper);
+  background:var(--white);
 }
 
 .righto-band.soft {
-  background: var(--canvas);
+  background:var(--canvas);
 }
 
 .righto-prose {
@@ -270,7 +271,7 @@
 }
 
 .righto-prose p {
-  color: #5b4f47;
+  color:var(--ink);
   font-size: 16px;
   line-height: 1.7;
 }
@@ -284,12 +285,10 @@
   display: grid;
   place-items: center;
   aspect-ratio: 16 / 9;
-  border: 0.5px solid var(--dust);
+  border: 0.5px solid var(--line);
   border-radius: 14px;
-  background:
-    linear-gradient(180deg, rgba(28, 20, 16, 0.15), rgba(28, 20, 16, 0.45)),
-    var(--slate);
-  color: var(--pale);
+  background:var(--canvas);
+  color:var(--ink);
   text-align: center;
 }
 
@@ -302,7 +301,7 @@
 }
 
 .righto-poster span {
-  color: var(--dust);
+  color:var(--ink);
   font-size: 13px;
 }
 
@@ -310,9 +309,9 @@
   max-width: 720px;
   margin-top: 28px;
   padding: 24px;
-  border: 0.5px solid var(--dust);
+  border: 0.5px solid var(--line);
   border-radius: 14px;
-  background: var(--white);
+  background:var(--white);
 }
 
 .righto-math h3 {
@@ -324,7 +323,7 @@
 
 .righto-math p,
 .righto-result {
-  color: #5b4f47;
+  color:var(--ink);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -339,7 +338,7 @@
 .righto-calc label {
   display: grid;
   gap: 6px;
-  color: #4f433c;
+  color:var(--ink);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -350,14 +349,14 @@
   width: 100%;
   height: 44px;
   border: 0;
-  border-bottom: 1px solid #b9ad9f;
-  background: transparent;
-  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  background:transparent;
+  color:var(--ink);
   font-size: 16px;
 }
 
 .righto-result strong {
-  color: var(--ink);
+  color:var(--ink);
   font-family: var(--serif);
   font-size: 32px;
   font-weight: 400;
@@ -374,8 +373,8 @@
   display: flex;
   flex-direction: column;
   padding: 24px 20px;
-  border: 0.5px solid var(--dust);
-  background: var(--white);
+  border: 0.5px solid var(--line);
+  background:var(--white);
 }
 
 .righto-service:nth-child(1) { border-radius: 28px 8px 8px 8px; }
@@ -401,9 +400,9 @@
   stroke-linejoin: round;
 }
 
-.righto-icon.audit { background: var(--pale); color: var(--ochre); }
-.righto-icon.auto { background: var(--canvas); color: var(--slate); }
-.righto-icon.support { background: #1c1410; color: var(--gold); }
+.righto-icon.audit { background:var(--canvas); color:var(--ochre-dark); }
+.righto-icon.auto { background:var(--canvas); color:var(--ink); }
+.righto-icon.support { background:var(--ochre-dark); color:#fff; }
 
 .righto-service .tag {
   display: inline-block;
@@ -417,9 +416,9 @@
   text-transform: uppercase;
 }
 
-.righto-service:nth-child(1) .tag { background: var(--pale); color: #7a4f1e; }
-.righto-service:nth-child(2) .tag { background: var(--canvas); color: #1c1410; }
-.righto-service:nth-child(3) .tag { background: #1c1410; color: var(--dust); }
+.righto-service:nth-child(1) .tag { background:var(--canvas); color:var(--ochre-dark); }
+.righto-service:nth-child(2) .tag { background:var(--canvas); color:var(--ink); }
+.righto-service:nth-child(3) .tag { background:var(--ochre-dark); color:#fff; }
 
 .righto-service h3 {
   margin: 0 0 8px;
@@ -430,7 +429,7 @@
 
 .righto-service p {
   margin: 0;
-  color: #675b53;
+  color:var(--ink);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -438,8 +437,8 @@
 .righto-service footer {
   margin-top: auto;
   padding: 14px 0 0;
-  background: transparent;
-  color: #1c1410;
+  background:transparent;
+  color:var(--ink);
   font-size: 12px;
   font-weight: 600;
 }
@@ -452,9 +451,9 @@
   max-width: 760px;
   margin-top: 28px;
   padding: 28px 24px;
-  border: 0.5px solid var(--dust);
+  border: 0.5px solid var(--line);
   border-radius: 14px;
-  background: var(--white);
+  background:var(--white);
 }
 
 .righto-offer h3 {
@@ -467,13 +466,13 @@
 .righto-offer ul {
   margin: 0;
   padding-left: 18px;
-  color: #5b4f47;
+  color:var(--ink);
   font-size: 15px;
   line-height: 1.6;
 }
 
 .righto-offer p {
-  color: #5b4f47;
+  color:var(--ink);
   font-size: 15px;
   line-height: 1.65;
 }
@@ -486,9 +485,9 @@
   width: 100%;
   height: 48px;
   border: 0;
-  border-bottom: 1px solid #b9ad9f;
-  background: transparent;
-  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  background:transparent;
+  color:var(--ink);
   font-size: 15px;
 }
 
@@ -503,7 +502,7 @@
   align-items: flex-start;
   gap: 10px;
   margin: 18px 0;
-  color: #4f433c;
+  color:var(--ink);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0;
@@ -528,24 +527,24 @@
 .righto-success {
   margin-top: 16px;
   padding: 16px;
-  border: 0.5px solid var(--dust);
+  border: 0.5px solid var(--line);
   border-radius: 8px;
-  background: var(--white);
+  background:var(--white);
 }
 
 .righto-where {
   margin-top: 18px;
-  color: var(--muted);
+  color:var(--ink);
   font-size: 13px;
 }
 
 .righto-faq {
-  background: var(--paper);
+  background:var(--white);
 }
 
 @media (max-width: 900px) {
   .righto-hero {
-    background: var(--paper);
+    background:var(--white);
   }
 
   .righto-hero-grid {
@@ -556,25 +555,25 @@
 
   .righto-hero .hero-copy {
     padding: 110px 20px 48px;
-    background: var(--slate);
+    background:var(--white);
   }
 
   .righto-sample {
     padding: 48px 20px 16px;
-    background: var(--paper);
+    background:var(--white);
   }
 
   .righto-sample .eyebrow {
-    color: #7a4f1e;
+    color:var(--ochre-dark);
   }
 
   .righto-sample h2,
   .righto-caption {
-    color: var(--ink);
+    color:var(--ink);
   }
 
   .righto-caption {
-    color: var(--muted);
+    color:var(--ink);
   }
 
   .righto-cards,
