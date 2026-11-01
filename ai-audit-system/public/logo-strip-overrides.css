@@ -5,7 +5,7 @@
   height:64px;
   padding:10px 16px;
   border-radius:12px;
-  background:rgba(255,255,255,.55);
+  background:var(--white);
 }
 .logo-item img{
   max-width:140px;
@@ -26,18 +26,6 @@
 .logo-item img[src*="hubspotlogo"]{transform:scale(1.12)}
 .logo-item img[src*="deputylogo"]{transform:scale(1.05)}
 .logo-item img[src*="aroflo"]{transform:scale(1.08)}
-
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .logo-item{
-    background:#f5f0e8;
-    box-shadow:0 0 0 1px rgba(255,255,255,.06);
-  }
-}
-:root[data-theme="dark"] .logo-item{
-  background:#f5f0e8;
-  box-shadow:0 0 0 1px rgba(255,255,255,.06);
-}
-
 /* Stack meta + title on audit result cards (fixes ConversionPhone Visibility) */
 .action-item span,
 .action-item strong,

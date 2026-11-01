@@ -871,13 +871,12 @@ app.use((_req, res) => {
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: 'DM Sans', system-ui, sans-serif; color: #1c1410; background: #f9f6f1; text-align: center; padding: 40px 20px; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: 'DM Sans', system-ui, sans-serif; color: #1c1410; background: #ffffff; text-align: center; padding: 40px 20px; }
     h1 { font-family: 'Outfit', system-ui, sans-serif; font-size: 48px; margin: 0 0 12px; letter-spacing: -.03em; }
-    p { color: #594c43; font-size: 16px; line-height: 1.6; margin: 0 0 28px; max-width: 400px; }
-    a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: #c47b2e; color: #fdf4e7; border-radius: 12px; text-decoration: none; font-weight: 700; font-family: 'Outfit', system-ui, sans-serif; transition: background .2s; }
-    a:hover { background: #a96525; }
-    .code { color: #a89880; font-size: 14px; margin-top: 20px; }
-    @media (prefers-color-scheme: dark) { body { background: #151210; color: #f0ebe4; } p { color: #c4b9ab; } .code { color: #6e6358; } }
+    p { color: #1c1410; font-size: 16px; line-height: 1.6; margin: 0 0 28px; max-width: 400px; }
+    a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: #9c5c1e; color: #ffffff; border-radius: 12px; text-decoration: none; font-weight: 700; font-family: 'Outfit', system-ui, sans-serif; transition: background .2s; }
+    a:hover { background: #1c1410; }
+    .code { color: #9c5c1e; font-size: 14px; margin-top: 20px; }
   </style>
 </head>
 <body>
