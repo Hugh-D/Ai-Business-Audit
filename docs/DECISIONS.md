@@ -1,5 +1,20 @@
 # Decisions log
 
+## 1 Nov 2026
+
+- **Rebrand paused.** Hugh can't decide yet. Brand system v3 (`design/BRAND.md`) stays live for everything in the meantime; nothing below is adopted.
+- **Rebrand brief, as of the pause** (use this when it restarts):
+  - Core idea: move owners from owning a job to owning a business, one that runs without them and could be sold. Step by step: **Find** (free 12-minute check: missed calls, unchased quotes, extras never invoiced, everything in the owner's head), **Close** (simple systems), **Coach** (forward).
+  - Audience: service businesses and small home businesses, not only tradies. No workshop imagery.
+  - Look: plain white, clean, Apple-like, easy to repeat.
+  - Name: just "Volve". Tie-in: Volve sounds like evolve.
+  - Report gets a "Checked by Volve" badge, not a certificate look.
+  - Method: the DOSTI approach (CJ Cawley): one strong idea pulled apart into mark, pattern, type, colour and touchpoints. Idea and rough mark first, then the system.
+- **Open: the mark.** Two rough routes on the table (private page: https://claude.ai/artifact/TGX3dzEfWa9dXU521DM7W7):
+  - Route A "The steps": keeps the V with a stroke; three rising strokes = Find, Close, Coach, doubling as a progress bar.
+  - Route B "Step back": V (the job) plus a dot (the owner) stepped out of it; the dot's position tells the journey. Claude's recommendation.
+- **Earlier explorations, not adopted:** "Volve Checked" concept (charcoal, tick mark), mark studies round 2, and "Volve Gap" (negative-space cut, tread plate). Superseded by the brief above because they were trade-only and too dark.
+
 ## 29 Oct 2026
 
 - **Report v4 brief approved and live** (PRs #35, #36). ~~Design stays as is until Hugh brings example layouts.~~ Superseded the same day by the brand system v3 (below).
