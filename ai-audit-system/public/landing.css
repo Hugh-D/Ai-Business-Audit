@@ -55,3 +55,4 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 
 /* Hero background: warm grey (Hugh, 2 Nov) */
 .hero,.catalogue-hero{background:var(--canvas)}
+.hero h1 em,.catalogue-hero h1 em{color:var(--ochre-dark)}
