@@ -353,4 +353,5 @@ module.exports = {
   hasEmailConfig,
   sendReportEmail,
   sendReviewEmail,
+  sendViaResend,
 };

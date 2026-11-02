@@ -1,0 +1,17 @@
+{
+  "customers": [
+    {
+      "id": "volve-test",
+      "test": true,
+      "businessName": "Volve Solutions",
+      "ownerName": "Hugh Douglas",
+      "trade": "business automation",
+      "serviceArea": "Picton and the Macarthur region, NSW",
+      "trialDays": 14,
+      "retellAgentIds": ["agent_a248b5cd96684035e931f897d2"],
+      "phoneNumbers": [],
+      "smsToEnv": "RIGHTO_TEST_SMS_TO",
+      "emailToEnv": "RIGHTO_TEST_EMAIL_TO"
+    }
+  ]
+}
