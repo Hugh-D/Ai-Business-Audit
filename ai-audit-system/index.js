@@ -15,6 +15,7 @@ const notesPdf = require('./agents/notes_pdf');
 const reportV4 = require('./agents/report_v4');
 const deliveryAgent = require('./agents/delivery_agent');
 const websiteAuditor = require('./agents/website_auditor');
+const righto = require('./agents/righto');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -528,6 +529,11 @@ app.post('/webhook/retell', async (req, res) => {
     const payload = voiceAgent.parseRetellWebhook(req.rawBody, signature);
 
     const call = payload.call || {};
+    // Righto (TEST) receptionist calls are handled separately and never enter the audit pipeline.
+    if (righto.findCustomer(call)) {
+      righto.handleEvent(payload).catch(err => console.error('righto:', err.message));
+      return res.sendStatus(204);
+    }
     const callId = call.call_id;
     callStore.save(callId, {
       status: payload.event,
