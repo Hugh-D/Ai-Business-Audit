@@ -39,12 +39,21 @@ function recipients(customer, env = process.env) {
   return { sms, email };
 }
 
+function cleanNumber(v) {
+  const s = String(v == null ? '' : v).trim();
+  return /\d{6,}/.test(s.replace(/[\s()-]/g, '')) ? s : '';
+}
+
 function extractDetails(call = {}) {
   const a = call.call_analysis || {};
   const d = a.custom_analysis_data || {};
   return {
     callerName: d.caller_name || '',
-    callbackNumber: d.callback_number || (call.direction === 'inbound' ? call.from_number : '') || '',
+    callbackNumber: cleanNumber(d.callback_number) || cleanNumber(call.from_number) || '',
+    callbackSameAsCaller: d.callback_same_as_caller === true,
+    callbackNote: cleanNumber(d.callback_number) || cleanNumber(call.from_number) ? '' :
+      (d.callback_same_as_caller === true ? 'caller said "same number" but there was no caller ID' : 'not given') +
+      (call.call_type === 'web_call' ? ' (web call)' : ''),
     suburb: d.suburb || '',
     job: d.job_description || a.call_summary || '',
     urgency: d.urgency || (d.is_emergency ? 'emergency' : 'unknown'),
@@ -73,7 +82,7 @@ function buildEmail(customer, x, call = {}) {
     `New enquiry taken by Righto for ${customer.businessName}.`,
     '',
     `Name: ${x.callerName || '-'}`,
-    `Callback number: ${x.callbackNumber || '-'}`,
+    `Callback number: ${x.callbackNumber || (x.callbackNote ? '- ' + x.callbackNote : '-')}`,
     `Suburb: ${x.suburb || '-'}`,
     `Job: ${x.job || '-'}`,
     `Urgency: ${x.urgency}${x.isEmergency ? ' (EMERGENCY)' : ''}`,
