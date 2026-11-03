@@ -86,3 +86,27 @@ test('shipped customer list has the test agent and not Elle', () => {
   assert.ok(!list.some(c => c.retellAgentIds.includes(righto.ELLE_AGENT_ID)));
 });
 
+
+test('callback number: spoken -> from_number -> note', () => {
+  const real = { call_analysis: { call_summary: 'x', custom_analysis_data: { caller_name: 'Hugh', callback_number: '', suburb: 'Picton' } } };
+  const x0 = righto.extractDetails({ call_type: 'web_call', call_analysis: real.call_analysis });
+  assert.equal(x0.callbackNumber, '');
+  assert.match(righto.buildEmail({ businessName: 'T' }, x0).text || JSON.stringify(righto.buildEmail({ businessName: 'T' }, x0)), /not given \(web call\)/);
+  const x1 = righto.extractDetails({ call_type: 'phone_call', direction: 'outbound', from_number: '+61400111222', call_analysis: { custom_analysis_data: { callback_number: '' } } });
+  assert.equal(x1.callbackNumber, '+61400111222');
+  const x2 = righto.extractDetails({ from_number: '+61400111222', call_analysis: { custom_analysis_data: { callback_number: '0412 345 678' } } });
+  assert.equal(x2.callbackNumber, '0412 345 678');
+  const x3 = righto.extractDetails({ call_analysis: { custom_analysis_data: { callback_number: 'same number' } } });
+  assert.equal(x3.callbackNumber, '');
+});
+
+test('callback mapping cases', () => {
+  const ca = (d) => ({ custom_analysis_data: d });
+  assert.equal(righto.extractDetails({ call_analysis: ca({ callback_number: '0412 345 678' }) }).callbackNumber, '0412 345 678');
+  const same = righto.extractDetails({ call_type: 'phone_call', from_number: '+61474000111', call_analysis: ca({ callback_number: '', callback_same_as_caller: true }) });
+  assert.equal(same.callbackNumber, '+61474000111');
+  const none = righto.extractDetails({ call_type: 'web_call', call_analysis: ca({ callback_number: '', callback_same_as_caller: true }) });
+  assert.equal(none.callbackNumber, '');
+  assert.equal(none.callbackSameAsCaller, true);
+  assert.match(JSON.stringify(righto.buildEmail({ businessName: 'T' }, none)), /Callback number: - caller said .*same number.* no caller ID \(web call\)/);
+});
